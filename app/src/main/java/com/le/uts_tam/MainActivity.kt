@@ -15,12 +15,14 @@ class MainActivity : ComponentActivity() {
             UTS_TAMTheme {
                 var currentScreen by remember { mutableStateOf("login") }
 
-                if (currentScreen == "login") {
-                    Login(onLoginSuccess = {
-                        currentScreen = "dashboard"
-                    })
-                } else {
-                    Dashboard()
+                when (currentScreen) {
+                    "login" -> Login(onLoginSuccess = { currentScreen = "dashboard" })
+                    "dashboard" -> Dashboard(
+                        onPelangganClick = { currentScreen = "pelanggan" },
+                        onProfileClick = { currentScreen = "pengaturan" }
+                    )
+                    "pelanggan" -> Pelanggan(onBack = { currentScreen = "dashboard" })
+                    "pengaturan" -> Profil(onBack = { currentScreen = "dashboard" })
                 }
             }
         }

@@ -3,6 +3,7 @@ package com.le.uts_tam
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -28,7 +29,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun Dashboard() {
+fun Dashboard(
+    onPelangganClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {}
+) {
     val scrollState = rememberScrollState()
     val customFontFamily = FontFamily(
         Font(R.font.poppins),
@@ -60,7 +64,8 @@ fun Dashboard() {
                     .padding(top = 50.dp)
                     .size(50.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFE53935)),
+                    .background(Color(0xFFE53935))
+                    .clickable { onProfileClick() },
                 contentAlignment = Alignment.Center
             ) {
                 Image(painter = painterResource(R.drawable.profile), contentDescription = "Profile")
@@ -96,7 +101,7 @@ fun Dashboard() {
         }
         Spacer(modifier = Modifier.height(16.dp))
         Row(modifier = Modifier.fillMaxWidth()) {
-            StatCard("PELANGGAN", "156", customFontFamily, Modifier.weight(1f))
+            StatCard("PELANGGAN", "156", customFontFamily, Modifier.weight(1f), onClick = onPelangganClick)
             Spacer(modifier = Modifier.width(16.dp))
             StatCard("BULAN INI", "RP 68JT", customFontFamily, Modifier.weight(1f), Color(0xFFFFA000))
         }
@@ -178,9 +183,18 @@ fun SummaryText(label: String, value: String) {
 }
 
 @Composable
-fun StatCard(title: String, value: String, fontFamily: FontFamily, modifier: Modifier = Modifier, valueColor: Color = Color.White) {
+fun StatCard(
+    title: String,
+    value: String,
+    fontFamily: FontFamily,
+    modifier: Modifier = Modifier,
+    valueColor: Color = Color.White,
+    onClick: () -> Unit = {}
+) {
     Card(
-        modifier = modifier.height(120.dp),
+        modifier = modifier
+            .height(120.dp)
+            .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
     ) {
