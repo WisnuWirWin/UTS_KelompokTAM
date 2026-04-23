@@ -21,12 +21,18 @@ class MainActivity : ComponentActivity() {
                         onPelangganClick = { currentScreen = "pelanggan" },
                         onProfileClick = { currentScreen = "pengaturan" },
                         onKasirClick = { currentScreen = "kasir" },
-                        onRiwayatClick = { currentScreen = "riwayat" }
+                        onRiwayatClick = { currentScreen = "riwayat" },
+                        onStokClick = { currentScreen = "inventaris" }
                     )
                     "pelanggan" -> Pelanggan(onBack = { currentScreen = "dashboard" })
                     "pengaturan" -> Profil(onBack = { currentScreen = "dashboard" })
                     "kasir" -> Kasir(onBack = { currentScreen = "dashboard" })
                     "riwayat" -> Riwayat(onBack = { currentScreen = "dashboard" })
+                    "inventaris" -> Inventaris(
+                        onBack = { currentScreen = "dashboard" },
+                        onAddItem = { currentScreen = "edit_stock" }
+                    )
+                    "edit_stock" -> EditStock(onBack = { currentScreen = "inventaris" })
                 }
             }
         }

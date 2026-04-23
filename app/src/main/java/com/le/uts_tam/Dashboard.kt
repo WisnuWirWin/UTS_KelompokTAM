@@ -34,7 +34,8 @@ fun Dashboard(
     onPelangganClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
     onKasirClick: () -> Unit = {},
-    onRiwayatClick: () -> Unit = {}
+    onRiwayatClick: () -> Unit = {},
+    onStokClick: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     val customFontFamily = FontFamily(
@@ -98,7 +99,7 @@ fun Dashboard(
 
         //Statistik
         Row(modifier = Modifier.fillMaxWidth()) {
-            StatCard("JENIS STOK", "47", customFontFamily, Modifier.weight(1f))
+            StatCard("JENIS STOK", "47", customFontFamily, Modifier.weight(1f), onClick = onStokClick)
             Spacer(modifier = Modifier.width(16.dp))
             StatCard("STOK HAMPIR HABIS", "3", customFontFamily, Modifier.weight(1f), Color.Red)
         }
@@ -151,7 +152,9 @@ fun Dashboard(
                 Box(modifier = Modifier.clickable { onRiwayatClick() }) {
                     QuickActionButton(Icons.Default.Email, "Riwayat", customFontFamily)
                 }
-                QuickActionButton(Icons.Default.List, "Stok", customFontFamily)
+                Box(modifier = Modifier.clickable { onStokClick() }) {
+                    QuickActionButton(Icons.Default.List, "Stok", customFontFamily)
+                }
                 QuickActionButton(Icons.Default.Edit, "Laporan", customFontFamily)
             }
         }
