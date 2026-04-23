@@ -1,5 +1,6 @@
 package com.le.uts_tam
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -16,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -66,12 +68,16 @@ fun Profil(onBack: () -> Unit = {}) {
             ) {
                 Box(
                     modifier = Modifier
-                        .size(64.dp)
+                        .size(80.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0xFFE53935)),
+                        .background(Color.White),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Home, contentDescription = null, tint = Color.White, modifier = Modifier.size(32.dp))
+                    Image(
+                        painter = painterResource(R.drawable.logo),
+                        contentDescription = "logo",
+                        modifier = Modifier.padding(8.dp)
+                    )
                 }
                 
                 Spacer(modifier = Modifier.width(16.dp))
