@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Warning
@@ -31,7 +32,9 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun Dashboard(
     onPelangganClick: () -> Unit = {},
-    onProfileClick: () -> Unit = {}
+    onProfileClick: () -> Unit = {},
+    onKasirClick: () -> Unit = {},
+    onRiwayatClick: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     val customFontFamily = FontFamily(
@@ -142,7 +145,12 @@ fun Dashboard(
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                QuickActionButton(Icons.Default.ShoppingCart, "Kasir", customFontFamily)
+                Box(modifier = Modifier.clickable { onKasirClick() }) {
+                    QuickActionButton(Icons.Default.ShoppingCart, "Kasir", customFontFamily)
+                }
+                Box(modifier = Modifier.clickable { onRiwayatClick() }) {
+                    QuickActionButton(Icons.Default.Email, "Riwayat", customFontFamily)
+                }
                 QuickActionButton(Icons.Default.List, "Stok", customFontFamily)
                 QuickActionButton(Icons.Default.Edit, "Laporan", customFontFamily)
             }

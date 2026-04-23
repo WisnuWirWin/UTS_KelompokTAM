@@ -128,6 +128,20 @@ fun Pelanggan(onBack: () -> Unit = {}) {
             customFontFamily = customFontFamily
         )
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        CustomerCard(
+            plate = "F 5509 TT",
+            name = "Dzackiy",
+            phone = "0821-8943-2121",
+            motor = "Honda Beat 2024",
+            history = listOf(
+                ServiceHistory("Ganti shock + Filter + Aki", "12 Jan 2025", "Rp 400rb"),
+                ServiceHistory("Ganti Rem Depan", "12 Jan 2025", "Rp 100rb")
+            ),
+            customFontFamily = customFontFamily
+        )
+
         Spacer(modifier = Modifier.height(40.dp))
     }
 }
