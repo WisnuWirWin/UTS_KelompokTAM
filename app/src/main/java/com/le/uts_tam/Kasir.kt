@@ -34,7 +34,8 @@ val TextYellow = Color(0xFFFFEB3B)
 
 @Composable
 fun Kasir(
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onPrintNota: () -> Unit
 ) {
     val jasaServisList = listOf(
         JasaServis("Servis Rutin", isSelected = true),
@@ -114,7 +115,11 @@ fun Kasir(
                 item { ButtonTambahBarang() }
             }
 
-            FooterTotalAndPay(totalBayar = totalBayar, totalJasa = totalJasa)
+            FooterTotalAndPay(
+                totalBayar = totalBayar, 
+                totalJasa = totalJasa,
+                onPrintClick = onPrintNota
+            )
 
             Spacer(modifier = Modifier.height(20.dp))
         }
@@ -284,7 +289,7 @@ fun ButtonTambahBarang() {
 }
 
 @Composable
-fun FooterTotalAndPay(totalBayar: Int, totalJasa: Int) {
+fun FooterTotalAndPay(totalBayar: Int, totalJasa: Int, onPrintClick: () -> Unit) {
     Column {
         Surface(
             color = DarkCard,
@@ -323,7 +328,7 @@ fun FooterTotalAndPay(totalBayar: Int, totalJasa: Int) {
         }
 
         Surface(
-            onClick = {},
+            onClick = onPrintClick,
             shape = RoundedCornerShape(20.dp),
             modifier = Modifier.fillMaxWidth(),
             color = Color.Transparent

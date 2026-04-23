@@ -35,7 +35,8 @@ fun Dashboard(
     onProfileClick: () -> Unit = {},
     onKasirClick: () -> Unit = {},
     onRiwayatClick: () -> Unit = {},
-    onStokClick: () -> Unit = {}
+    onStokClick: () -> Unit = {},
+    onLaporanClick: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     val customFontFamily = FontFamily(
@@ -155,7 +156,9 @@ fun Dashboard(
                 Box(modifier = Modifier.clickable { onStokClick() }) {
                     QuickActionButton(Icons.Default.List, "Stok", customFontFamily)
                 }
-                QuickActionButton(Icons.Default.Edit, "Laporan", customFontFamily)
+                Box(modifier = Modifier.clickable { onLaporanClick() }) {
+                    QuickActionButton(Icons.Default.Edit, "Laporan", customFontFamily)
+                }
             }
         }
 
