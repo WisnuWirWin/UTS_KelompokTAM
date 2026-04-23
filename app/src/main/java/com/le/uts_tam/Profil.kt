@@ -100,7 +100,7 @@ fun Profil(onBack: () -> Unit = {}) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Call, contentDescription = null, tint = Color(0xFFE53935), modifier = Modifier.size(12.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = "0882-7422-0721", color = Color.Gray, fontSize = 11.sp, fontFamily = customFontFamily)
+                        Text(text = "0857-6494-8010", color = Color.Gray, fontSize = 11.sp, fontFamily = customFontFamily)
                     }
                 }
             }

@@ -19,14 +19,14 @@ class MainActivity : ComponentActivity() {
                     "login" -> Login(onLoginSuccess = { currentScreen = "dashboard" })
                     "dashboard" -> Dashboard(
                         onPelangganClick = { currentScreen = "pelanggan" },
-                        onProfileClick = { currentScreen = "pengaturan" },
+                        onProfileClick = { currentScreen = "profil" },
                         onKasirClick = { currentScreen = "kasir" },
                         onRiwayatClick = { currentScreen = "riwayat" },
                         onStokClick = { currentScreen = "inventaris" },
                         onLaporanClick = { currentScreen = "laporan" }
                     )
                     "pelanggan" -> Pelanggan(onBack = { currentScreen = "dashboard" })
-                    "pengaturan" -> Profil(onBack = { currentScreen = "dashboard" })
+                    "profil" -> Profil(onBack = { currentScreen = "dashboard" })
                     "kasir" -> Kasir(
                         onBack = { currentScreen = "dashboard" },
                         onPrintNota = { currentScreen = "nota_digital" }
