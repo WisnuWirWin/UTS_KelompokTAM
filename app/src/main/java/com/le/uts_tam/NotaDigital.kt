@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -23,7 +22,7 @@ fun NotaDigital(
     onBack: () -> Unit
 ) {
     Scaffold(
-        containerColor = DarkBackground
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -67,35 +66,33 @@ fun HeaderNota(onBack: () -> Unit) {
             IconButton(
                 onClick = onBack,
                 modifier = Modifier
-                    .background(DarkCard, RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp))
                     .size(40.dp)
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Kembali",
-                    tint = TextWhite,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(24.dp)
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
             Text(
                 text = "NOTA DIGITAL",
-                color = TextWhite,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.titleLarge,
                 letterSpacing = 1.sp
             )
         }
 
         Surface(
-            color = Color(0xFF1B5E20),
+            color = Color(0xFF1B5E20), // Dark green background for LUNAS badge
             shape = RoundedCornerShape(8.dp)
         ) {
             Text(
                 text = "LUNAS",
-                color = Color(0xFF4CAF50),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
+                color = Color(0xFF4CAF50), // Light green text for LUNAS badge
+                style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
             )
         }
@@ -105,7 +102,7 @@ fun HeaderNota(onBack: () -> Unit) {
 @Composable
 fun ReceiptCard() {
     Surface(
-        color = DarkCard,
+        color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -120,48 +117,46 @@ fun ReceiptCard() {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "BENGKEL MAJU JAYA",
-                        color = PrimaryOrange,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Black
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.titleLarge
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "Jl. Raya Natar No.12, Lampung Selatan",
-                        color = TextGrey,
-                        fontSize = 12.sp
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.labelSmall
                     )
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.Phone,
                             contentDescription = null,
-                            tint = Color(0xFFE91E63),
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = "0821-XXXX-XXXX",
-                            color = TextGrey,
-                            fontSize = 12.sp
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.labelSmall
                         )
                     }
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
                         text = "TRX-20250422-013",
-                        color = TextWhite,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.labelMedium
                     )
                     Text(
                         text = "22 Apr 2025, 10:25",
-                        color = TextGrey,
-                        fontSize = 10.sp
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.labelSmall
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            HorizontalDivider(color = Color(0xFF333333), thickness = 1.dp)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), thickness = 1.dp)
             Spacer(modifier = Modifier.height(16.dp))
 
             // Customer Info
@@ -172,7 +167,7 @@ fun ReceiptCard() {
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            HorizontalDivider(color = Color(0xFF333333), thickness = 1.dp)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), thickness = 1.dp)
             Spacer(modifier = Modifier.height(16.dp))
 
             // Items
@@ -189,13 +184,13 @@ fun ReceiptCard() {
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            HorizontalDivider(color = Color(0xFF333333), thickness = 1.dp)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), thickness = 1.dp)
             Spacer(modifier = Modifier.height(16.dp))
 
             // Totals
-            TotalRow("Subtotal", "Rp 200.000", TextGrey)
+            TotalRow("Subtotal", "Rp 200.000", MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(modifier = Modifier.height(8.dp))
-            TotalRow("Diskon", "- Rp 0", Color.Red)
+            TotalRow("Diskon", "- Rp 0", MaterialTheme.colorScheme.error)
             
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -206,15 +201,13 @@ fun ReceiptCard() {
             ) {
                 Text(
                     text = "TOTAL BAYAR",
-                    color = TextWhite,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.titleMedium
                 )
                 Text(
                     text = "RP 200.000",
-                    color = TextYellow,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Black
+                    color = MaterialTheme.colorScheme.tertiary,
+                    style = MaterialTheme.typography.headlineLarge
                 )
             }
         }
@@ -224,8 +217,8 @@ fun ReceiptCard() {
 @Composable
 fun InfoColumn(label: String, value: String, modifier: Modifier = Modifier) {
     Column(modifier = modifier) {
-        Text(text = label, color = TextGrey, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-        Text(text = value, color = TextYellow, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        Text(text = label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+        Text(text = value, color = MaterialTheme.colorScheme.tertiary, style = MaterialTheme.typography.labelLarge)
     }
 }
 
@@ -237,21 +230,20 @@ fun ReceiptItemRow(item: ReceiptItem) {
     ) {
         Text(
             text = item.name,
-            color = TextWhite,
-            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.weight(1f)
         )
         Text(
             text = "${item.quantity}x",
-            color = TextGrey,
-            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.width(40.dp)
         )
         Text(
             text = "Rp ${"%,d".format(item.price)}",
-            color = PrimaryOrange,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.labelLarge
         )
     }
 }
@@ -262,15 +254,15 @@ fun TotalRow(label: String, value: String, valueColor: Color) {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = label, color = TextGrey, fontSize = 14.sp)
-        Text(text = value, color = valueColor, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+        Text(text = label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
+        Text(text = value, color = valueColor, style = MaterialTheme.typography.bodyMedium)
     }
 }
 
 @Composable
 fun QRCodeSection() {
     Surface(
-        color = DarkCard,
+        color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -296,14 +288,13 @@ fun QRCodeSection() {
             Column {
                 Text(
                     text = "QR Code Nota",
-                    color = TextWhite,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.titleMedium
                 )
                 Text(
                     text = "Scan untuk verifikasi - TRX-013",
-                    color = TextGrey,
-                    fontSize = 12.sp
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.labelMedium
                 )
             }
         }
@@ -323,18 +314,18 @@ fun ActionButtons() {
                 .weight(1f)
                 .height(56.dp),
             shape = RoundedCornerShape(12.dp),
-            border = androidx.compose.foundation.BorderStroke(2.dp, PrimaryOrange)
+            border = androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
         ) {
             Icon(
                 imageVector = Icons.Default.Share,
                 contentDescription = null,
-                tint = PrimaryOrange
+                tint = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "WHATSAPP",
-                color = PrimaryOrange,
-                fontWeight = FontWeight.Bold
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.labelLarge
             )
         }
 
@@ -352,7 +343,7 @@ fun ActionButtons() {
                 modifier = Modifier
                     .fillMaxSize()
                     .background(
-                        Brush.horizontalGradient(listOf(Color(0xFFE53935), PrimaryOrange)),
+                        Brush.horizontalGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)),
                         RoundedCornerShape(12.dp)
                     ),
                 contentAlignment = Alignment.Center
@@ -361,13 +352,13 @@ fun ActionButtons() {
                     Icon(
                         imageVector = Icons.Default.Info, // Replaced Print with Info for now
                         contentDescription = null,
-                        tint = TextWhite
+                        tint = MaterialTheme.colorScheme.onPrimary
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "CETAK NOTA",
-                        color = TextWhite,
-                        fontWeight = FontWeight.Bold
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        style = MaterialTheme.typography.labelLarge
                     )
                 }
             }

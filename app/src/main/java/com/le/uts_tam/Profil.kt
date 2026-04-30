@@ -18,23 +18,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun Profil(onBack: () -> Unit = {}) {
+fun Profil(
+    onBack: () -> Unit = {},
+    isDarkTheme: Boolean = true,
+    onThemeToggle: (Boolean) -> Unit = {}
+) {
     val scrollState = rememberScrollState()
-    val customFontFamily = FontFamily(
-        Font(R.font.poppins),
-    )
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF121212))
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(scrollState)
             .padding(20.dp)
     ) {
@@ -42,15 +41,17 @@ fun Profil(onBack: () -> Unit = {}) {
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack, 
+                    contentDescription = "Back", 
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
             }
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "PROFIL",
-                color = Color.White,
-                fontSize = 28.sp,
-                fontFamily = customFontFamily,
-                fontWeight = FontWeight.Bold
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.headlineMedium
             )
         }
 
@@ -60,7 +61,7 @@ fun Profil(onBack: () -> Unit = {}) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Row(
                 modifier = Modifier.padding(20.dp),
@@ -85,28 +86,42 @@ fun Profil(onBack: () -> Unit = {}) {
                 Column {
                     Text(
                         text = "BENGKEL PAK ARLI",
-                        color = Color.White,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = customFontFamily
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.titleLarge
                     )
                     Text(
                         text = "BENGKEL MOTOR",
-                        color = Color(0xFFFFA000),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = customFontFamily
+                        color = MaterialTheme.colorScheme.secondary,
+                        style = MaterialTheme.typography.labelMedium
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.LocationOn, contentDescription = null, tint = Color(0xFFE53935), modifier = Modifier.size(12.dp))
+                        Icon(
+                            imageVector = Icons.Default.LocationOn, 
+                            contentDescription = null, 
+                            tint = MaterialTheme.colorScheme.primary, 
+                            modifier = Modifier.size(12.dp)
+                        )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = "Rejomulyo, Kec. Jati Agung, Kab. Lampung Selatan", color = Color.Gray, fontSize = 11.sp, fontFamily = customFontFamily)
+                        Text(
+                            text = "Rejomulyo, Kec. Jati Agung, Kab. Lampung Selatan", 
+                            color = MaterialTheme.colorScheme.onSurfaceVariant, 
+                            style = MaterialTheme.typography.labelSmall
+                        )
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Call, contentDescription = null, tint = Color(0xFFE53935), modifier = Modifier.size(12.dp))
+                        Icon(
+                            imageVector = Icons.Default.Call, 
+                            contentDescription = null, 
+                            tint = MaterialTheme.colorScheme.primary, 
+                            modifier = Modifier.size(12.dp)
+                        )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = "0857-6494-8010", color = Color.Gray, fontSize = 11.sp, fontFamily = customFontFamily)
+                        Text(
+                            text = "0857-6494-8010", 
+                            color = MaterialTheme.colorScheme.onSurfaceVariant, 
+                            style = MaterialTheme.typography.labelSmall
+                        )
                     }
                 }
             }
@@ -115,36 +130,79 @@ fun Profil(onBack: () -> Unit = {}) {
         Spacer(modifier = Modifier.height(32.dp))
 
         // Section Title
-        SectionHeader(icon = Icons.Default.Settings, title = "INFORMASI BENGKEL", customFontFamily = customFontFamily)
+        SectionHeader(icon = Icons.Default.Settings, title = "INFORMASI BENGKEL")
         
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column {
-                SettingsItem(icon = Icons.Default.Home, label = "Nama Bengkel", value = "Pak Arli", customFontFamily = customFontFamily)
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = Color.Gray.copy(alpha = 0.1f))
-                SettingsItem(icon = Icons.Default.LocationOn, label = "Alamat", value = "Jati Agung, Lampung", customFontFamily = customFontFamily)
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = Color.Gray.copy(alpha = 0.1f))
-                SettingsItem(icon = Icons.Default.Call, label = "No. Telepon", value = "0857-6494-8010", customFontFamily = customFontFamily)
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = Color.Gray.copy(alpha = 0.1f))
-                SettingsItem(icon = Icons.Default.Place, label = "Logo Bengkel", value = "Upload", customFontFamily = customFontFamily)
+                SettingsItem(icon = Icons.Default.Home, label = "Nama Bengkel", value = "Pak Arli")
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+                SettingsItem(icon = Icons.Default.LocationOn, label = "Alamat", value = "Jati Agung, Lampung")
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+                SettingsItem(icon = Icons.Default.Call, label = "No. Telepon", value = "0857-6494-8010")
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+                SettingsItem(icon = Icons.Default.Place, label = "Logo Bengkel", value = "Upload")
             }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         // Section Title
-        SectionHeader(icon = Icons.Default.Notifications, title = "PREFERENSI APLIKASI", customFontFamily = customFontFamily)
+        SectionHeader(icon = Icons.Default.Notifications, title = "PREFERENSI APLIKASI")
         
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column {
-                SettingsItem(icon = Icons.Default.List, label = "Printer Bluetooth", value = "Tidak terhubung", customFontFamily = customFontFamily)
+                SettingsItem(icon = Icons.Default.List, label = "Printer Bluetooth", value = "Tidak terhubung")
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+                
+                // Theme Toggle Item
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = if (isDarkTheme) Icons.Default.DarkMode else Icons.Default.LightMode, 
+                                contentDescription = null, 
+                                tint = MaterialTheme.colorScheme.secondary, 
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "Mode Gelap", 
+                            color = MaterialTheme.colorScheme.onSurface, 
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    Switch(
+                        checked = isDarkTheme,
+                        onCheckedChange = onThemeToggle,
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.primary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
+                            uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    )
+                }
             }
         }
 
@@ -153,25 +211,23 @@ fun Profil(onBack: () -> Unit = {}) {
 }
 
 @Composable
-fun SectionHeader(icon: ImageVector, title: String, customFontFamily: FontFamily) {
+fun SectionHeader(icon: ImageVector, title: String) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(bottom = 12.dp)
     ) {
-        Icon(icon, contentDescription = null, tint = Color(0xFFFFA000), modifier = Modifier.size(16.dp))
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(16.dp))
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = title,
-            color = Color(0xFFFFA000),
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            fontFamily = customFontFamily
+            color = MaterialTheme.colorScheme.secondary,
+            style = MaterialTheme.typography.labelMedium
         )
     }
 }
 
 @Composable
-fun SettingsItem(icon: ImageVector, label: String, value: String, customFontFamily: FontFamily) {
+fun SettingsItem(icon: ImageVector, label: String, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -184,17 +240,30 @@ fun SettingsItem(icon: ImageVector, label: String, value: String, customFontFami
                 modifier = Modifier
                     .size(36.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFF262626)),
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, contentDescription = null, tint = Color(0xFFFFA000), modifier = Modifier.size(20.dp))
+                Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(20.dp))
             }
             Spacer(modifier = Modifier.width(12.dp))
-            Text(text = label, color = Color.White, fontSize = 14.sp, fontFamily = customFontFamily)
+            Text(
+                text = label, 
+                color = MaterialTheme.colorScheme.onSurface, 
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text = value, color = Color.Gray, fontSize = 13.sp, fontFamily = customFontFamily)
-            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(16.dp))
+            Text(
+                text = value, 
+                color = MaterialTheme.colorScheme.onSurfaceVariant, 
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight, 
+                contentDescription = null, 
+                tint = MaterialTheme.colorScheme.onSurfaceVariant, 
+                modifier = Modifier.size(16.dp)
+            )
         }
     }
 }
