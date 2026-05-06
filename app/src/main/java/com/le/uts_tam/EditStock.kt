@@ -1,31 +1,35 @@
 package com.le.uts_tam
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.Canvas
 
 @Composable
 fun EditStock(onBack: () -> Unit = {}) {
@@ -128,7 +132,7 @@ fun EditStock(onBack: () -> Unit = {}) {
 
         EditField("NAMA BARANG", namaBarang, { namaBarang = it }, customFontFamily, isHighlighted = true)
         EditField("KODE SKU", kodeSku, { kodeSku = it }, customFontFamily)
-        
+
         Row(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.weight(1f)) {
                 EditField("HARGA BELI", hargaBeli, { hargaBeli = it }, customFontFamily)
@@ -164,7 +168,7 @@ fun EditStock(onBack: () -> Unit = {}) {
         ) {
             Text("SIMPAN PERUBAHAN", fontFamily = customFontFamily, fontWeight = FontWeight.Bold)
         }
-        
+
         Spacer(modifier = Modifier.height(40.dp))
     }
 }
@@ -201,15 +205,23 @@ fun EditField(
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = value,
-                    color = Color.White,
-                    fontSize = 14.sp,
-                    fontFamily = fontFamily
+                // Menggunakan BasicTextField agar parameter onValueChange terpakai dan teks bisa diinput
+                BasicTextField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    textStyle = TextStyle(
+                        color = Color.White,
+                        fontSize = 14.sp,
+                        fontFamily = fontFamily
+                    ),
+                    cursorBrush = SolidColor(Color.White),
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
+                    readOnly = isDropdown // Jika dropdown, biasanya hanya baca saja (pilih lewat menu)
                 )
+
                 if (isDropdown) {
                     Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = Color.Gray)
                 }

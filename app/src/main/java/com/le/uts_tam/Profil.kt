@@ -9,6 +9,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -144,7 +145,7 @@ fun Profil(onBack: () -> Unit = {}) {
             colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
         ) {
             Column {
-                SettingsItem(icon = Icons.Default.List, label = "Printer Bluetooth", value = "Tidak terhubung", customFontFamily = customFontFamily)
+                SettingsItem(icon = Icons.AutoMirrored.Filled.List, label = "Printer Bluetooth", value = "Tidak terhubung", customFontFamily = customFontFamily)
             }
         }
 

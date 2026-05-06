@@ -10,9 +10,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
@@ -154,7 +154,7 @@ fun Dashboard(
                     QuickActionButton(Icons.Default.Email, "Riwayat", customFontFamily)
                 }
                 Box(modifier = Modifier.clickable { onStokClick() }) {
-                    QuickActionButton(Icons.Default.List, "Stok", customFontFamily)
+                    QuickActionButton(Icons.AutoMirrored.Filled.List, "Stok", customFontFamily)
                 }
                 Box(modifier = Modifier.clickable { onLaporanClick() }) {
                     QuickActionButton(Icons.Default.Edit, "Laporan", customFontFamily)
