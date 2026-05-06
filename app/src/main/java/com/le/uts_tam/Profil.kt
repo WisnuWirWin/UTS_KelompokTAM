@@ -19,11 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 @Composable
 fun Profil(
@@ -32,9 +28,7 @@ fun Profil(
     onThemeToggle: (Boolean) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
-    val customFontFamily = FontFamily(
-        Font(R.font.poppins),
-    )
+
 
     Column(
         modifier = Modifier
@@ -165,7 +159,7 @@ fun Profil(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column {
-                SettingsItem(icon = Icons.Default.List, label = "Printer Bluetooth", value = "Tidak terhubung")
+                SettingsItem(icon = Icons.AutoMirrored.Filled.List, label = "Printer Bluetooth", value = "Tidak terhubung")
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
 
                 // Theme Toggle Item
