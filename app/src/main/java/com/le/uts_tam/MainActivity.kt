@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            var isDarkTheme by remember { mutableStateOf(true) } // Default to dark as per current app design
+            var isDarkTheme by remember { mutableStateOf(true) }
 
             UTS_TAMTheme(darkTheme = isDarkTheme) {
                 var currentScreen by remember { mutableStateOf("login") }

@@ -40,14 +40,6 @@ fun Login(onLoginSuccess: () -> Unit) {
             color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.displayLarge
         )
-        
-        Spacer(modifier = Modifier.height(8.dp))
-        
-        Text(
-            text = "Platform manajemen servis kendaraan terpadu untuk bengkel modern.",
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodyMedium
-        )
 
         Spacer(modifier = Modifier.height(40.dp))
 
