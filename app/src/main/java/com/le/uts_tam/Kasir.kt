@@ -17,20 +17,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 data class JasaServis(val nama: String, val isSelected: Boolean = false)
 data class Barang(val nama: String, val harga: Int, var jumlah: Int)
-
-val DarkBackground = Color(0xFF121212)
-val DarkCard = Color(0xFF1E1E1E)
-val PrimaryOrange = Color(0xFFFF5722)
-val TextGrey = Color(0xFFB0B0B0)
-val TextWhite = Color(0xFFFFFFFF)
-val TextYellow = Color(0xFFFFEB3B)
 
 @Composable
 fun Kasir(
@@ -55,7 +46,7 @@ fun Kasir(
     val totalBayar = totalJasa + totalBarang
 
     Scaffold(
-        containerColor = DarkBackground
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -72,7 +63,7 @@ fun Kasir(
                 .height(2.dp)
                 .background(
                     Brush.horizontalGradient(
-                        listOf(Color.Red, Color(0xFFFFEB3B), Color.Transparent)
+                        listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.tertiary, Color.Transparent)
                     )
                 )
             )
@@ -81,9 +72,8 @@ fun Kasir(
 
             Text(
                 text = "PILIH JASA SERVIS",
-                color = TextGrey,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelMedium,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
@@ -98,9 +88,8 @@ fun Kasir(
 
             Text(
                 text = "KERANJANG BARANG",
-                color = TextGrey,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelMedium,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
@@ -140,25 +129,23 @@ fun HeaderKasir(onBack: () -> Unit) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Kembali",
-                    tint = TextWhite,
+                    tint = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.size(28.dp)
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "KASIR",
-                color = TextWhite,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.headlineLarge,
                 letterSpacing = 2.sp
             )
         }
 
         Text(
             text = "TRX-20250422-013",
-            color = PrimaryOrange,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.labelMedium
         )
     }
 }
@@ -170,13 +157,13 @@ fun JasaServisChip(
 ) {
     Surface(
         onClick = onClick,
-        color = if (jasa.isSelected) Color.Transparent else DarkCard,
+        color = if (jasa.isSelected) Color.Transparent else MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(12.dp),
         modifier = Modifier
             .then(
                 if (jasa.isSelected) Modifier.border(
                     2.dp,
-                    PrimaryOrange,
+                    MaterialTheme.colorScheme.primary,
                     RoundedCornerShape(12.dp)
                 ) else Modifier
             )
@@ -188,9 +175,8 @@ fun JasaServisChip(
         ) {
             Text(
                 text = jasa.nama,
-                color = if (jasa.isSelected) PrimaryOrange else TextGrey,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium
+                color = if (jasa.isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium
             )
         }
     }
@@ -199,7 +185,7 @@ fun JasaServisChip(
 @Composable
 fun CartItemCard(barang: Barang) {
     Surface(
-        color = DarkCard,
+        color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -213,14 +199,13 @@ fun CartItemCard(barang: Barang) {
             Column {
                 Text(
                     text = barang.nama,
-                    color = TextWhite,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.titleMedium
                 )
                 Text(
                     text = "Rp ${"%,d".format(barang.harga)} / pcs",
-                    color = TextGrey,
-                    fontSize = 12.sp
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.labelMedium
                 )
             }
 
@@ -231,26 +216,25 @@ fun CartItemCard(barang: Barang) {
                 Box(
                     modifier = Modifier
                         .size(36.dp)
-                        .background(Color(0xFF262626), CircleShape),
+                        .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("-", color = TextWhite, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text("-", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleLarge)
                 }
 
                 Text(
                     text = barang.jumlah.toString(),
-                    color = TextWhite,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.bodyLarge
                 )
 
                 Box(
                     modifier = Modifier
                         .size(36.dp)
-                        .background(PrimaryOrange, CircleShape),
+                        .background(MaterialTheme.colorScheme.primary, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("+", color = DarkBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text("+", color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.titleLarge)
                 }
             }
         }
@@ -264,7 +248,7 @@ fun ButtonTambahBarang() {
         shape = RoundedCornerShape(12.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .border(2.dp, PrimaryOrange, RoundedCornerShape(12.dp))
+            .border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp))
     ) {
         Row(
             modifier = Modifier.padding(vertical = 14.dp),
@@ -274,15 +258,14 @@ fun ButtonTambahBarang() {
             Icon(
                 imageVector = Icons.Default.Add,
                 contentDescription = "+",
-                tint = PrimaryOrange,
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "TAMBAH BARANG",
-                color = PrimaryOrange,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.labelLarge
             )
         }
     }
@@ -292,7 +275,7 @@ fun ButtonTambahBarang() {
 fun FooterTotalAndPay(totalBayar: Int, totalJasa: Int, onPrintClick: () -> Unit) {
     Column {
         Surface(
-            color = DarkCard,
+            color = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
@@ -306,22 +289,20 @@ fun FooterTotalAndPay(totalBayar: Int, totalJasa: Int, onPrintClick: () -> Unit)
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text(text = "TOTAL BAYAR", color = TextGrey, fontSize = 12.sp)
+                    Text(text = "TOTAL BAYAR", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                     Text(
                         text = "RP ${"%,d".format(totalBayar)}",
-                        color = TextYellow,
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.ExtraBold
+                        color = MaterialTheme.colorScheme.tertiary,
+                        style = MaterialTheme.typography.headlineLarge
                     )
                 }
 
                 Column(horizontalAlignment = Alignment.End) {
-                    Text(text = "Jasa Servis", color = TextGrey, fontSize = 12.sp)
+                    Text(text = "Jasa Servis", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                     Text(
                         text = "Rp ${"%,d".format(totalJasa)}",
-                        color = TextWhite,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.titleMedium
                     )
                 }
             }
@@ -337,7 +318,7 @@ fun FooterTotalAndPay(totalBayar: Int, totalJasa: Int, onPrintClick: () -> Unit)
                 modifier = Modifier
                     .background(
                         brush = Brush.horizontalGradient(
-                            listOf(Color(0xFFE53935), PrimaryOrange)
+                            listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)
                         ),
                         shape = RoundedCornerShape(20.dp)
                     )
@@ -348,13 +329,11 @@ fun FooterTotalAndPay(totalBayar: Int, totalJasa: Int, onPrintClick: () -> Unit)
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = "CETAK NOTA & SELESAI",
-                    color = TextWhite,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    style = MaterialTheme.typography.titleMedium,
                     letterSpacing = 1.sp
                 )
             }
         }
     }
 }
-

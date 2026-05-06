@@ -10,9 +10,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
@@ -23,9 +23,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -39,14 +36,11 @@ fun Dashboard(
     onLaporanClick: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
-    val customFontFamily = FontFamily(
-        Font(R.font.poppins),
-    )
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF121212))
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(scrollState)
             .padding(20.dp)
     ) {
@@ -57,10 +51,22 @@ fun Dashboard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column (modifier = Modifier.padding(top = 50.dp)) {
-                Text(text = "SELAMAT PAGI,", color = Color.Gray, fontSize = 12.sp, fontFamily = customFontFamily, fontWeight = FontWeight.Bold)
+                Text(
+                    text = "SELAMAT PAGI,", 
+                    color = MaterialTheme.colorScheme.onSurfaceVariant, 
+                    style = MaterialTheme.typography.labelMedium
+                )
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "Pak ", color = Color.White, fontSize = 24.sp, fontFamily = customFontFamily, fontWeight = FontWeight.Bold)
-                    Text(text = "Arli ", color = Color(0xFFFFA000), fontSize = 24.sp, fontFamily = customFontFamily, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Pak ", 
+                        color = MaterialTheme.colorScheme.onBackground, 
+                        style = MaterialTheme.typography.headlineLarge
+                    )
+                    Text(
+                        text = "Arli ", 
+                        color = MaterialTheme.colorScheme.secondary, 
+                        style = MaterialTheme.typography.headlineLarge
+                    )
                     Text(text = "👋", fontSize = 24.sp)
                 }
             }
@@ -69,7 +75,7 @@ fun Dashboard(
                     .padding(top = 50.dp)
                     .size(50.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFE53935))
+                    .background(MaterialTheme.colorScheme.primary)
                     .clickable { onProfileClick() },
                 contentAlignment = Alignment.Center
             ) {
@@ -83,11 +89,19 @@ fun Dashboard(
         Card(
             modifier = Modifier.fillMaxWidth().height(180.dp),
             shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFB71C1C))
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
         ) {
             Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.SpaceBetween) {
-                Text(text = "TOTAL PENDAPATAN HARI INI", color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp, fontFamily = customFontFamily)
-                Text(text = "RP 4.750.000", color = Color.White, fontSize = 32.sp, fontFamily = customFontFamily, fontWeight = FontWeight.Bold)
+                Text(
+                    text = "TOTAL PENDAPATAN HARI INI", 
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f), 
+                    style = MaterialTheme.typography.labelSmall
+                )
+                Text(
+                    text = "RP 4.750.000", 
+                    color = MaterialTheme.colorScheme.onPrimaryContainer, 
+                    style = MaterialTheme.typography.headlineLarge
+                )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     SummaryText("Transaksi", "12")
                     SummaryText("Servis", "8")
@@ -100,30 +114,34 @@ fun Dashboard(
 
         //Statistik
         Row(modifier = Modifier.fillMaxWidth()) {
-            StatCard("JENIS STOK", "47", customFontFamily, Modifier.weight(1f), onClick = onStokClick)
+            StatCard("JENIS STOK", "47", Modifier.weight(1f), onClick = onStokClick)
             Spacer(modifier = Modifier.width(16.dp))
-            StatCard("STOK HAMPIR HABIS", "3", customFontFamily, Modifier.weight(1f), Color.Red)
+            StatCard("STOK HAMPIR HABIS", "3", Modifier.weight(1f), MaterialTheme.colorScheme.error)
         }
         Spacer(modifier = Modifier.height(16.dp))
         Row(modifier = Modifier.fillMaxWidth()) {
-            StatCard("PELANGGAN", "156", customFontFamily, Modifier.weight(1f), onClick = onPelangganClick)
+            StatCard("PELANGGAN", "156", Modifier.weight(1f), onClick = onPelangganClick)
             Spacer(modifier = Modifier.width(16.dp))
-            StatCard("BULAN INI", "RP 68JT", customFontFamily, Modifier.weight(1f), Color(0xFFFFA000))
+            StatCard("BULAN INI", "RP 68JT", Modifier.weight(1f), MaterialTheme.colorScheme.secondary)
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         //Low-Stock Alert
         Card(
-            modifier = Modifier.fillMaxWidth().border(1.dp, Color(0xFFFFA000), RoundedCornerShape(16.dp)),
+            modifier = Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.secondary, RoundedCornerShape(16.dp)),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Warning, contentDescription = null, tint = Color(0xFFFFA000), modifier = Modifier.size(16.dp))
+                    Icon(Icons.Default.Warning, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "LOW-STOCK ALERT", color = Color(0xFFFFA000), fontSize = 12.sp, fontFamily = customFontFamily, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "LOW-STOCK ALERT", 
+                        color = MaterialTheme.colorScheme.secondary, 
+                        style = MaterialTheme.typography.labelMedium
+                    )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 AlertRow("Oli Mesin 10W-40", "2 PCS")
@@ -138,7 +156,7 @@ fun Dashboard(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Row(
                 modifier = Modifier
@@ -148,16 +166,16 @@ fun Dashboard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(modifier = Modifier.clickable { onKasirClick() }) {
-                    QuickActionButton(Icons.Default.ShoppingCart, "Kasir", customFontFamily)
+                    QuickActionButton(Icons.Default.ShoppingCart, "Kasir")
                 }
                 Box(modifier = Modifier.clickable { onRiwayatClick() }) {
-                    QuickActionButton(Icons.Default.Email, "Riwayat", customFontFamily)
+                    QuickActionButton(Icons.Default.Email, "Riwayat")
                 }
                 Box(modifier = Modifier.clickable { onStokClick() }) {
-                    QuickActionButton(Icons.AutoMirrored.Filled.List, "Stok", customFontFamily)
+                    QuickActionButton(Icons.Default.List, "Stok")
                 }
                 Box(modifier = Modifier.clickable { onLaporanClick() }) {
-                    QuickActionButton(Icons.Default.Edit, "Laporan", customFontFamily)
+                    QuickActionButton(Icons.Default.Edit, "Laporan")
                 }
             }
         }
@@ -167,32 +185,32 @@ fun Dashboard(
 }
 
 @Composable
-fun QuickActionButton(icon: ImageVector, label: String, fontFamily: FontFamily) {
+fun QuickActionButton(icon: ImageVector, label: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
                 .size(60.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(Color(0xFF262626)),
+                .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = label,
-                tint = Color(0xFFFFA000),
+                tint = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.size(28.dp)
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
-        Text(text = label, color = Color.Gray, fontSize = 11.sp, fontFamily = fontFamily)
+        Text(text = label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
     }
 }
 
 @Composable
 fun SummaryText(label: String, value: String) {
     Row {
-        Text(text = "$label: ", color = Color.White.copy(alpha = 0.7f), fontSize = 11.sp)
-        Text(text = value, color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+        Text(text = "$label: ", color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f), style = MaterialTheme.typography.labelSmall)
+        Text(text = value, color = MaterialTheme.colorScheme.onPrimaryContainer, style = MaterialTheme.typography.labelSmall)
     }
 }
 
@@ -200,9 +218,8 @@ fun SummaryText(label: String, value: String) {
 fun StatCard(
     title: String,
     value: String,
-    fontFamily: FontFamily,
     modifier: Modifier = Modifier,
-    valueColor: Color = Color.White,
+    valueColor: Color = MaterialTheme.colorScheme.onSurface,
     onClick: () -> Unit = {}
 ) {
     Card(
@@ -210,11 +227,11 @@ fun StatCard(
             .height(120.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.Bottom) {
-            Text(text = value, color = valueColor, fontSize = 24.sp, fontFamily = fontFamily, fontWeight = FontWeight.Bold)
-            Text(text = title, color = Color.Gray, fontSize = 10.sp, fontFamily = fontFamily, fontWeight = FontWeight.Bold)
+            Text(text = value, color = valueColor, style = MaterialTheme.typography.headlineSmall)
+            Text(text = title, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
         }
     }
 }
@@ -222,7 +239,7 @@ fun StatCard(
 @Composable
 fun AlertRow(name: String, qty: String) {
     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(text = name, color = Color.White, fontSize = 13.sp)
-        Text(text = qty, color = Color.Red, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        Text(text = name, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodyMedium)
+        Text(text = qty, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelMedium)
     }
 }

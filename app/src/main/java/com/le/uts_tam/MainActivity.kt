@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.*
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.le.uts_tam.ui.theme.UTS_TAMTheme
@@ -14,7 +15,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            UTS_TAMTheme {
+            var isDarkTheme by remember { mutableStateOf(true) } // Default to dark as per current app design
+
+            UTS_TAMTheme(darkTheme = isDarkTheme) {
                 var currentScreen by remember { mutableStateOf("login") }
 
                 when (currentScreen) {
@@ -28,7 +31,11 @@ class MainActivity : ComponentActivity() {
                         onLaporanClick = { currentScreen = "laporan" }
                     )
                     "pelanggan" -> Pelanggan(onBack = { currentScreen = "dashboard" })
-                    "profil" -> Profil(onBack = { currentScreen = "dashboard" })
+                    "profil" -> Profil(
+                        onBack = { currentScreen = "dashboard" },
+                        isDarkTheme = isDarkTheme,
+                        onThemeToggle = { isDarkTheme = it }
+                    )
                     "kasir" -> Kasir(
                         onBack = { currentScreen = "dashboard" },
                         onPrintNota = { currentScreen = "nota_digital" }

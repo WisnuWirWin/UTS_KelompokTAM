@@ -11,14 +11,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -38,8 +37,6 @@ data class HistoryItem(
 
 @Composable
 fun Riwayat(onBack: () -> Unit) {
-    val customFontFamily = FontFamily(Font(R.font.poppins))
-
     val listRiwayat = listOf(
         HistoryItem("22", "APR", "TRX-20250422-013", "Wisnu Wira Winata", "Honda CB150R", "B 4821 XZ", "Servis Rutin + Ganti Oli + Filter", "200RB", "10:25", "LUNAS", Color(0xFF4CAF50)),
         HistoryItem("22", "APR", "TRX-20250422-012", "Kamila Putri Hasan", "Yamaha NMAX", "B 7734 KC", "Tune Up + Busi + Aki", "450RB", "09:10", "LUNAS", Color(0xFF4CAF50)),
@@ -48,8 +45,7 @@ fun Riwayat(onBack: () -> Unit) {
     )
 
     Scaffold(
-        containerColor = Color(0xFF121212)
-
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -72,17 +68,15 @@ fun Riwayat(onBack: () -> Unit) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Kembali",
-                        tint = Color.White,
+                        tint = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.size(28.dp)
                     )
                 }
 
                 Text(
                     text = "RIWAYAT",
-                    color = Color.White,
-                    fontSize = 28.sp,
-                    fontFamily = customFontFamily,
-                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    style = MaterialTheme.typography.headlineMedium,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -90,14 +84,14 @@ fun Riwayat(onBack: () -> Unit) {
                     Box(
                         modifier = Modifier
                             .size(40.dp)
-                            .background(Color(0xFF1E1E1E), RoundedCornerShape(10.dp))
+                            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(10.dp))
                             .clickable { /* Search action */ },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            painter = painterResource(id = android.R.drawable.ic_menu_search),
+                            imageVector = Icons.Default.Search,
                             contentDescription = null,
-                            tint = Color(0xFF03A9F4),
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -105,10 +99,10 @@ fun Riwayat(onBack: () -> Unit) {
                     Box(
                         modifier = Modifier
                             .size(40.dp)
-                            .background(Color(0xFF1E1E1E), RoundedCornerShape(10.dp)),
+                            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(10.dp)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.Settings, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(20.dp))
+                        Icon(Icons.Default.Settings, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                     }
                 }
             }
@@ -117,10 +111,10 @@ fun Riwayat(onBack: () -> Unit) {
                     .fillMaxWidth()
                     .height(2.dp)
                     .background(
-                        brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                        brush = Brush.horizontalGradient(
                             colors = listOf(
-                                Color.Red,
-                                Color.Yellow,
+                                MaterialTheme.colorScheme.primary,
+                                MaterialTheme.colorScheme.tertiary,
                                 Color.Transparent
                             )
                         )
@@ -130,16 +124,16 @@ fun Riwayat(onBack: () -> Unit) {
             Spacer(modifier = Modifier.height(20.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                TabItem("HARI INI", true, customFontFamily)
-                TabItem("MINGGU INI", false, customFontFamily)
-                TabItem("BULAN INI", false, customFontFamily)
+                TabItem("HARI INI", true)
+                TabItem("MINGGU INI", false)
+                TabItem("BULAN INI", false)
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
             LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 items(listRiwayat) { item ->
-                    HistoryCard(item, customFontFamily)
+                    HistoryCard(item)
                 }
             }
         }
@@ -147,29 +141,27 @@ fun Riwayat(onBack: () -> Unit) {
 }
 
 @Composable
-fun TabItem(label: String, isSelected: Boolean, fontFamily: FontFamily) {
+fun TabItem(label: String, isSelected: Boolean) {
     Surface(
-        color = if (isSelected) Color(0xFFFF6F00) else Color.Transparent,
+        color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
         shape = RoundedCornerShape(20.dp),
-        modifier = Modifier.border(1.dp, if (isSelected) Color.Transparent else Color.Gray, RoundedCornerShape(20.dp))
+        modifier = Modifier.border(1.dp, if (isSelected) Color.Transparent else MaterialTheme.colorScheme.outline, RoundedCornerShape(20.dp))
     ) {
         Text(
             text = label,
-            color = Color.White,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            fontFamily = fontFamily,
+            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.labelSmall,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
     }
 }
 
 @Composable
-fun HistoryCard(item: HistoryItem, fontFamily: FontFamily) {
+fun HistoryCard(item: HistoryItem) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
             modifier = Modifier.padding(16.dp).fillMaxWidth(),
@@ -178,32 +170,68 @@ fun HistoryCard(item: HistoryItem, fontFamily: FontFamily) {
             Box(
                 modifier = Modifier
                     .size(60.dp)
-                    .background(Color(0xFF262626), RoundedCornerShape(12.dp)),
+                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(item.tgl, color = Color(0xFFFF6F00), fontSize = 22.sp, fontWeight = FontWeight.Bold, fontFamily = fontFamily)
-                    Text(item.bln, color = Color.Gray, fontSize = 10.sp, fontFamily = fontFamily)
+                    Text(
+                        text = item.tgl,
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+                    Text(
+                        text = item.bln,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.labelSmall
+                    )
                 }
             }
 
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(item.trxId, color = Color.Gray, fontSize = 10.sp, fontFamily = fontFamily)
-                Text(item.nama, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold, fontFamily = fontFamily)
-                Row {
-                    Text(item.motor, color = Color.Gray, fontSize = 12.sp, fontFamily = fontFamily)
-                    Text(" • ", color = Color.Gray)
-                    Text(item.plat, color = Color.Yellow, fontSize = 12.sp, fontWeight = FontWeight.Bold, fontFamily = fontFamily)
+                Text(
+                    text = item.trxId,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.labelSmall
+                )
+                Text(
+                    text = item.nama,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = item.motor,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(" • ", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        text = item.plat,
+                        color = MaterialTheme.colorScheme.tertiary,
+                        style = MaterialTheme.typography.labelLarge
+                    )
                 }
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(item.layanan, color = Color.Gray.copy(alpha = 0.6f), fontSize = 11.sp, fontFamily = fontFamily)
+                Text(
+                    text = item.layanan,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
 
             Column(horizontalAlignment = Alignment.End) {
-                Text(item.harga, color = Color.Yellow, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, fontFamily = fontFamily)
-                Text(item.jam, color = Color.Gray, fontSize = 10.sp, fontFamily = fontFamily)
+                Text(
+                    text = item.harga,
+                    color = MaterialTheme.colorScheme.tertiary,
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Text(
+                    text = item.jam,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.labelSmall
+                )
                 Spacer(modifier = Modifier.height(8.dp))
                 Surface(
                     color = item.statusColor.copy(alpha = 0.2f),
@@ -212,9 +240,7 @@ fun HistoryCard(item: HistoryItem, fontFamily: FontFamily) {
                     Text(
                         text = item.status,
                         color = item.statusColor,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontFamily = fontFamily,
+                        style = MaterialTheme.typography.labelSmall,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                     )
                 }
