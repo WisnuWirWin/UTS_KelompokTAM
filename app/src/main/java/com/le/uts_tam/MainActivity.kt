@@ -29,7 +29,14 @@ class MainActivity : ComponentActivity() {
                         onStokClick = { currentScreen = "inventaris" },
                         onLaporanClick = { currentScreen = "laporan" }
                     )
-                    "pelanggan" -> Pelanggan(onBack = { currentScreen = "dashboard" })
+                    "pelanggan" -> Pelanggan(
+                        onBack = { currentScreen = "dashboard" },
+                        onAddPelanggan = { currentScreen = "add_pelanggan" }
+                    )
+                    "add_pelanggan" -> AddPelanggan(
+                        onBack = { currentScreen = "pelanggan" },
+                        onConfirm = { currentScreen = "pelanggan" }
+                    )
                     "profil" -> Profil(
                         onBack = { currentScreen = "dashboard" },
                         isDarkTheme = isDarkTheme,

@@ -18,7 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun Pelanggan(onBack: () -> Unit = {}) {
+fun Pelanggan(onBack: () -> Unit = {}, onAddPelanggan: () -> Unit = {}) {
     val scrollState = rememberScrollState()
     var searchQuery by remember { mutableStateOf("") }
 
@@ -52,7 +52,7 @@ fun Pelanggan(onBack: () -> Unit = {}) {
                 modifier = Modifier.weight(1f)
             )
             IconButton(
-                onClick = { /* TODO */ },
+                onClick = onAddPelanggan,
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp))
                     .size(40.dp)
