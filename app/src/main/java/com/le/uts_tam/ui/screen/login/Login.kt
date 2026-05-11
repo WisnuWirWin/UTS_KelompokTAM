@@ -9,12 +9,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun Login(onLoginSuccess: () -> Unit) {
-    var email by remember { mutableStateOf("") }
+    val viewModel: LoginViewModel = viewModel()
+    var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
     Column(
@@ -43,6 +47,15 @@ fun Login(onLoginSuccess: () -> Unit) {
 
         Spacer(modifier = Modifier.height(40.dp))
 
+        viewModel.errorMessage?.let { error ->
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+        }
+
         Text(
             text = "USERNAME / EMAIL",
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -50,8 +63,11 @@ fun Login(onLoginSuccess: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(8.dp))
         TextField(
-            value = email,
-            onValueChange = { email = it },
+            value = username,
+            onValueChange = { 
+                username = it
+                viewModel.errorMessage = null
+            },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             colors = TextFieldDefaults.colors(
@@ -75,7 +91,10 @@ fun Login(onLoginSuccess: () -> Unit) {
         Spacer(modifier = Modifier.height(8.dp))
         TextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = { 
+                password = it
+                viewModel.errorMessage = null
+            },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             visualTransformation = PasswordVisualTransformation(),
@@ -93,7 +112,10 @@ fun Login(onLoginSuccess: () -> Unit) {
         Spacer(modifier = Modifier.height(32.dp))
 
         Button(
-            onClick = { onLoginSuccess() },
+            onClick = { 
+                viewModel.login(username, password, onLoginSuccess)
+            },
+            enabled = !viewModel.isLoading,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
@@ -108,11 +130,20 @@ fun Login(onLoginSuccess: () -> Unit) {
             ),
             contentPadding = PaddingValues()
         ) {
-            Text(
-                text = "MASUK SEKARANG",
-                color = MaterialTheme.colorScheme.onPrimary,
-                style = MaterialTheme.typography.labelLarge
-            )
+            if (viewModel.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text(
+                    text = "MASUK SEKARANG",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
