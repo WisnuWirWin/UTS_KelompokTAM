@@ -6,6 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.le.uts_tam.ui.screen.dashborad.Dashboard
+import com.le.uts_tam.ui.screen.login.Login
 import com.le.uts_tam.ui.theme.UTS_TAMTheme
 
 class MainActivity : ComponentActivity() {
