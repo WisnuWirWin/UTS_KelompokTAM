@@ -1,5 +1,6 @@
-package com.le.uts_tam
+package com.le.uts_tam.ui.screen.laporan
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -203,7 +204,7 @@ fun Laporan(
             Surface(
                 color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.1f),
                 shape = RoundedCornerShape(16.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.3f)),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.3f)),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(

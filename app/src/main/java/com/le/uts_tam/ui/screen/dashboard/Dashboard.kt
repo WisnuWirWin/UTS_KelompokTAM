@@ -1,4 +1,4 @@
-package com.le.uts_tam.ui.screen.dashborad
+package com.le.uts_tam.ui.screen.dashboard
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

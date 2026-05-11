@@ -1,5 +1,6 @@
-package com.le.uts_tam
+package com.le.uts_tam.ui.screen.nota
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -314,7 +315,7 @@ fun ActionButtons() {
                 .weight(1f)
                 .height(56.dp),
             shape = RoundedCornerShape(12.dp),
-            border = androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+            border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
         ) {
             Icon(
                 imageVector = Icons.Default.Share,

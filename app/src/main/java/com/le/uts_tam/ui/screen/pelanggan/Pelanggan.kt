@@ -1,4 +1,4 @@
-package com.le.uts_tam
+package com.le.uts_tam.ui.screen.pelanggan
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -16,18 +16,33 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.le.uts_tam.ui.screen.pelanggan.viewmodel.PelangganViewModel
 
 @Composable
-fun Pelanggan(onBack: () -> Unit = {}, onAddPelanggan: () -> Unit = {}) {
+fun Pelanggan(
+    onBack: () -> Unit = {},
+    onAddPelanggan: () -> Unit = {},
+    viewModel: PelangganViewModel = viewModel(),
+) {
     val scrollState = rememberScrollState()
     var searchQuery by remember { mutableStateOf("") }
+    
+    val uiState by viewModel.uiState.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
+
+    val filteredList = uiState.filter {
+        it.name.contains(searchQuery, ignoreCase = true) || 
+        it.plate.contains(searchQuery, ignoreCase = true)
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .verticalScroll(scrollState)
-            .padding(20.dp)
+            .padding(20.dp),
     ) {
         Spacer(modifier = Modifier.height(50.dp))
 
@@ -35,13 +50,13 @@ fun Pelanggan(onBack: () -> Unit = {}, onAddPelanggan: () -> Unit = {}) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = onBack) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack, 
                     contentDescription = "Back", 
-                    tint = MaterialTheme.colorScheme.onBackground
+                    tint = MaterialTheme.colorScheme.onBackground,
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
@@ -49,13 +64,13 @@ fun Pelanggan(onBack: () -> Unit = {}, onAddPelanggan: () -> Unit = {}) {
                 text = "PELANGGAN",
                 color = MaterialTheme.colorScheme.onBackground,
                 style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
             IconButton(
                 onClick = onAddPelanggan,
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp))
-                    .size(40.dp)
+                    .size(40.dp),
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add", tint = MaterialTheme.colorScheme.onPrimary)
             }
@@ -75,75 +90,56 @@ fun Pelanggan(onBack: () -> Unit = {}, onAddPelanggan: () -> Unit = {}) {
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
                 focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
             ),
             placeholder = { 
                 Text(
                     text = "Cari nama atau no. plat...", 
                     color = MaterialTheme.colorScheme.onSurfaceVariant, 
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
                 ) 
             },
             leadingIcon = { 
                 Icon(
                     imageVector = Icons.Default.Search, 
                     contentDescription = null, 
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 ) 
-            }
+            },
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Customer Cards
-        CustomerCard(
-            plate = "BE 4821 XZ",
-            name = "Wisnu",
-            phone = "0812-3456-7890",
-            motor = "Honda CB150R 2022",
-            history = listOf(
-                ServiceHistory("Ganti Oli + Servis Rutin", "22 Apr 2025", "Rp 200rb"),
-                ServiceHistory("Tune Up + Filter Udara", "12 Mar 2025", "Rp 175rb")
-            )
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        CustomerCard(
-            plate = "BE 7734 KC",
-            name = "Kamila",
-            phone = "0857-6543-2100",
-            motor = "Yamaha NMAX 155 2023",
-            history = listOf(
-                ServiceHistory("Tune Up + Busi + Aki", "22 Apr 2025", "Rp 450rb"),
-                ServiceHistory("Ganti Rem Belakang", "01 Feb 2025", "Rp 130rb")
-            )
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        CustomerCard(
-            plate = "BE 2210 YA",
-            name = "Athallah",
-            phone = "0823-9988-1122",
-            motor = "Suzuki GSX 150R 2021",
-            history = listOf(
-                ServiceHistory("Rem Depan + Kampas", "21 Apr 2025", "Rp 280rb")
-            )
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        CustomerCard(
-            plate = "F 5509 TT",
-            name = "Dzackiy",
-            phone = "0821-8943-2121",
-            motor = "Honda Beat 2024",
-            history = listOf(
-                ServiceHistory("Ganti shock + Filter + Aki", "12 Jan 2025", "Rp 400rb"),
-                ServiceHistory("Ganti Rem Depan", "12 Jan 2025", "Rp 100rb")
-            )
-        )
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        } else if (error != null) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(text = error ?: "Unknown Error", color = MaterialTheme.colorScheme.error)
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(onClick = { viewModel.fetchData() }) {
+                    Text("Coba Lagi")
+                }
+            }
+        } else {
+            // Customer Cards
+            filteredList.forEach { customer ->
+                CustomerCard(
+                    plate = customer.plate,
+                    name = customer.name,
+                    phone = customer.phone,
+                    motor = customer.motor,
+                    history = listOf(
+                        ServiceHistory(customer.complaint, "Hari ini", "-"),
+                    ),
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
 
         Spacer(modifier = Modifier.height(40.dp))
     }
@@ -157,12 +153,12 @@ fun CustomerCard(
     name: String,
     phone: String,
     motor: String,
-    history: List<ServiceHistory>
+    history: List<ServiceHistory>,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -170,12 +166,12 @@ fun CustomerCard(
                 Box(
                     modifier = Modifier
                         .background(MaterialTheme.colorScheme.tertiary, RoundedCornerShape(8.dp))
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
                 ) {
                     Text(
                         text = plate,
-                        color = Color.Black, // Keeping black for high contrast on yellow
-                        style = MaterialTheme.typography.labelLarge
+                        color = Color.Black,
+                        style = MaterialTheme.typography.labelLarge,
                     )
                 }
                 
@@ -185,26 +181,26 @@ fun CustomerCard(
                     Text(
                         text = name, 
                         color = MaterialTheme.colorScheme.onSurface, 
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
                     )
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.Call, 
                             contentDescription = null, 
                             tint = MaterialTheme.colorScheme.primary, 
-                            modifier = Modifier.size(12.dp)
+                            modifier = Modifier.size(12.dp),
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = phone, 
                             color = MaterialTheme.colorScheme.onSurfaceVariant, 
-                            style = MaterialTheme.typography.bodyMedium
+                            style = MaterialTheme.typography.bodyMedium,
                         )
                     }
                     Text(
                         text = motor, 
                         color = MaterialTheme.colorScheme.secondary, 
-                        style = MaterialTheme.typography.labelSmall
+                        style = MaterialTheme.typography.labelSmall,
                     )
                 }
             }
@@ -216,7 +212,7 @@ fun CustomerCard(
             Text(
                 text = "RIWAYAT SERVIS",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.labelSmall
+                style = MaterialTheme.typography.labelSmall,
             )
 
             history.forEach { item ->
@@ -226,18 +222,18 @@ fun CustomerCard(
                         Text(
                             text = item.name, 
                             color = MaterialTheme.colorScheme.onSurface, 
-                            style = MaterialTheme.typography.bodyMedium
+                            style = MaterialTheme.typography.bodyMedium,
                         )
                         Text(
                             text = item.date, 
                             color = MaterialTheme.colorScheme.onSurfaceVariant, 
-                            style = MaterialTheme.typography.labelSmall
+                            style = MaterialTheme.typography.labelSmall,
                         )
                     }
                     Text(
                         text = item.price, 
                         color = MaterialTheme.colorScheme.secondary, 
-                        style = MaterialTheme.typography.labelLarge
+                        style = MaterialTheme.typography.labelLarge,
                     )
                 }
             }

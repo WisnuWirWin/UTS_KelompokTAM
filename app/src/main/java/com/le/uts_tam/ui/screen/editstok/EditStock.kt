@@ -1,4 +1,4 @@
-package com.le.uts_tam
+package com.le.uts_tam.ui.screen.editstok
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -18,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
@@ -30,6 +31,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.le.uts_tam.R
 
 @Composable
 fun EditStock(onBack: () -> Unit = {}) {
@@ -107,7 +109,7 @@ fun EditStock(onBack: () -> Unit = {}) {
                 drawRoundRect(
                     color = Color.Gray.copy(alpha = 0.5f),
                     style = stroke,
-                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(16.dp.toPx())
+                    cornerRadius = CornerRadius(16.dp.toPx())
                 )
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {

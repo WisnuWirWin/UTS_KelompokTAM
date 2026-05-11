@@ -1,4 +1,4 @@
-package com.le.uts_tam
+package com.le.uts_tam.ui.screen.profil
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -20,15 +20,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import com.le.uts_tam.R
+import com.le.uts_tam.ui.screen.profil.viewmodel.ProfilViewModel
 
 @Composable
 fun Profil(
     onBack: () -> Unit = {},
     isDarkTheme: Boolean = true,
-    onThemeToggle: (Boolean) -> Unit = {}
+    onThemeToggle: (Boolean) -> Unit = {},
+    viewModel: ProfilViewModel = viewModel()
 ) {
     val scrollState = rememberScrollState()
-
+    val uiState by viewModel.uiState.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
 
     Column(
         modifier = Modifier
@@ -57,94 +64,116 @@ fun Profil(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Profile Card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-        ) {
-            Row(
-                modifier = Modifier.padding(20.dp),
-                verticalAlignment = Alignment.CenterVertically
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxWidth().height(150.dp), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        } else if (error != null) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color.White),
-                    contentAlignment = Alignment.Center
+                Text(text = error ?: "Unknown Error", modifier = Modifier.padding(16.dp))
+            }
+        } else {
+            // Profile Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Row(
+                    modifier = Modifier.padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Image(
-                        painter = painterResource(R.drawable.logo),
-                        contentDescription = "logo",
-                        modifier = Modifier.padding(8.dp)
-                    )
-                }
-                
-                Spacer(modifier = Modifier.width(16.dp))
-                
-                Column {
-                    Text(
-                        text = "BENGKEL PAK ARLI",
-                        color = MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                    Text(
-                        text = "BENGKEL MOTOR",
-                        color = MaterialTheme.colorScheme.secondary,
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.LocationOn,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(12.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "Rejomulyo, Kec. Jati Agung, Kab. Lampung Selatan",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.labelSmall
-                        )
+                    Box(
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color.White),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (uiState.imageUrl.isNotEmpty()) {
+                            AsyncImage(
+                                model = uiState.imageUrl,
+                                contentDescription = "profile image",
+                                error = painterResource(R.drawable.logo),
+                                placeholder = painterResource(R.drawable.logo)
+                            )
+                        } else {
+                            Image(
+                                painter = painterResource(R.drawable.logo),
+                                contentDescription = "logo",
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        }
                     }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Call,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(12.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
+                    
+                    Spacer(modifier = Modifier.width(16.dp))
+                    
+                    Column {
                         Text(
-                            text = "0857-6494-8010",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.labelSmall
+                            text = uiState.ownerName.uppercase(),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.titleLarge
                         )
+                        Text(
+                            text = uiState.businessType,
+                            color = MaterialTheme.colorScheme.secondary,
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.LocationOn,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = uiState.address,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Call,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = uiState.phone,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
                     }
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-        // Section Title
-        SectionHeader(icon = Icons.Default.Settings, title = "INFORMASI BENGKEL")
-        
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-        ) {
-            Column {
-                SettingsItem(icon = Icons.Default.Home, label = "Nama Bengkel", value = "Pak Arli")
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
-                SettingsItem(icon = Icons.Default.LocationOn, label = "Alamat", value = "Jati Agung, Lampung")
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
-                SettingsItem(icon = Icons.Default.Call, label = "No. Telepon", value = "0857-6494-8010")
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
-                SettingsItem(icon = Icons.Default.Place, label = "Logo Bengkel", value = "Upload")
+            // Section Title
+            SectionHeader(icon = Icons.Default.Settings, title = "INFORMASI BENGKEL")
+            
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column {
+                    SettingsItem(icon = Icons.Default.Home, label = "Nama Pemilik", value = uiState.ownerName)
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+                    SettingsItem(icon = Icons.Default.LocationOn, label = "Alamat", value = uiState.address)
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+                    SettingsItem(icon = Icons.Default.Call, label = "No. Telepon", value = uiState.phone)
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+                    SettingsItem(icon = Icons.Default.Place, label = "Logo Bengkel", value = "Update")
+                }
             }
         }
 
@@ -162,7 +191,7 @@ fun Profil(
                 SettingsItem(icon = Icons.AutoMirrored.Filled.List, label = "Printer Bluetooth", value = "Tidak terhubung")
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
 
-                // Theme Toggle Item
+                // Tema Item Toggle
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -256,7 +285,8 @@ fun SettingsItem(icon: ImageVector, label: String, value: String) {
             Text(
                 text = value,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.widthIn(max = 150.dp)
             )
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,

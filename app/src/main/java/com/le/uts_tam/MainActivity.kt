@@ -6,8 +6,17 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.le.uts_tam.ui.screen.dashborad.Dashboard
+import com.le.uts_tam.ui.screen.addpelanggan.AddPelanggan
+import com.le.uts_tam.ui.screen.dashboard.Dashboard
+import com.le.uts_tam.ui.screen.editstok.EditStock
+import com.le.uts_tam.ui.screen.inventaris.Inventaris
+import com.le.uts_tam.ui.screen.kasir.Kasir
+import com.le.uts_tam.ui.screen.laporan.Laporan
 import com.le.uts_tam.ui.screen.login.Login
+import com.le.uts_tam.ui.screen.nota.NotaDigital
+import com.le.uts_tam.ui.screen.pelanggan.Pelanggan
+import com.le.uts_tam.ui.screen.profil.Profil
+import com.le.uts_tam.ui.screen.riwayat.Riwayat
 import com.le.uts_tam.ui.theme.UTS_TAMTheme
 
 class MainActivity : ComponentActivity() {

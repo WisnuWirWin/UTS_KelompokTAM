@@ -1,4 +1,4 @@
-package com.le.uts_tam
+package com.le.uts_tam.ui.screen.addpelanggan
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
