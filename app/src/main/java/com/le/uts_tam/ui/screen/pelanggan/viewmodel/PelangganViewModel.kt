@@ -2,8 +2,8 @@ package com.le.uts_tam.ui.screen.pelanggan.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.le.uts_tam.data.remote.model.Customers
-import com.le.uts_tam.data.remote.model.Vehicles
+import com.le.uts_tam.data.model.dataclass.Customers
+import com.le.uts_tam.data.model.dataclass.Vehicles
 import com.le.uts_tam.data.remote.retrofit.RetrofitClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

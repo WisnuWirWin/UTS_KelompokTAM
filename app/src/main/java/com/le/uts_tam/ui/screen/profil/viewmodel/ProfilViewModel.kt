@@ -2,7 +2,7 @@ package com.le.uts_tam.ui.screen.profil.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.le.uts_tam.data.remote.model.Owners
+import com.le.uts_tam.data.model.dataclass.Owners
 import com.le.uts_tam.data.remote.retrofit.RetrofitClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -21,7 +21,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.le.uts_tam.data.remote.model.Items
+import com.le.uts_tam.data.model.dataclass.Items
 
 @Composable
 fun Inventaris(

@@ -4,7 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.le.uts_tam.data.remote.model.Items
+import com.le.uts_tam.data.model.dataclass.Items
 
 class EditStockViewModel : ViewModel() {
     var idItems by mutableStateOf("")

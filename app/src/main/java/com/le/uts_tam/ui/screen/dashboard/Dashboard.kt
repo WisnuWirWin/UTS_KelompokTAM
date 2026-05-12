@@ -22,9 +22,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.le.uts_tam.R
 
 @Composable
@@ -34,7 +37,8 @@ fun Dashboard(
     onKasirClick: () -> Unit = {},
     onRiwayatClick: () -> Unit = {},
     onStokClick: () -> Unit = {},
-    onLaporanClick: () -> Unit = {}
+    onLaporanClick: () -> Unit = {},
+    viewModel: DashboardViewModel = viewModel()
 ) {
     val scrollState = rememberScrollState()
 
@@ -99,11 +103,11 @@ fun Dashboard(
                             style = MaterialTheme.typography.headlineLarge
                         )
                         Text(
-                            text = "Arli ", 
+                            text = viewModel.ownerName, 
                             color = MaterialTheme.colorScheme.secondary, 
                             style = MaterialTheme.typography.headlineLarge
                         )
-                        Text(text = "👋", fontSize = 24.sp)
+                        Text(text = " 👋", fontSize = 24.sp)
                     }
                 }
                 Box(
@@ -115,7 +119,16 @@ fun Dashboard(
                         .clickable { onProfileClick() },
                     contentAlignment = Alignment.Center
                 ) {
-                    Image(painter = painterResource(R.drawable.profile), contentDescription = "Profile")
+                    if (viewModel.profileImageUrl.isNotEmpty()) {
+                        AsyncImage(
+                            model = viewModel.profileImageUrl,
+                            contentDescription = "Profile",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Image(painter = painterResource(R.drawable.profile), contentDescription = "Profile")
+                    }
                 }
             }
 
@@ -150,13 +163,13 @@ fun Dashboard(
 
             //Statistik
             Row(modifier = Modifier.fillMaxWidth()) {
-                StatCard("JENIS STOK", "47", Modifier.weight(1f), onClick = onStokClick)
+                StatCard("JENIS STOK", viewModel.totalItems.toString(), Modifier.weight(1f), onClick = onStokClick)
                 Spacer(modifier = Modifier.width(16.dp))
-                StatCard("STOK HAMPIR HABIS", "3", Modifier.weight(1f), MaterialTheme.colorScheme.error)
+                StatCard("STOK HAMPIR HABIS", viewModel.lowStockItemsCount.toString(), Modifier.weight(1f), MaterialTheme.colorScheme.error)
             }
             Spacer(modifier = Modifier.height(16.dp))
             Row(modifier = Modifier.fillMaxWidth()) {
-                StatCard("PELANGGAN", "156", Modifier.weight(1f), onClick = onPelangganClick)
+                StatCard("PELANGGAN", viewModel.totalCustomers.toString(), Modifier.weight(1f), onClick = onPelangganClick)
                 Spacer(modifier = Modifier.width(16.dp))
                 StatCard("BULAN INI", "RP 68JT", Modifier.weight(1f), MaterialTheme.colorScheme.secondary)
             }
@@ -180,9 +193,18 @@ fun Dashboard(
                         )
                     }
                     Spacer(modifier = Modifier.height(12.dp))
-                    AlertRow("Oli Mesin 10W-40", "2 PCS")
-                    AlertRow("Filter Udara CB150R", "1 PCS")
-                    AlertRow("Kampas Rem Depan", "3 PCS")
+                    
+                    if (viewModel.lowStockList.isEmpty()) {
+                        Text(
+                            text = "Semua stok aman", 
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    } else {
+                        viewModel.lowStockList.take(3).forEach { item ->
+                            AlertRow(item.name ?: "Unknown", "${item.stock} PCS")
+                        }
+                    }
                 }
             }
 

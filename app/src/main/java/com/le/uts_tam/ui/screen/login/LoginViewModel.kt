@@ -2,11 +2,10 @@ package com.le.uts_tam.ui.screen.login
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.le.uts_tam.data.model.dataclass.Owners
 import com.le.uts_tam.repository.AuthRepository
 import kotlinx.coroutines.launch
 
@@ -21,7 +20,6 @@ class LoginViewModel : ViewModel() {
         passwordInput: String,
         onSuccess: () -> Unit
     ) {
-
         val u = usernameInput.trim()
         val p = passwordInput.trim()
 

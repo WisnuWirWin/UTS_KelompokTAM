@@ -2,7 +2,7 @@ package com.le.uts_tam.ui.screen.inventaris
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.le.uts_tam.data.remote.model.Items
+import com.le.uts_tam.data.model.dataclass.Items
 import com.le.uts_tam.data.remote.retrofit.RetrofitClient
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

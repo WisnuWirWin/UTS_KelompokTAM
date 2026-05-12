@@ -1,9 +1,9 @@
 package com.le.uts_tam.data.remote.api
 
-import com.le.uts_tam.data.remote.model.Customers
-import com.le.uts_tam.data.remote.model.Items
-import com.le.uts_tam.data.remote.model.Owners
-import com.le.uts_tam.data.remote.model.Vehicles
+import com.le.uts_tam.data.model.dataclass.Customers
+import com.le.uts_tam.data.model.dataclass.Items
+import com.le.uts_tam.data.model.dataclass.Owners
+import com.le.uts_tam.data.model.dataclass.Vehicles
 import retrofit2.http.GET
 
 interface APIService {

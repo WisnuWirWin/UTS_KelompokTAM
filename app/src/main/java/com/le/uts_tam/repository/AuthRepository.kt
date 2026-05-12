@@ -1,6 +1,6 @@
 package com.le.uts_tam.repository
 
-import com.le.uts_tam.data.remote.model.Owners
+import com.le.uts_tam.data.model.dataclass.Owners
 import com.le.uts_tam.data.remote.retrofit.RetrofitClient
 
 class AuthRepository {
