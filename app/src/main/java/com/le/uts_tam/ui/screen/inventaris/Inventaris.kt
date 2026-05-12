@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -29,9 +30,10 @@ fun Inventaris(
     viewModel: InventarisViewModel = viewModel()
 ) {
     val categories = listOf("SEMUA", "OLI & CAIRAN", "FILTER", "REM")
-    var selectedCategory by remember { mutableStateOf("SEMUA") }
-
-    val items by viewModel.items.collectAsState()
+    
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val selectedCategory by viewModel.selectedCategory.collectAsState()
+    val items by viewModel.filteredItems.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
     Column(
@@ -82,29 +84,42 @@ fun Inventaris(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            Box(
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { viewModel.onSearchQueryChange(it) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
-                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
-                    .padding(horizontal = 16.dp),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
+                    .height(60.dp),
+                placeholder = {
                     Text(
                         text = "Cari suku cadang...",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodyMedium
                     )
-                }
-            }
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
+                            Icon(Icons.Default.Close, contentDescription = "Clear", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                },
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = Color.Transparent,
+                ),
+                singleLine = true
+            )
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -119,7 +134,7 @@ fun Inventaris(
                                 color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
                                 shape = RoundedCornerShape(20.dp)
                             )
-                            .clickable { selectedCategory = category }
+                            .clickable { viewModel.onCategoryChange(category) }
                             .padding(horizontal = 20.dp, vertical = 10.dp)
                     ) {
                         Text(
@@ -138,12 +153,18 @@ fun Inventaris(
                     CircularProgressIndicator()
                 }
             } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(bottom = 30.dp)
-                ) {
-                    items(items) { item ->
-                        InventoryCard(item)
+                if (items.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Tidak ada barang ditemukan", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                } else {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        contentPadding = PaddingValues(bottom = 30.dp)
+                    ) {
+                        items(items) { item ->
+                            InventoryCard(item)
+                        }
                     }
                 }
             }
