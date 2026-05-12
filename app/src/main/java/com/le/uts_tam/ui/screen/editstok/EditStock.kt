@@ -14,8 +14,6 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -31,21 +29,16 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.le.uts_tam.R
 
 @Composable
-fun EditStock(onBack: () -> Unit = {}) {
+fun EditStock(
+    onBack: () -> Unit = {},
+    viewModel: EditStockViewModel = viewModel()
+) {
     val customFontFamily = FontFamily(Font(R.font.poppins))
     val scrollState = rememberScrollState()
-
-    var namaBarang by remember { mutableStateOf("Kampas Rem Belakang") }
-    var kodeSku by remember { mutableStateOf("BR-044") }
-    var hargaBeli by remember { mutableStateOf("Rp 38.000") }
-    var hargaJual by remember { mutableStateOf("Rp 55.000") }
-    var stok by remember { mutableStateOf("15") }
-    var minStok by remember { mutableStateOf("5") }
-    var kategori by remember { mutableStateOf("Rem & Kopling") }
-    var supplier by remember { mutableStateOf("FBW Indonesia") }
 
     Column(
         modifier = Modifier
@@ -132,36 +125,84 @@ fun EditStock(onBack: () -> Unit = {}) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        EditField("NAMA BARANG", namaBarang, { namaBarang = it }, customFontFamily, isHighlighted = true)
-        EditField("KODE SKU", kodeSku, { kodeSku = it }, customFontFamily)
+        EditField(
+            label = "NAMA BARANG",
+            value = viewModel.name,
+            onValueChange = { viewModel.name = it },
+            fontFamily = customFontFamily,
+            isHighlighted = true
+        )
+        
+        EditField(
+            label = "ID / SKU",
+            value = viewModel.idItems,
+            onValueChange = { viewModel.idItems = it },
+            fontFamily = customFontFamily
+        )
 
         Row(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.weight(1f)) {
-                EditField("HARGA BELI", hargaBeli, { hargaBeli = it }, customFontFamily)
+                EditField(
+                    label = "HARGA BELI",
+                    value = viewModel.hargaBeli,
+                    onValueChange = { viewModel.hargaBeli = it },
+                    fontFamily = customFontFamily
+                )
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                EditField("HARGA JUAL", hargaJual, { hargaJual = it }, customFontFamily)
+                EditField(
+                    label = "HARGA JUAL",
+                    value = viewModel.price,
+                    onValueChange = { viewModel.price = it },
+                    fontFamily = customFontFamily
+                )
             }
         }
 
         Row(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.weight(1f)) {
-                EditField("STOK", stok, { stok = it }, customFontFamily)
+                EditField(
+                    label = "STOK",
+                    value = viewModel.stock,
+                    onValueChange = { viewModel.stock = it },
+                    fontFamily = customFontFamily
+                )
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                EditField("MIN. STOK", minStok, { minStok = it }, customFontFamily)
+                EditField(
+                    label = "MIN. STOK",
+                    value = viewModel.minStok,
+                    onValueChange = { viewModel.minStok = it },
+                    fontFamily = customFontFamily
+                )
             }
         }
 
-        EditField("KATEGORI", kategori, { kategori = it }, customFontFamily, isDropdown = true)
-        EditField("SUPPLIER / MERK", supplier, { supplier = it }, customFontFamily)
+        EditField(
+            label = "KATEGORI",
+            value = viewModel.kategori,
+            onValueChange = { viewModel.kategori = it },
+            fontFamily = customFontFamily,
+            isDropdown = true
+        )
+
+        EditField(
+            label = "SUPPLIER / MERK",
+            value = viewModel.supplier,
+            onValueChange = { viewModel.supplier = it },
+            fontFamily = customFontFamily
+        )
 
         Spacer(modifier = Modifier.height(30.dp))
 
         Button(
-            onClick = { },
+            onClick = {
+                viewModel.saveChanges {
+                    onBack()
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
@@ -209,7 +250,6 @@ fun EditField(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Menggunakan BasicTextField agar parameter onValueChange terpakai dan teks bisa diinput
                 BasicTextField(
                     value = value,
                     onValueChange = onValueChange,
@@ -221,7 +261,7 @@ fun EditField(
                     cursorBrush = SolidColor(Color.White),
                     modifier = Modifier.weight(1f),
                     singleLine = true,
-                    readOnly = isDropdown // Jika dropdown, biasanya hanya baca saja (pilih lewat menu)
+                    readOnly = isDropdown
                 )
 
                 if (isDropdown) {

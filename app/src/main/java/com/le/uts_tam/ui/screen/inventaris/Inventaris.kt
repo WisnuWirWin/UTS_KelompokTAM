@@ -11,31 +11,28 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.le.uts_tam.data.remote.model.Items
 
 @Composable
-fun Inventaris(onBack: () -> Unit = {}, onAddItem: () -> Unit = {}) {
+fun Inventaris(
+    onBack: () -> Unit = {},
+    onAddItem: () -> Unit = {},
+    viewModel: InventarisViewModel = viewModel()
+) {
     val categories = listOf("SEMUA", "OLI & CAIRAN", "FILTER", "REM")
     var selectedCategory by remember { mutableStateOf("SEMUA") }
 
-    val inventoryItems = listOf(
-        InventoryItem("Oli Mesin 10W-40", "OL-001", "Yamalube", "Rp 45.000", 2, "LOW", Icons.Default.Build),
-        InventoryItem("Filter Udara CB150R", "FA-022", "Honda", "Rp 35.000", 1, "LOW", Icons.Default.Info),
-        InventoryItem("Kampas Rem Depan", "BR-031", "FBW", "Rp 55.000", 12, "OK", Icons.Default.Settings),
-        InventoryItem("Aki Kering 5Ah", "AK-008", "GS Astra", "Rp 175.000", 8, "OK", Icons.Default.ShoppingCart),
-        InventoryItem("Busi NGK CPR8EA", "BU-015", "NGK", "Rp 28.000", 25, "OK", Icons.Default.Build)
-    )
+    val items by viewModel.items.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     Column(
         modifier = Modifier
@@ -136,12 +133,18 @@ fun Inventaris(onBack: () -> Unit = {}, onAddItem: () -> Unit = {}) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(bottom = 30.dp)
-            ) {
-                items(inventoryItems) { item ->
-                    InventoryCard(item)
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(bottom = 30.dp)
+                ) {
+                    items(items) { item ->
+                        InventoryCard(item)
+                    }
                 }
             }
         }
@@ -149,7 +152,7 @@ fun Inventaris(onBack: () -> Unit = {}, onAddItem: () -> Unit = {}) {
 }
 
 @Composable
-fun InventoryCard(item: InventoryItem) {
+fun InventoryCard(item: Items) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -168,7 +171,7 @@ fun InventoryCard(item: InventoryItem) {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = item.icon,
+                    imageVector = Icons.Default.Build,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(28.dp)
@@ -179,12 +182,12 @@ fun InventoryCard(item: InventoryItem) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = item.name,
+                    text = item.name ?: "Unknown",
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.titleMedium
                 )
                 Text(
-                    text = "SKU: ${item.sku} - ${item.brand}",
+                    text = "ID: ${item.id ?: "-"}",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.labelSmall
                 )
@@ -192,26 +195,28 @@ fun InventoryCard(item: InventoryItem) {
 
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = item.price,
+                    text = "Rp ${item.price ?: "0"}",
                     color = MaterialTheme.colorScheme.secondary,
                     style = MaterialTheme.typography.labelLarge
                 )
                 Text(
-                    text = item.stock.toString(),
+                    text = item.stock ?: "0",
                     color = MaterialTheme.colorScheme.secondary,
                     style = MaterialTheme.typography.titleMedium
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                val badgeColor = if (item.status == "LOW") MaterialTheme.colorScheme.error else Color(0xFF4CAF50)
+                val stockInt = item.stock?.toIntOrNull() ?: 0
+                val status = if (stockInt < 5) "LOW" else "OK"
+                val badgeColor = if (status == "LOW") MaterialTheme.colorScheme.error else Color(0xFF4CAF50)
                 Box(
                     modifier = Modifier
                         .background(badgeColor.copy(alpha = 0.1f), RoundedCornerShape(4.dp))
                         .padding(horizontal = 12.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = item.status,
+                        text = status,
                         color = badgeColor,
                         style = MaterialTheme.typography.labelSmall
                     )
@@ -220,13 +225,3 @@ fun InventoryCard(item: InventoryItem) {
         }
     }
 }
-
-data class InventoryItem(
-    val name: String,
-    val sku: String,
-    val brand: String,
-    val price: String,
-    val stock: Int,
-    val status: String,
-    val icon: ImageVector
-)
