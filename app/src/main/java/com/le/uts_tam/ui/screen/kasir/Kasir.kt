@@ -1,7 +1,6 @@
 package com.le.uts_tam.ui.screen.kasir
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,7 +10,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -24,12 +22,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.le.uts_tam.data.model.dataclass.Items
 
 @Composable
 fun Kasir(
     onBack: () -> Unit,
-    onPrintNota: () -> Unit, // Tambahkan ini agar tidak error di MainActivity
+    onPrintNota: () -> Unit,
     viewModel: KasirViewModel = viewModel()
 ) {
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -44,9 +41,9 @@ fun Kasir(
                 .padding(innerPadding)
                 .padding(horizontal = 20.dp)
         ) {
-            Spacer(modifier = Modifier.height(20.dp)) // Dikurangi agar tidak terlalu turun
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Header Section
+
             Row(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -54,22 +51,18 @@ fun Kasir(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = onBack) {
-                        // Menggunakan AutoMirrored agar tidak deprecated
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = Color.White)
                     }
                     Text("KASIR", color = Color.White, fontSize = 25.sp, fontWeight = FontWeight.Bold)
                 }
                 Text("TRX-20250422-013", color = Color(0xFFFF5722), fontSize = 12.sp)
             }
-
-            // Divider Garis Gradasi
             Box(modifier = Modifier.fillMaxWidth().height(2.dp).background(
                 Brush.horizontalGradient(listOf(Color.Red, Color.Yellow, Color.Transparent))
             ))
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Search Bar
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.onSearchQueryChange(it) },
@@ -87,8 +80,6 @@ fun Kasir(
                     unfocusedBorderColor = Color.Transparent
                 )
             )
-
-            // Dropdown Hasil Pencarian
             if (searchQuery.isNotEmpty() && filteredItems.isNotEmpty()) {
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
@@ -103,7 +94,7 @@ fun Kasir(
                                     .fillMaxWidth()
                                     .clickable {
                                         viewModel.addToCart(item)
-                                        viewModel.onSearchQueryChange("") // Reset search setelah pilih
+                                        viewModel.onSearchQueryChange("")
                                     }
                                     .padding(16.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween
@@ -119,7 +110,6 @@ fun Kasir(
             Spacer(modifier = Modifier.height(24.dp))
             Text("KERANJANG BARANG", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
 
-            // Daftar Keranjang
             LazyColumn(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -140,12 +130,10 @@ fun Kasir(
                                 Text("Rp ${item.price}", color = Color.Gray, fontSize = 12.sp)
                             }
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                // Tombol Kurang / Hapus
                                 IconButton(onClick = { viewModel.updateQty(item, -1) }) {
                                     Icon(Icons.Default.Close, contentDescription = null, tint = Color.Red, modifier = Modifier.size(18.dp))
                                 }
                                 Text("$qty", color = Color.White, fontWeight = FontWeight.Bold)
-                                // Tombol Tambah
                                 Box(
                                     modifier = Modifier.size(30.dp).background(Color(0xFFFF5722), CircleShape)
                                         .clickable { viewModel.updateQty(item, 1) },
@@ -159,7 +147,6 @@ fun Kasir(
                 }
             }
 
-            // Bottom Section: Total & Tombol Bayar
             Card(
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
                 shape = RoundedCornerShape(16.dp),
@@ -175,10 +162,10 @@ fun Kasir(
                         Text("RP ${"%,d".format(totalBayar)}", color = Color(0xFFFFEB3B), fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
                     }
                     Button(
-                        onClick = { onPrintNota() }, // Pindah ke layar Nota Digital
+                        onClick = { onPrintNota() },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
                         shape = RoundedCornerShape(12.dp),
-                        enabled = cartItems.isNotEmpty() // Tombol hanya aktif jika ada belanjaan
+                        enabled = cartItems.isNotEmpty()
                     ) {
                         Text("BAYAR", fontWeight = FontWeight.Bold)
                     }

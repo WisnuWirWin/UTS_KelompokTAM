@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.stateIn
 
 class RiwayatViewModel : ViewModel() {
 
-    private val _allHistory = MutableStateFlow<List<HistoryItem>>(
+    private val _allHistory = MutableStateFlow(
         listOf(
             HistoryItem(
                 trxId = "TRX-20250422-013",
@@ -78,7 +78,6 @@ class RiwayatViewModel : ViewModel() {
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    // Tipe data eksplisit <List<HistoryItem>, String, String, List<HistoryItem>> untuk mencegah error inference
     val filteredHistory: StateFlow<List<HistoryItem>> = combine(
         _allHistory,
         _selectedFilter,
