@@ -9,38 +9,42 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.le.uts_tam.data.model.dataclass.Customers
+import com.le.uts_tam.data.model.dataclass.Vehicles
 
 data class HistoryItem(
+    val trxId: String,
     val tgl: String,
     val bln: String,
-    val trxId: String,
-    val nama: String,
-    val motor: String,
-    val plat: String,
-    val layanan: String,
-    val harga: String,
     val jam: String,
+    val customer: Customers,
+    val vehicle: Vehicles,
+    val layanan: String,
+    val totalHarga: String,
     val status: String,
-    val statusColor: Color
+    val statusColor: Color,
+    val kategori: String
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Riwayat(onBack: () -> Unit) {
-    val listRiwayat = listOf(
-        HistoryItem("22", "APR", "TRX-20250422-013", "Wisnu Wira Winata", "Honda CB150R", "B 4821 XZ", "Servis Rutin + Ganti Oli + Filter", "200RB", "10:25", "LUNAS", Color(0xFF4CAF50)),
-        HistoryItem("22", "APR", "TRX-20250422-012", "Kamila Putri Hasan", "Yamaha NMAX", "B 7734 KC", "Tune Up + Busi + Aki", "450RB", "09:10", "LUNAS", Color(0xFF4CAF50)),
-        HistoryItem("21", "APR", "TRX-20250421-011", "Athallah", "Suzuki GSX", "D 2210 YA", "Rem Depan + Kampas", "280RB", "15:42", "BON", Color(0xFFFFA000)),
-        HistoryItem("21", "APR", "TRX-20250421-010", "Miqdad Dzackiy Arroyan", "Honda Beat", "F 5509 TT", "Ganti Oli + Filter Udara", "120RB", "11:30", "LUNAS", Color(0xFF4CAF50))
-    )
+fun Riwayat(
+    onBack: () -> Unit,
+    viewModel: RiwayatViewModel = viewModel()
+) {
+    val selectedFilter by viewModel.selectedFilter.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val filteredRiwayat by viewModel.filteredHistory.collectAsState(initial = emptyList())
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background
@@ -59,58 +63,57 @@ fun Riwayat(onBack: () -> Unit) {
                     .padding(top = 20.dp, bottom = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(
-                    onClick = { onBack() },
-                    modifier = Modifier.padding(end = 8.dp)
-                ) {
+                IconButton(onClick = onBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Kembali",
+                        contentDescription = null,
                         tint = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.size(28.dp)
                     )
                 }
 
-                Text(
-                    text = "RIWAYAT",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    style = MaterialTheme.typography.headlineMedium,
-                    modifier = Modifier.weight(1f)
+                TextField(
+                    value = searchQuery,
+                    onValueChange = { viewModel.onSearchQueryChanged(it) },
+                    placeholder = { Text("Cari Nama / Plat...", style = MaterialTheme.typography.bodyMedium) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 8.dp),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        cursorColor = MaterialTheme.colorScheme.primary
+                    ),
+                    leadingIcon = {
+                        Icon(Icons.Default.Search, null, tint = MaterialTheme.colorScheme.primary)
+                    },
+                    singleLine = true
                 )
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(10.dp))
-                            .clickable { /* Search action */ },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(10.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(Icons.Default.Settings, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
-                    }
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(10.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.Settings,
+                        null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(2.dp)
                     .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
+                        Brush.horizontalGradient(
+                            listOf(
                                 MaterialTheme.colorScheme.primary,
                                 MaterialTheme.colorScheme.tertiary,
                                 Color.Transparent
@@ -122,15 +125,25 @@ fun Riwayat(onBack: () -> Unit) {
             Spacer(modifier = Modifier.height(20.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                TabItem("HARI INI", true)
-                TabItem("MINGGU INI", false)
-                TabItem("BULAN INI", false)
+                listOf("HARI INI", "MINGGU INI", "BULAN INI").forEach { label ->
+                    TabItem(
+                        label = label,
+                        isSelected = selectedFilter == label,
+                        onClick = { viewModel.setFilter(label) }
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                items(listRiwayat) { item ->
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(bottom = 20.dp)
+            ) {
+                items(
+                    items = filteredRiwayat,
+                    key = { it.trxId }
+                ) { item: HistoryItem ->
                     HistoryCard(item)
                 }
             }
@@ -139,11 +152,17 @@ fun Riwayat(onBack: () -> Unit) {
 }
 
 @Composable
-fun TabItem(label: String, isSelected: Boolean) {
+fun TabItem(label: String, isSelected: Boolean, onClick: () -> Unit) {
     Surface(
         color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
         shape = RoundedCornerShape(20.dp),
-        modifier = Modifier.border(1.dp, if (isSelected) Color.Transparent else MaterialTheme.colorScheme.outline, RoundedCornerShape(20.dp))
+        modifier = Modifier
+            .border(
+                width = 1.dp,
+                color = if (isSelected) Color.Transparent else MaterialTheme.colorScheme.outline,
+                shape = RoundedCornerShape(20.dp)
+            )
+            .clickable { onClick() }
     ) {
         Text(
             text = label,
@@ -162,7 +181,9 @@ fun HistoryCard(item: HistoryItem) {
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
@@ -172,41 +193,29 @@ fun HistoryCard(item: HistoryItem) {
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = item.tgl,
-                        color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.headlineMedium
-                    )
-                    Text(
-                        text = item.bln,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.labelSmall
-                    )
+                    Text(text = item.tgl, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.headlineMedium)
+                    Text(text = item.bln, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                 }
             }
 
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
+                Text(text = item.trxId, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                 Text(
-                    text = item.trxId,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.labelSmall
-                )
-                Text(
-                    text = item.nama,
+                    text = item.customer.name ?: "Tanpa Nama",
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.titleMedium
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = item.motor,
+                        text = item.vehicle.brand ?: "-",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(" • ", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(
-                        text = item.plat,
+                        text = item.vehicle.numberPlate ?: "-",
                         color = MaterialTheme.colorScheme.tertiary,
                         style = MaterialTheme.typography.labelLarge
                     )
@@ -220,16 +229,8 @@ fun HistoryCard(item: HistoryItem) {
             }
 
             Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = item.harga,
-                    color = MaterialTheme.colorScheme.tertiary,
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Text(
-                    text = item.jam,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.labelSmall
-                )
+                Text(text = item.totalHarga, color = MaterialTheme.colorScheme.tertiary, style = MaterialTheme.typography.titleLarge)
+                Text(text = item.jam, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                 Spacer(modifier = Modifier.height(8.dp))
                 Surface(
                     color = item.statusColor.copy(alpha = 0.2f),
