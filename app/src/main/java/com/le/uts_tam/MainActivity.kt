@@ -58,13 +58,29 @@ class MainActivity : ComponentActivity() {
                         onPrintNota = { currentScreen = "nota_digital" }
                     )
                     "nota_digital" -> NotaDigital(onBack = { currentScreen = "kasir" })
-                    "riwayat" -> Riwayat(onBack = { currentScreen = "dashboard" })
+                    "riwayat" -> Riwayat(
+                        onBack = { currentScreen = "dashboard" },
+                        onKasirClick = { currentScreen = "kasir" },
+                        onRiwayatClick = { currentScreen = "riwayat" },
+                        onStokClick = { currentScreen = "inventaris" },
+                        onLaporanClick = { currentScreen = "laporan" }
+                    )
                     "inventaris" -> Inventaris(
                         onBack = { currentScreen = "dashboard" },
-                        onAddItem = { currentScreen = "edit_stock" }
+                        onAddItem = { currentScreen = "edit_stock" },
+                        onKasirClick = { currentScreen = "kasir" },
+                        onRiwayatClick = { currentScreen = "riwayat" },
+                        onStokClick = { currentScreen = "inventaris" },
+                        onLaporanClick = { currentScreen = "laporan" }
                     )
                     "edit_stock" -> EditStock(onBack = { currentScreen = "inventaris" })
-                    "laporan" -> Laporan(onBack = { currentScreen = "dashboard" })
+                    "laporan" -> Laporan(
+                        onBack = { currentScreen = "dashboard" },
+                        onKasirClick = { currentScreen = "kasir" },
+                        onRiwayatClick = { currentScreen = "riwayat" },
+                        onStokClick = { currentScreen = "inventaris" },
+                        onLaporanClick = { currentScreen = "laporan" }
+                    )
                 }
             }
         }

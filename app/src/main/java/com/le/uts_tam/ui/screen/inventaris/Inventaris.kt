@@ -9,16 +9,22 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.le.uts_tam.data.model.dataclass.Items
@@ -27,6 +33,10 @@ import com.le.uts_tam.data.model.dataclass.Items
 fun Inventaris(
     onBack: () -> Unit = {},
     onAddItem: () -> Unit = {},
+    onKasirClick: () -> Unit = {},
+    onRiwayatClick: () -> Unit = {},
+    onStokClick: () -> Unit = {},
+    onLaporanClick: () -> Unit = {},
     viewModel: InventarisViewModel = viewModel()
 ) {
     val categories = listOf("SEMUA", "OLI & CAIRAN", "FILTER", "REM")
@@ -36,12 +46,47 @@ fun Inventaris(
     val items by viewModel.filteredItems.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        bottomBar = {
+            // Nav Bar
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 20.dp),
+                shape = RoundedCornerShape(20.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(modifier = Modifier.clickable { onKasirClick() }) {
+                        QuickActionButton(Icons.Default.ShoppingCart, "Kasir")
+                    }
+                    Box(modifier = Modifier.clickable { onRiwayatClick() }) {
+                        QuickActionButton(Icons.Default.Email, "Riwayat")
+                    }
+                    Box(modifier = Modifier.clickable { onStokClick() }) {
+                        QuickActionButton(Icons.AutoMirrored.Filled.List, "Stok")
+                    }
+                    Box(modifier = Modifier.clickable { onLaporanClick() }) {
+                        QuickActionButton(Icons.Default.Edit, "Laporan")
+                    }
+                }
+            }
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 20.dp)
+        ) {
             Spacer(modifier = Modifier.height(40.dp))
 
             Row(
@@ -169,6 +214,28 @@ fun Inventaris(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun QuickActionButton(icon: ImageVector, label: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier
+                .size(60.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.size(28.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(text = label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
     }
 }
 
