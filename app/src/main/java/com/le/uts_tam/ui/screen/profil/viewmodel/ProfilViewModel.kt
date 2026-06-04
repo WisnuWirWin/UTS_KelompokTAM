@@ -43,7 +43,7 @@ class ProfilViewModel : ViewModel() {
                     _uiState.value = ProfilUIState(
                         ownerName = owner.owner ?: "BENGKEL PAK ARLI",
                         businessType = "BENGKEL MOTOR",
-                        address = owner.address ?: "Lampung",
+                        address = owner.address ?: "Rejomulyo, Kec. Jati Agung, Kab. Lampung Selatan",
                         phone = owner.noHp ?: "0857-6494-8010",
                         imageUrl = owner.imageUrl ?: ""
                     )
@@ -54,5 +54,17 @@ class ProfilViewModel : ViewModel() {
                 _isLoading.value = false
             }
         }
+    }
+
+    fun updateOwnerName(newName: String) {
+        _uiState.value = _uiState.value.copy(ownerName = newName)
+    }
+
+    fun updateAddress(newAddress: String) {
+        _uiState.value = _uiState.value.copy(address = newAddress)
+    }
+
+    fun updatePhone(newPhone: String) {
+        _uiState.value = _uiState.value.copy(phone = newPhone)
     }
 }

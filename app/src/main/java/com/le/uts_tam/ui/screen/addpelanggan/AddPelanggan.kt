@@ -10,7 +10,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -146,36 +145,35 @@ fun AddPelanggan(onBack: () -> Unit = {}, onConfirm: () -> Unit = {}) {
                 placeholder = "Budi Santoso"
             )
 
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.Bottom
+                    .padding(horizontal = 20.dp, vertical = 8.dp)
             ) {
-                Column(modifier = Modifier.width(70.dp)) {
-                    Text(
-                        text = "NOMOR TELEPON / WHATSAPP *",
-                        color = Color.Gray,
-                        fontSize = 12.sp,
-                        modifier = Modifier.width(300.dp) // Just to make label span across
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "NOMOR TELEPON / WHATSAPP *",
+                    color = Color.Gray,
+                    fontSize = 12.sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .width(70.dp)
                             .height(56.dp)
                             .background(DarkSurfaceVariant, RoundedCornerShape(12.dp)),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(text = "+62", color = Color.Gray)
                     }
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Box(modifier = Modifier.weight(1f)) {
+                    Spacer(modifier = Modifier.width(12.dp))
                     TextField(
                         value = nomorTelepon,
                         onValueChange = { nomorTelepon = it },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.weight(1f),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = DarkSurfaceVariant,
                             unfocusedContainerColor = DarkSurfaceVariant,
@@ -243,23 +241,20 @@ fun AddPelanggan(onBack: () -> Unit = {}, onConfirm: () -> Unit = {}) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(text = "MERK MOTOR", color = Color.Gray, fontSize = 12.sp)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp)
-                            .background(DarkSurfaceVariant, RoundedCornerShape(12.dp))
-                            .padding(horizontal = 16.dp),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(text = merkMotor, color = Color.White)
-                            Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = Color.Gray)
-                        }
-                    }
+                    TextField(
+                        value = merkMotor,
+                        onValueChange = { merkMotor = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = DarkSurfaceVariant,
+                            unfocusedContainerColor = DarkSurfaceVariant,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 // Tipe / Model

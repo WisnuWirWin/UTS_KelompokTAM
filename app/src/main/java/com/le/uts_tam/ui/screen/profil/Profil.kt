@@ -2,6 +2,7 @@ package com.le.uts_tam.ui.screen.profil
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,6 +37,38 @@ fun Profil(
     val uiState by viewModel.uiState.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+
+    var showEditDialog by remember { mutableStateOf(false) }
+    var editLabel by remember { mutableStateOf("") }
+    var editValue by remember { mutableStateOf("") }
+    var onConfirmEdit by remember { mutableStateOf<(String) -> Unit>({}) }
+
+    if (showEditDialog) {
+        AlertDialog(
+            onDismissRequest = { showEditDialog = false },
+            title = { Text("Edit $editLabel") },
+            text = {
+                TextField(
+                    value = editValue,
+                    onValueChange = { editValue = it },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    onConfirmEdit(editValue)
+                    showEditDialog = false
+                }) {
+                    Text("Simpan")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEditDialog = false }) {
+                    Text("Batal")
+                }
+            }
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -166,11 +199,41 @@ fun Profil(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 Column {
-                    SettingsItem(icon = Icons.Default.Home, label = "Nama Pemilik", value = uiState.ownerName)
+                    SettingsItem(
+                        icon = Icons.Default.Home,
+                        label = "Nama Pemilik",
+                        value = uiState.ownerName,
+                        onClick = {
+                            editLabel = "Nama Pemilik"
+                            editValue = uiState.ownerName
+                            onConfirmEdit = { viewModel.updateOwnerName(it) }
+                            showEditDialog = true
+                        }
+                    )
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
-                    SettingsItem(icon = Icons.Default.LocationOn, label = "Alamat", value = uiState.address)
+                    SettingsItem(
+                        icon = Icons.Default.LocationOn,
+                        label = "Alamat",
+                        value = uiState.address,
+                        onClick = {
+                            editLabel = "Alamat"
+                            editValue = uiState.address
+                            onConfirmEdit = { viewModel.updateAddress(it) }
+                            showEditDialog = true
+                        }
+                    )
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
-                    SettingsItem(icon = Icons.Default.Call, label = "No. Telepon", value = uiState.phone)
+                    SettingsItem(
+                        icon = Icons.Default.Call,
+                        label = "No. Telepon",
+                        value = uiState.phone,
+                        onClick = {
+                            editLabel = "No. Telepon"
+                            editValue = uiState.phone
+                            onConfirmEdit = { viewModel.updatePhone(it) }
+                            showEditDialog = true
+                        }
+                    )
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
                     SettingsItem(icon = Icons.Default.Place, label = "Logo Bengkel", value = "Update")
                 }
@@ -256,10 +319,11 @@ fun SectionHeader(icon: ImageVector, title: String) {
 }
 
 @Composable
-fun SettingsItem(icon: ImageVector, label: String, value: String) {
+fun SettingsItem(icon: ImageVector, label: String, value: String, onClick: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable(onClick = onClick)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -285,8 +349,7 @@ fun SettingsItem(icon: ImageVector, label: String, value: String) {
             Text(
                 text = value,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.widthIn(max = 150.dp)
+                style = MaterialTheme.typography.bodyMedium
             )
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
