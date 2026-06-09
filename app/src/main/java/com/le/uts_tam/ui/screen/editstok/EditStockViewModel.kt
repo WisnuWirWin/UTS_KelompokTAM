@@ -9,8 +9,8 @@ import com.le.uts_tam.data.model.dataclass.Items
 import com.le.uts_tam.data.repository.FirebaseRepository
 import kotlinx.coroutines.launch
 
-class EditStockViewModel : ViewModel() {
-    private val repository = FirebaseRepository()
+class EditStockViewModel(ownerId: String) : ViewModel() {
+    private val repository = FirebaseRepository(ownerId)
 
     var firebaseKey by mutableStateOf<String?>(null)
     var idItems by mutableStateOf("")

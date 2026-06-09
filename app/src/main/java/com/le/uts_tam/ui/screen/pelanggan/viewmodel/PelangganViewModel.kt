@@ -23,8 +23,8 @@ data class PelangganUIState(
     val motorDisplay: String = ""
 )
 
-class PelangganViewModel : ViewModel() {
-    private val repository = FirebaseRepository()
+class PelangganViewModel(ownerId: String) : ViewModel() {
+    private val repository = FirebaseRepository(ownerId)
     
     private val _uiState = MutableStateFlow<List<PelangganUIState>>(emptyList())
     val uiState: StateFlow<List<PelangganUIState>> = _uiState.asStateFlow()

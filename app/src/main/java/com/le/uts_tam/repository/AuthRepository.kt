@@ -9,7 +9,7 @@ class AuthRepository {
 
     suspend fun getOwners(): List<Owners> {
         return try {
-            firebaseRepository.getOwners().first()
+            firebaseRepository.getOwnersForLogin().first()
         } catch (e: Exception) {
             emptyList()
         }

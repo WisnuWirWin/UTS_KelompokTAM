@@ -18,7 +18,16 @@ import com.le.uts_tam.ui.screen.pelanggan.Pelanggan
 import com.le.uts_tam.ui.screen.profil.Profil
 import com.le.uts_tam.ui.screen.riwayat.Riwayat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.le.uts_tam.ui.screen.dashboard.DashboardViewModel
+import com.le.uts_tam.ui.screen.pelanggan.viewmodel.PelangganViewModel
+import com.le.uts_tam.ui.screen.kasir.KasirViewModel
+import com.le.uts_tam.ui.screen.riwayat.RiwayatViewModel
+import com.le.uts_tam.ui.screen.profil.viewmodel.ProfilViewModel
+import com.le.uts_tam.ui.screen.addpelanggan.AddPelangganViewModel
 import com.le.uts_tam.ui.screen.editstok.EditStockViewModel
+import com.le.uts_tam.ui.screen.inventaris.InventarisViewModel
 import com.le.uts_tam.ui.theme.UTS_TAMTheme
 
 class MainActivity : ComponentActivity() {
@@ -31,87 +40,149 @@ class MainActivity : ComponentActivity() {
 
             UTS_TAMTheme(darkTheme = isDarkTheme) {
                 var currentScreen by remember { mutableStateOf("login") }
+                var loggedInOwnerId by remember { mutableStateOf<String?>(null) }
+                
                 var selectedItemForEdit by remember { mutableStateOf<com.le.uts_tam.data.model.dataclass.Items?>(null) }
                 var selectedCustomerForEdit by remember { mutableStateOf<com.le.uts_tam.data.model.dataclass.Customers?>(null) }
                 var selectedTransactionForNota by remember { mutableStateOf<com.le.uts_tam.ui.screen.riwayat.HistoryItem?>(null) }
 
-                when (currentScreen) {
-                    "login" -> Login(onLoginSuccess = { currentScreen = "dashboard" })
-                    "dashboard" -> Dashboard(
-                        onPelangganClick = { currentScreen = "pelanggan" },
-                        onProfileClick = { currentScreen = "profil" },
-                        onKasirClick = { currentScreen = "kasir" },
-                        onRiwayatClick = { currentScreen = "riwayat" },
-                        onStokClick = { currentScreen = "inventaris" },
-                        onLaporanClick = { currentScreen = "laporan" }
-                    )
-                    "pelanggan" -> Pelanggan(
-                        onBack = { currentScreen = "dashboard" },
-                        onAddPelanggan = {
-                            selectedCustomerForEdit = null
-                            currentScreen = "add_pelanggan"
-                        },
-                        onEditPelanggan = { customer ->
-                            selectedCustomerForEdit = customer
-                            currentScreen = "add_pelanggan"
+                @Suppress("UNCHECKED_CAST")
+                class ScopedViewModelFactory(private val ownerId: String) : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        val viewModel = when {
+                            modelClass.isAssignableFrom(DashboardViewModel::class.java) -> DashboardViewModel(ownerId)
+                            modelClass.isAssignableFrom(PelangganViewModel::class.java) -> PelangganViewModel(ownerId)
+                            modelClass.isAssignableFrom(KasirViewModel::class.java) -> KasirViewModel(ownerId)
+                            modelClass.isAssignableFrom(RiwayatViewModel::class.java) -> RiwayatViewModel(ownerId)
+                            modelClass.isAssignableFrom(ProfilViewModel::class.java) -> ProfilViewModel(ownerId)
+                            modelClass.isAssignableFrom(AddPelangganViewModel::class.java) -> AddPelangganViewModel(ownerId)
+                            modelClass.isAssignableFrom(EditStockViewModel::class.java) -> EditStockViewModel(ownerId)
+                            modelClass.isAssignableFrom(InventarisViewModel::class.java) -> InventarisViewModel(ownerId)
+                            else -> throw IllegalArgumentException("Unknown ViewModel class")
                         }
-                    )
+                        return viewModel as T
+                    }
+                }
+
+                when (currentScreen) {
+                    "login" -> Login(onLoginSuccess = { owner -> 
+                        loggedInOwnerId = owner.firebaseKey
+                        currentScreen = "dashboard" 
+                    })
+                    
+                    "dashboard" -> {
+                        val ownerId = loggedInOwnerId ?: return@UTS_TAMTheme
+                        Dashboard(
+                            onPelangganClick = { currentScreen = "pelanggan" },
+                            onProfileClick = { currentScreen = "profil" },
+                            onKasirClick = { currentScreen = "kasir" },
+                            onRiwayatClick = { currentScreen = "riwayat" },
+                            onStokClick = { currentScreen = "inventaris" },
+                            onLaporanClick = { currentScreen = "laporan" },
+                            viewModel = viewModel(factory = ScopedViewModelFactory(ownerId))
+                        )
+                    }
+                    
+                    "pelanggan" -> {
+                        val ownerId = loggedInOwnerId ?: return@UTS_TAMTheme
+                        Pelanggan(
+                            onBack = { currentScreen = "dashboard" },
+                            onAddPelanggan = { 
+                                selectedCustomerForEdit = null
+                                currentScreen = "add_pelanggan" 
+                            },
+                            onEditPelanggan = { customer ->
+                                selectedCustomerForEdit = customer
+                                currentScreen = "add_pelanggan"
+                            },
+                            viewModel = viewModel(factory = ScopedViewModelFactory(ownerId))
+                        )
+                    }
+                    
                     "add_pelanggan" -> {
-                        val addPelangganViewModel: com.le.uts_tam.ui.screen.addpelanggan.AddPelangganViewModel = viewModel()
+                        val ownerId = loggedInOwnerId ?: return@UTS_TAMTheme
+                        val addViewModel: AddPelangganViewModel = viewModel(factory = ScopedViewModelFactory(ownerId))
                         LaunchedEffect(selectedCustomerForEdit) {
-                            addPelangganViewModel.setInitialData(selectedCustomerForEdit)
+                            addViewModel.setInitialData(selectedCustomerForEdit)
                         }
                         AddPelanggan(
                             onBack = { currentScreen = "pelanggan" },
                             onConfirm = { currentScreen = "pelanggan" },
-                            viewModel = addPelangganViewModel
+                            viewModel = addViewModel
                         )
                     }
-                    "profil" -> Profil(
-                        onBack = { currentScreen = "dashboard" },
-                        onLogout = { currentScreen = "login" },
-                        isDarkTheme = isDarkTheme,
-                        onThemeToggle = { isDarkTheme = it }
-                    )
-                    "kasir" -> Kasir(
-                        onBack = { currentScreen = "dashboard" },
-                        onPrintNota = {
-                            // This would ideally set the last transaction
-                            currentScreen = "riwayat"
-                        }
-                    )
-                    "nota_digital" -> NotaDigital(
-                        onBack = { currentScreen = "riwayat" },
-                        transaction = selectedTransactionForNota
-                    )
-                    "riwayat" -> Riwayat(
-                        onBack = { currentScreen = "dashboard" },
-                        onKasirClick = { currentScreen = "kasir" },
-                        onRiwayatClick = { currentScreen = "riwayat" },
-                        onStokClick = { currentScreen = "inventaris" },
-                        onLaporanClick = { currentScreen = "laporan" },
-                        onTransactionClick = { transaction ->
-                            selectedTransactionForNota = transaction
-                            currentScreen = "nota_digital"
-                        }
-                    )
-                    "inventaris" -> Inventaris(
-                        onBack = { currentScreen = "dashboard" },
-                        onAddItem = {
-                            selectedItemForEdit = null
-                            currentScreen = "edit_stock"
-                        },
-                        onEditItem = { item ->
-                            selectedItemForEdit = item
-                            currentScreen = "edit_stock"
-                        },
-                        onKasirClick = { currentScreen = "kasir" },
-                        onRiwayatClick = { currentScreen = "riwayat" },
-                        onStokClick = { currentScreen = "inventaris" },
-                        onLaporanClick = { currentScreen = "laporan" }
-                    )
+                    
+                    "profil" -> {
+                        val ownerId = loggedInOwnerId ?: return@UTS_TAMTheme
+                        Profil(
+                            onBack = { currentScreen = "dashboard" },
+                            onLogout = { 
+                                loggedInOwnerId = null
+                                currentScreen = "login" 
+                            },
+                            isDarkTheme = isDarkTheme,
+                            onThemeToggle = { isDarkTheme = it },
+                            viewModel = viewModel(factory = ScopedViewModelFactory(ownerId))
+                        )
+                    }
+                    
+                    "kasir" -> {
+                        val ownerId = loggedInOwnerId ?: return@UTS_TAMTheme
+                        Kasir(
+                            onBack = { currentScreen = "dashboard" },
+                            onPrintNota = { currentScreen = "riwayat" },
+                            viewModel = viewModel(factory = ScopedViewModelFactory(ownerId))
+                        )
+                    }
+                    
+                    "nota_digital" -> {
+                        val ownerId = loggedInOwnerId ?: return@UTS_TAMTheme
+                        NotaDigital(
+                            onBack = { currentScreen = "riwayat" },
+                            transaction = selectedTransactionForNota,
+                            profilViewModel = viewModel(factory = ScopedViewModelFactory(ownerId))
+                        )
+                    }
+                    
+                    "riwayat" -> {
+                        val ownerId = loggedInOwnerId ?: return@UTS_TAMTheme
+                        Riwayat(
+                            onBack = { currentScreen = "dashboard" },
+                            onKasirClick = { currentScreen = "kasir" },
+                            onRiwayatClick = { currentScreen = "riwayat" },
+                            onStokClick = { currentScreen = "inventaris" },
+                            onLaporanClick = { currentScreen = "laporan" },
+                            onTransactionClick = { transaction ->
+                                selectedTransactionForNota = transaction
+                                currentScreen = "nota_digital"
+                            },
+                            viewModel = viewModel(factory = ScopedViewModelFactory(ownerId))
+                        )
+                    }
+                    
+                    "inventaris" -> {
+                        val ownerId = loggedInOwnerId ?: return@UTS_TAMTheme
+                        Inventaris(
+                            onBack = { currentScreen = "dashboard" },
+                            onAddItem = { 
+                                selectedItemForEdit = null
+                                currentScreen = "edit_stock" 
+                            },
+                            onEditItem = { item ->
+                                selectedItemForEdit = item
+                                currentScreen = "edit_stock"
+                            },
+                            onKasirClick = { currentScreen = "kasir" },
+                            onRiwayatClick = { currentScreen = "riwayat" },
+                            onStokClick = { currentScreen = "inventaris" },
+                            onLaporanClick = { currentScreen = "laporan" },
+                            viewModel = viewModel(factory = ScopedViewModelFactory(ownerId))
+                        )
+                    }
+                    
                     "edit_stock" -> {
-                        val editViewModel: EditStockViewModel = viewModel()
+                        val ownerId = loggedInOwnerId ?: return@UTS_TAMTheme
+                        val editViewModel: EditStockViewModel = viewModel(factory = ScopedViewModelFactory(ownerId))
                         LaunchedEffect(selectedItemForEdit) {
                             editViewModel.setInitialData(selectedItemForEdit)
                         }
@@ -120,6 +191,7 @@ class MainActivity : ComponentActivity() {
                             viewModel = editViewModel
                         )
                     }
+
                     "laporan" -> Laporan(
                         onBack = { currentScreen = "dashboard" },
                         onKasirClick = { currentScreen = "kasir" },

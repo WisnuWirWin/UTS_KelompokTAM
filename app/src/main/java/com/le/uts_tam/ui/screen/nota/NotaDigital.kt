@@ -3,6 +3,8 @@ package com.le.uts_tam.ui.screen.nota
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,9 +19,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -27,13 +31,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.le.uts_tam.ui.screen.profil.viewmodel.ProfilViewModel
 import com.le.uts_tam.ui.screen.riwayat.HistoryItem
+import kotlin.random.Random
 
 @Composable
 fun NotaDigital(
     onBack: () -> Unit,
-    transaction: HistoryItem? = null
+    transaction: HistoryItem? = null,
+    profilViewModel: ProfilViewModel = viewModel()
 ) {
+    val shopInfo by profilViewModel.uiState.collectAsState()
     var showPrintDialog by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -55,7 +64,12 @@ fun NotaDigital(
                     .fillMaxWidth()
             ) {
                 if (transaction != null) {
-                    ReceiptCard(transaction)
+                    ReceiptCard(
+                        transaction = transaction,
+                        shopName = shopInfo.ownerName.ifEmpty { "TAM MOTOR" },
+                        shopAddress = shopInfo.address.ifEmpty { "Jl. Raya Natar No.12, Lampung Selatan" },
+                        shopPhone = shopInfo.phone.ifEmpty { "0857-6494-8010" }
+                    )
                 } else {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text("Data Transaksi Tidak Ditemukan", color = Color.Gray)
@@ -76,13 +90,22 @@ fun NotaDigital(
     if (showPrintDialog && transaction != null) {
         PrintReceiptDialog(
             transaction = transaction,
+            shopName = shopInfo.ownerName.ifEmpty { "TAM MOTOR" },
+            shopAddress = shopInfo.address.ifEmpty { "Jl. Raya Natar No.12, Lampung Selatan" },
+            shopPhone = shopInfo.phone.ifEmpty { "0857-6494-8010" },
             onDismiss = { showPrintDialog = false }
         )
     }
 }
 
 @Composable
-fun PrintReceiptDialog(transaction: HistoryItem, onDismiss: () -> Unit) {
+fun PrintReceiptDialog(
+    transaction: HistoryItem,
+    shopName: String,
+    shopAddress: String,
+    shopPhone: String,
+    onDismiss: () -> Unit
+) {
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -98,7 +121,7 @@ fun PrintReceiptDialog(transaction: HistoryItem, onDismiss: () -> Unit) {
                 modifier = Modifier
                     .width(350.dp)
                     .padding(16.dp)
-                    .clickable(enabled = false) {}, // Prevent dismiss on card click
+                    .clickable(enabled = false) {}, 
                 shape = RoundedCornerShape(4.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
@@ -110,21 +133,22 @@ fun PrintReceiptDialog(transaction: HistoryItem, onDismiss: () -> Unit) {
                 ) {
                     // Receipt Header
                     Text(
-                        text = "TAM MOTOR",
+                        text = shopName.uppercase(),
                         color = Color.Black,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
+                        fontFamily = FontFamily.Monospace,
+                        textAlign = TextAlign.Center
                     )
                     Text(
-                        text = "Jl. Raya Natar No.12, Lampung Selatan",
+                        text = shopAddress,
                         color = Color.Black,
                         fontSize = 12.sp,
                         textAlign = TextAlign.Center,
                         fontFamily = FontFamily.Monospace
                     )
                     Text(
-                        text = "Telp: 0857-6494-8010",
+                        text = "Telp: $shopPhone",
                         color = Color.Black,
                         fontSize = 12.sp,
                         fontFamily = FontFamily.Monospace
@@ -136,11 +160,11 @@ fun PrintReceiptDialog(transaction: HistoryItem, onDismiss: () -> Unit) {
 
                     // Trx Info
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(text = transaction.trxId, fontSize = 11.sp, color = Color.Black, fontFamily = FontFamily.Monospace)
-                        Text(text = "${transaction.tgl}/${transaction.bln} ${transaction.jam}", fontSize = 11.sp, color = Color.Black, fontFamily = FontFamily.Monospace)
+                        ReceiptText(text = transaction.trxId, modifier = Modifier)
+                        ReceiptText(text = "${transaction.tgl}/${transaction.bln} ${transaction.jam}", modifier = Modifier)
                     }
                     Row(modifier = Modifier.fillMaxWidth()) {
-                        Text(text = "Kasir: Admin", fontSize = 11.sp, color = Color.Black, fontFamily = FontFamily.Monospace)
+                        ReceiptText(text = "Kasir: Admin", modifier = Modifier)
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -149,48 +173,39 @@ fun PrintReceiptDialog(transaction: HistoryItem, onDismiss: () -> Unit) {
 
                     // Customer Info
                     Row(modifier = Modifier.fillMaxWidth()) {
-                        Text(text = "Pelanggan: ${transaction.customer.name ?: "Umum"}", fontSize = 12.sp, color = Color.Black, fontFamily = FontFamily.Monospace)
+                        ReceiptText(text = "Pelanggan: ${transaction.customer.name ?: "Umum"}", modifier = Modifier)
                     }
                     Row(modifier = Modifier.fillMaxWidth()) {
-                        Text(text = "Plat     : ${transaction.vehicle.numberPlate ?: "-"}", fontSize = 12.sp, color = Color.Black, fontFamily = FontFamily.Monospace)
+                        ReceiptText(text = "Plat     : ${transaction.vehicle.numberPlate ?: "-"}", modifier = Modifier)
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // Items Table
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Item", weight = Modifier.weight(1f))
-                        Text("Qty", weight = Modifier.width(40.dp), textAlign = TextAlign.Center)
-                        Text("Total", weight = Modifier.width(80.dp), textAlign = TextAlign.End)
+                        ReceiptText("Item", modifier = Modifier.weight(1f))
+                        ReceiptText("Qty", modifier = Modifier.width(40.dp), textAlign = TextAlign.Center)
+                        ReceiptText("Total", modifier = Modifier.width(80.dp), textAlign = TextAlign.End)
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     DashedDivider()
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Transaction list (Using layanan summary)
+                    // Transaction list
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(
+                        ReceiptText(
                             text = transaction.layanan, 
-                            color = Color.Black, 
-                            fontSize = 12.sp, 
-                            modifier = Modifier.weight(1f),
-                            fontFamily = FontFamily.Monospace
+                            modifier = Modifier.weight(1f)
                         )
-                        Text(
+                        ReceiptText(
                             text = "1", 
-                            color = Color.Black, 
-                            fontSize = 12.sp, 
                             modifier = Modifier.width(40.dp), 
-                            textAlign = TextAlign.Center,
-                            fontFamily = FontFamily.Monospace
+                            textAlign = TextAlign.Center
                         )
-                        Text(
+                        ReceiptText(
                             text = transaction.totalHarga, 
-                            color = Color.Black, 
-                            fontSize = 12.sp, 
                             modifier = Modifier.width(80.dp), 
-                            textAlign = TextAlign.End,
-                            fontFamily = FontFamily.Monospace
+                            textAlign = TextAlign.End
                         )
                     }
 
@@ -203,44 +218,19 @@ fun PrintReceiptDialog(transaction: HistoryItem, onDismiss: () -> Unit) {
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = "TOTAL", fontWeight = FontWeight.Bold, color = Color.Black, fontSize = 14.sp, fontFamily = FontFamily.Monospace)
-                        Text(text = "Rp ${transaction.totalHarga}", fontWeight = FontWeight.Bold, color = Color.Black, fontSize = 14.sp, fontFamily = FontFamily.Monospace)
+                        ReceiptText(text = "TOTAL", modifier = Modifier)
+                        ReceiptText(text = "Rp ${transaction.totalHarga}", modifier = Modifier)
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // QR Code Fake Implementation for UI
-                    Box(
-                        modifier = Modifier
-                            .size(100.dp)
-                            .background(Color.White)
-                            .border(1.dp, Color.Black)
-                            .padding(8.dp)
-                    ) {
-                        // QR Code Grid pattern mock
-                        Canvas(modifier = Modifier.fillMaxSize()) {
-                            val size = 10
-                            val cellSize = size.toFloat()
-                            for (i in 0..8) {
-                                for (j in 0..8) {
-                                    if ((i + j) % 2 == 0) {
-                                        drawRect(
-                                            color = Color.Black,
-                                            topLeft = Offset(i * cellSize * 1.2f, j * cellSize * 1.2f),
-                                            size = androidx.compose.ui.geometry.Size(cellSize, cellSize)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    // Real QR Code Generator
+                    QRVisualizer(seed = transaction.trxId, sizeDp = 100)
                     
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
+                    ReceiptText(
                         text = transaction.trxId,
-                        color = Color.Black,
-                        fontSize = 10.sp,
-                        fontFamily = FontFamily.Monospace
+                        modifier = Modifier
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -265,10 +255,65 @@ fun PrintReceiptDialog(transaction: HistoryItem, onDismiss: () -> Unit) {
 }
 
 @Composable
-fun Text(text: String, weight: Modifier, textAlign: TextAlign = TextAlign.Start) {
+fun QRVisualizer(seed: String, sizeDp: Int, tintColor: Color = Color.Black) {
+    Box(
+        modifier = Modifier
+            .size(sizeDp.dp)
+            .background(Color.White)
+            .border(1.dp, tintColor.copy(alpha = 0.2f))
+            .padding(4.dp)
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val dots = 15
+            val cellSize = size.width / dots
+            val random = Random(seed.hashCode())
+
+            drawCornerPattern(0, 0, cellSize)
+            drawCornerPattern(dots - 5, 0, cellSize)
+            drawCornerPattern(0, dots - 5, cellSize)
+
+            for (i in 0 until dots) {
+                for (j in 0 until dots) {
+                    val isInTopLeft = i < 5 && j < 5
+                    val isInTopRight = i > dots - 6 && j < 5
+                    val isInBottomLeft = i < 5 && j > dots - 6
+                    
+                    if (!isInTopLeft && !isInTopRight && !isInBottomLeft) {
+                        if (random.nextBoolean()) {
+                            drawRect(
+                                color = tintColor,
+                                topLeft = Offset(i * cellSize, j * cellSize),
+                                size = Size(cellSize * 0.9f, cellSize * 0.9f)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+fun DrawScope.drawCornerPattern(x: Int, y: Int, cellSize: Float) {
+    for (i in 0 until 5) {
+        for (j in 0 until 5) {
+            val isBorder = i == 0 || i == 4 || j == 0 || j == 4
+            val isCenter = i == 2 && j == 2
+            if (isBorder || isCenter) {
+                drawRect(
+                    color = Color.Black,
+                    topLeft = Offset((x + i) * cellSize, (y + j) * cellSize),
+                    size = Size(cellSize * 0.9f, cellSize * 0.9f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ReceiptText(text: String, modifier: Modifier, textAlign: TextAlign = TextAlign.Start) {
     Text(
         text = text,
-        modifier = weight,
+        modifier = modifier,
         textAlign = textAlign,
         color = Color.Black,
         fontSize = 12.sp,
@@ -336,7 +381,12 @@ fun HeaderNota(onBack: () -> Unit) {
 }
 
 @Composable
-fun ReceiptCard(transaction: HistoryItem) {
+fun ReceiptCard(
+    transaction: HistoryItem,
+    shopName: String,
+    shopAddress: String,
+    shopPhone: String
+) {
     Surface(
         color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(16.dp),
@@ -349,18 +399,18 @@ fun ReceiptCard(transaction: HistoryItem) {
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "TAM MOTOR",
+                        text = shopName.uppercase(),
                         color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.titleLarge
                     )
                     Text(
-                        text = "Jl. Raya Natar No.12, Lampung Selatan",
+                        text = shopAddress,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.labelSmall
                     )
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Phone, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
-                        Text(" 0857-6494-8010", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
+                        Text(" $shopPhone", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                     }
                 }
                 Column(horizontalAlignment = Alignment.End) {
@@ -426,15 +476,7 @@ fun QRCodeSection(trxId: String) {
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Surface(
-                color = Color.White,
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.size(60.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(Icons.Default.Share, null, tint = Color.Black)
-                }
-            }
+            QRVisualizer(seed = trxId, sizeDp = 60, tintColor = MaterialTheme.colorScheme.onSurface)
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text("QR Code Nota", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)

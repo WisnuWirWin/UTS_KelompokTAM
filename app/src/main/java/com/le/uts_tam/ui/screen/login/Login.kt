@@ -16,9 +16,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.le.uts_tam.data.model.dataclass.Owners
 
 @Composable
-fun Login(onLoginSuccess: () -> Unit) {
+fun Login(onLoginSuccess: (Owners) -> Unit) {
     val viewModel: LoginViewModel = viewModel()
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }

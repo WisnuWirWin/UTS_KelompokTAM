@@ -19,7 +19,7 @@ class LoginViewModel : ViewModel() {
     fun login(
         usernameInput: String,
         passwordInput: String,
-        onSuccess: () -> Unit
+        onSuccess: (Owners) -> Unit
     ) {
         val u = usernameInput.trim()
         val p = passwordInput.trim()
@@ -34,13 +34,8 @@ class LoginViewModel : ViewModel() {
             errorMessage = null
 
             try {
-                // Fetch all owners from Firebase
-                val owners = repository.getOwners().first()
-
-                if (owners.isEmpty()) {
-                    errorMessage = "Belum ada akun terdaftar"
-                    return@launch
-                }
+                // Fetch all owners to find match
+                val owners = repository.getOwnersForLogin().first()
 
                 val matchedOwner = owners.find {
                     it.username?.equals(u, ignoreCase = true) == true &&
@@ -48,7 +43,7 @@ class LoginViewModel : ViewModel() {
                 }
 
                 if (matchedOwner != null) {
-                    onSuccess()
+                    onSuccess(matchedOwner)
                 } else {
                     errorMessage = "Username atau Password salah"
                 }
@@ -69,7 +64,7 @@ class LoginViewModel : ViewModel() {
         viewModelScope.launch {
             isLoading = true
             try {
-                repository.registerOwner(
+                repository.registerNewOwner(
                     Owners(
                         owner = name,
                         username = user,

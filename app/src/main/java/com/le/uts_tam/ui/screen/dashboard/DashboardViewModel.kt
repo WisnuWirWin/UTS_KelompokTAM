@@ -10,8 +10,8 @@ import com.le.uts_tam.data.repository.FirebaseRepository
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
-class DashboardViewModel : ViewModel() {
-    private val repository = FirebaseRepository()
+class DashboardViewModel(ownerId: String) : ViewModel() {
+    private val repository = FirebaseRepository(ownerId)
 
     var ownerName by mutableStateOf("...")
     var profileImageUrl by mutableStateOf("")
@@ -45,9 +45,5 @@ class DashboardViewModel : ViewModel() {
                 isLoading = false
             }.collect {}
         }
-    }
-
-    fun loadDashboardData() {
-        observeDashboardData()
     }
 }

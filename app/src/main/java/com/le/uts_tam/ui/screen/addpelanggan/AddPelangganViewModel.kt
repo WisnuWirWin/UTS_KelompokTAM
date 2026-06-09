@@ -9,8 +9,8 @@ import com.le.uts_tam.data.model.dataclass.Customers
 import com.le.uts_tam.data.repository.FirebaseRepository
 import kotlinx.coroutines.launch
 
-class AddPelangganViewModel : ViewModel() {
-    private val repository = FirebaseRepository()
+class AddPelangganViewModel(ownerId: String) : ViewModel() {
+    private val repository = FirebaseRepository(ownerId)
 
     var firebaseKey by mutableStateOf<String?>(null)
     var namaLengkap by mutableStateOf("")

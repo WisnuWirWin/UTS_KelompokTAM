@@ -7,8 +7,8 @@ import com.le.uts_tam.data.repository.FirebaseRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class InventarisViewModel : ViewModel() {
-    private val repository = FirebaseRepository()
+class InventarisViewModel(ownerId: String) : ViewModel() {
+    private val repository = FirebaseRepository(ownerId)
     private val _items = MutableStateFlow<List<Items>>(emptyList())
     
     private val _searchQuery = MutableStateFlow("")

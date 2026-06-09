@@ -12,15 +12,48 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
-class FirebaseRepository {
+class FirebaseRepository(private val ownerId: String? = null) {
     private val database = FirebaseDatabase.getInstance("https://uas-tam-6107e-default-rtdb.asia-southeast1.firebasedatabase.app")
-    private val customersRef = database.getReference("customers")
-    private val itemsRef = database.getReference("items")
-    private val ownerRef = database.getReference("owner")
-    private val transactionsRef = database.getReference("transactions")
+    
+    // Global path for all owners (users)
+    private val allOwnersRef = database.getReference("owners_list")
+    
+    // Scoped paths for a specific owner's data
+    private val ownerDataRef = if (ownerId != null) database.getReference("data").child(ownerId) else null
+    
+    private val customersRef = ownerDataRef?.child("customers")
+    private val itemsRef = ownerDataRef?.child("items")
+    private val profileRef = ownerDataRef?.child("profile")
+    private val transactionsRef = ownerDataRef?.child("transactions")
 
-    // --- Customers ---
+    // --- Login & Registration (Global) ---
+    fun getOwnersForLogin(): Flow<List<Owners>> = callbackFlow {
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val list = snapshot.children.mapNotNull {
+                    it.getValue(Owners::class.java)?.copy(firebaseKey = it.key)
+                }
+                trySend(list)
+            }
+            override fun onCancelled(error: DatabaseError) {
+                close(error.toException())
+            }
+        }
+        allOwnersRef.addValueEventListener(listener)
+        awaitClose { allOwnersRef.removeEventListener(listener) }
+    }
+
+    suspend fun registerNewOwner(owner: Owners) {
+        val key = allOwnersRef.push().key ?: return
+        allOwnersRef.child(key).setValue(owner).await()
+        
+        // Initialize profile data for the new owner
+        database.getReference("data").child(key).child("profile").setValue(owner).await()
+    }
+
+    // --- Customers (Scoped) ---
     fun getCustomers(): Flow<List<Customers>> = callbackFlow {
+        if (customersRef == null) { trySend(emptyList()); return@callbackFlow }
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val list = snapshot.children.mapNotNull { 
@@ -37,20 +70,20 @@ class FirebaseRepository {
     }
 
     suspend fun addCustomer(customer: Customers) {
-        val key = customersRef.push().key ?: return
-        customersRef.child(key).setValue(customer).await()
+        customersRef?.push()?.setValue(customer)?.await()
     }
 
     suspend fun updateCustomer(key: String, customer: Customers) {
-        customersRef.child(key).setValue(customer).await()
+        customersRef?.child(key)?.setValue(customer)?.await()
     }
 
     suspend fun deleteCustomer(key: String) {
-        customersRef.child(key).removeValue().await()
+        customersRef?.child(key)?.removeValue()?.await()
     }
 
-    // --- Items / Stock ---
+    // --- Items / Stock (Scoped) ---
     fun getItems(): Flow<List<Items>> = callbackFlow {
+        if (itemsRef == null) { trySend(emptyList()); return@callbackFlow }
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val list = snapshot.children.mapNotNull { 
@@ -68,74 +101,44 @@ class FirebaseRepository {
     }
 
     suspend fun addItem(item: Items) {
-        val key = itemsRef.push().key ?: return
-        itemsRef.child(key).setValue(item).await()
+        itemsRef?.push()?.setValue(item)?.await()
     }
 
     suspend fun updateItem(key: String, item: Items) {
-        itemsRef.child(key).setValue(item).await()
+        itemsRef?.child(key)?.setValue(item)?.await()
     }
 
     suspend fun deleteItem(key: String) {
-        itemsRef.child(key).removeValue().await()
+        itemsRef?.child(key)?.removeValue()?.await()
     }
 
-    // --- Owner / Profile ---
-    fun getOwners(): Flow<List<Owners>> = callbackFlow {
-        val listener = object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val list = snapshot.children.mapNotNull {
-                    it.getValue(Owners::class.java)?.copy(firebaseKey = it.key)
-                }
-                trySend(list)
-            }
-            override fun onCancelled(error: DatabaseError) {
-                close(error.toException())
-            }
-        }
-        ownerRef.addValueEventListener(listener)
-        awaitClose { ownerRef.removeEventListener(listener) }
-    }
-
+    // --- Owner / Profile (Scoped) ---
     fun getOwner(): Flow<Owners?> = callbackFlow {
+        if (profileRef == null) { trySend(null); return@callbackFlow }
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                // If the root is a list, take the first child, otherwise take value
-                val owner = if (snapshot.hasChildren()) {
-                    snapshot.children.firstOrNull()?.let {
-                        it.getValue(Owners::class.java)?.copy(firebaseKey = it.key)
-                    }
-                } else {
-                    snapshot.getValue(Owners::class.java)
-                }
+                val owner = snapshot.getValue(Owners::class.java)
                 trySend(owner)
             }
             override fun onCancelled(error: DatabaseError) {
                 close(error.toException())
             }
         }
-        ownerRef.addValueEventListener(listener)
-        awaitClose { ownerRef.removeEventListener(listener) }
+        profileRef.addValueEventListener(listener)
+        awaitClose { profileRef.removeEventListener(listener) }
     }
 
-    suspend fun registerOwner(owner: Owners) {
-        val key = ownerRef.push().key ?: return
-        ownerRef.child(key).setValue(owner).await()
+    suspend fun updateOwner(owner: Owners) {
+        profileRef?.setValue(owner)?.await()
     }
 
-    suspend fun updateOwner(key: String, owner: Owners) {
-        ownerRef.child(key).setValue(owner).await()
-    }
-
-    suspend fun deleteOwner(key: String) {
-        ownerRef.child(key).removeValue().await()
-    }
-
-    // --- Transactions ---
+    // --- Transactions (Scoped) ---
     fun getTransactions(): Flow<List<Map<String, Any>>> = callbackFlow {
+        if (transactionsRef == null) { trySend(emptyList()); return@callbackFlow }
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val list = snapshot.children.mapNotNull { 
+                    @Suppress("UNCHECKED_CAST")
                     val data = it.value as? Map<String, Any>
                     data?.plus("firebaseKey" to (it.key ?: ""))
                 }
@@ -150,7 +153,6 @@ class FirebaseRepository {
     }
 
     suspend fun addTransaction(transaction: Map<String, Any>) {
-        val key = transactionsRef.push().key ?: return
-        transactionsRef.child(key).setValue(transaction).await()
+        transactionsRef?.push()?.setValue(transaction)?.await()
     }
 }

@@ -16,8 +16,8 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-class RiwayatViewModel : ViewModel() {
-    private val repository = FirebaseRepository()
+class RiwayatViewModel(ownerId: String) : ViewModel() {
+    private val repository = FirebaseRepository(ownerId)
 
     private val _allHistory = MutableStateFlow<List<HistoryItem>>(emptyList())
 

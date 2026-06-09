@@ -16,11 +16,12 @@ data class ProfilUIState(
     val address: String = "",
     val phone: String = "",
     val imageUrl: String = "",
-    val username: String = ""
+    val username: String = "",
+    val password: String = ""
 )
 
-class ProfilViewModel : ViewModel() {
-    private val repository = FirebaseRepository()
+class ProfilViewModel(ownerId: String) : ViewModel() {
+    private val repository = FirebaseRepository(ownerId)
     
     private val _uiState = MutableStateFlow(ProfilUIState())
     val uiState: StateFlow<ProfilUIState> = _uiState.asStateFlow()
@@ -47,7 +48,8 @@ class ProfilViewModel : ViewModel() {
                         address = owner.address ?: "",
                         phone = owner.noHp ?: "",
                         imageUrl = owner.imageUrl ?: "",
-                        username = owner.username ?: ""
+                        username = owner.username ?: "",
+                        password = owner.password ?: ""
                     )
                 }
                 _isLoading.value = false
@@ -65,16 +67,13 @@ class ProfilViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 repository.updateOwner(
-                    currentState.firebaseKey,
                     Owners(
                         owner = name,
                         address = address,
                         noHp = phone,
                         imageUrl = currentState.imageUrl,
-                        username = currentState.username
-                        // Password preserved in Firebase usually, but since we're using setValue,
-                        // we might need to fetch the full object first if we don't want to lose it.
-                        // For simplicity in this UTS, we'll assume these are the main fields.
+                        username = currentState.username,
+                        password = currentState.password
                     )
                 )
             } catch (e: Exception) {

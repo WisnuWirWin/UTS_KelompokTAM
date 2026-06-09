@@ -10,8 +10,8 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-class KasirViewModel : ViewModel() {
-    private val repository = FirebaseRepository()
+class KasirViewModel(ownerId: String) : ViewModel() {
+    private val repository = FirebaseRepository(ownerId)
 
     private val _items = MutableStateFlow<List<Items>>(emptyList())
     private val _customers = MutableStateFlow<List<Customers>>(emptyList())
