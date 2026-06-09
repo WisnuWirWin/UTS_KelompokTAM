@@ -49,7 +49,6 @@ fun Laporan(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            // Nav Bar
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -89,7 +88,6 @@ fun Laporan(
         ) {
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -119,7 +117,7 @@ fun Laporan(
                 }
                 
                 IconButton(
-                    onClick = { /* Handle Export */ },
+                    onClick = {},
                     modifier = Modifier
                         .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp))
                         .size(40.dp)
@@ -135,7 +133,6 @@ fun Laporan(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Custom Tabs with Animation
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -166,13 +163,11 @@ fun Laporan(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Animated Content based on selected tab
             AnimatedContent(
                 targetState = selectedTab,
                 label = "ReportContent"
             ) { targetTab ->
                 Column {
-                    // Modern Chart Section
                     Surface(
                         color = MaterialTheme.colorScheme.surface,
                         shape = RoundedCornerShape(24.dp),
@@ -226,7 +221,6 @@ fun Laporan(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Table Header
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -238,7 +232,6 @@ fun Laporan(
                         Text(text = "LABA BERSIH", modifier = Modifier.weight(1.5f), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                     }
 
-                    // Table Content
                     val reportItems = when(targetTab) {
                         "HARIAN" -> listOf(
                             ReportItem("22 Apr", "Rp 4.750.000", "Rp 1.820.000", true),
@@ -259,7 +252,7 @@ fun Laporan(
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(250.dp) // Fixed height to allow scrolling within AnimatedContent
+                            .height(250.dp)
                             .clip(RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
                             .background(MaterialTheme.colorScheme.surface)
                     ) {
@@ -273,7 +266,6 @@ fun Laporan(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Summary Total
             Surface(
                 color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.1f),
                 shape = RoundedCornerShape(16.dp),
@@ -345,7 +337,6 @@ fun InteractiveBarChart(
     var selectedBarIndex by remember { mutableStateOf(-1) }
     val maxVal = data.maxOrNull() ?: 1f
 
-    // Animation state for bars
     var animationTriggered by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { animationTriggered = true }
     val animationProgress by animateFloatAsState(
@@ -395,7 +386,6 @@ fun InteractiveBarChart(
                     )
                 }
 
-                // Draw Bars
                 data.forEachIndexed { index, value ->
                     val x = spacing + index * (barWidth + spacing)
                     val barHeight = (canvasHeight * (value / maxVal)) * animationProgress
@@ -407,7 +397,6 @@ fun InteractiveBarChart(
                         Brush.verticalGradient(listOf(primaryColor, primaryContainer))
                     }
 
-                    // Rounded Top Bar
                     drawRoundRect(
                         brush = brush,
                         topLeft = Offset(x, canvasHeight - barHeight),
@@ -415,8 +404,7 @@ fun InteractiveBarChart(
                         cornerRadius = CornerRadius(12.dp.toPx(), 12.dp.toPx()),
                         alpha = if (selectedBarIndex != -1 && !isSelected) 0.3f else 1f
                     )
-                    
-                    // Highlight for selection or today
+
                     if (isSelected || (index == data.size - 1 && selectedBarIndex == -1)) {
                         drawRoundRect(
                             color = tertiaryColor.copy(alpha = 0.2f),
@@ -429,7 +417,6 @@ fun InteractiveBarChart(
                 }
             }
 
-            // Simple Tooltip logic
             if (selectedBarIndex != -1) {
                 val valText = "$prefix${data[selectedBarIndex]}$suffix"
                 Surface(
@@ -452,8 +439,7 @@ fun InteractiveBarChart(
         }
         
         Spacer(modifier = Modifier.height(12.dp))
-        
-        // Labels Row
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween

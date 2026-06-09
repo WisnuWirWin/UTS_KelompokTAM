@@ -1,6 +1,8 @@
 package com.le.uts_tam.ui.screen.dashboard
 
+import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -9,8 +11,10 @@ import com.le.uts_tam.data.model.dataclass.Items
 import com.le.uts_tam.data.repository.FirebaseRepository
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
-class DashboardViewModel(ownerId: String) : ViewModel() {
+class DashboardViewModel(private val ownerId: String) : ViewModel() {
     private val repository = FirebaseRepository(ownerId)
 
     var ownerName by mutableStateOf("...")
@@ -19,9 +23,17 @@ class DashboardViewModel(ownerId: String) : ViewModel() {
     var lowStockItemsCount by mutableStateOf(0)
     var totalCustomers by mutableStateOf(0)
     var lowStockList by mutableStateOf<List<Items>>(emptyList())
+
+    var totalIncomeToday by mutableLongStateOf(0L)
+    var transactionCountToday by mutableStateOf(0)
+    var serviceCountToday by mutableStateOf(0)
+    var sparepartIncomeToday by mutableLongStateOf(0L)
+    var monthlyIncome by mutableLongStateOf(0L)
+
     var isLoading by mutableStateOf(false)
 
     init {
+        Log.d("DashboardVM", "DashboardViewModel created for ownerId: $ownerId")
         observeDashboardData()
     }
 
@@ -31,9 +43,12 @@ class DashboardViewModel(ownerId: String) : ViewModel() {
             combine(
                 repository.getOwner(),
                 repository.getItems(),
-                repository.getCustomers()
-            ) { owner, items, customers ->
-                ownerName = owner?.owner ?: "Owner"
+                repository.getCustomers(),
+                repository.getTransactions()
+            ) { owner, items, customers, transactions ->
+                Log.d("DashboardVM", "Data received for ownerId: $ownerId. Owner: ${owner?.username}")
+
+                ownerName = owner?.owner ?: owner?.username ?: "Pengguna"
                 profileImageUrl = owner?.imageUrl ?: ""
                 
                 totalItems = items.size
@@ -41,9 +56,56 @@ class DashboardViewModel(ownerId: String) : ViewModel() {
                 lowStockItemsCount = lowStockList.size
                 
                 totalCustomers = customers.size
+
+                calculateFinanceData(transactions)
                 
                 isLoading = false
             }.collect {}
         }
+    }
+
+    private fun calculateFinanceData(transactions: List<Map<String, Any>>) {
+        val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+        val todayStr = sdf.format(Date())
+        val currentMonth = todayStr.substring(3) // MM-yyyy
+
+        var incomeToday = 0L
+        var countToday = 0
+        var servicesToday = 0
+        var sparepartsToday = 0L
+        var incomeMonth = 0L
+
+        transactions.forEach { data ->
+            val date = data["date"] as? String ?: ""
+            val totalRaw = data["totalPrice"] as? Number ?: 0
+            val total = totalRaw.toLong()
+
+            if (date.endsWith(currentMonth)) {
+                incomeMonth += total
+            }
+
+            if (date == todayStr) {
+                incomeToday += total
+                countToday++
+                
+                val items = data["items"] as? List<Map<String, Any>>
+                items?.forEach { item ->
+                    val name = (item["name"] as? String)?.lowercase() ?: ""
+                    if (name.contains("servis") || name.contains("jasa")) {
+                        servicesToday++
+                    } else {
+                        val price = (item["price"] as? Number ?: 0).toLong()
+                        val qty = (item["quantity"] as? Number ?: 1).toLong()
+                        sparepartsToday += price * qty
+                    }
+                }
+            }
+        }
+
+        totalIncomeToday = incomeToday
+        transactionCountToday = countToday
+        serviceCountToday = servicesToday
+        sparepartIncomeToday = sparepartsToday
+        monthlyIncome = incomeMonth
     }
 }

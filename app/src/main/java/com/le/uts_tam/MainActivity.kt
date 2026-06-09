@@ -79,7 +79,10 @@ class MainActivity : ComponentActivity() {
                             onRiwayatClick = { currentScreen = "riwayat" },
                             onStokClick = { currentScreen = "inventaris" },
                             onLaporanClick = { currentScreen = "laporan" },
-                            viewModel = viewModel(factory = ScopedViewModelFactory(ownerId))
+                            viewModel = viewModel(
+                                key = "dashboard_$ownerId",
+                                factory = ScopedViewModelFactory(ownerId)
+                            )
                         )
                     }
                     
@@ -95,13 +98,19 @@ class MainActivity : ComponentActivity() {
                                 selectedCustomerForEdit = customer
                                 currentScreen = "add_pelanggan"
                             },
-                            viewModel = viewModel(factory = ScopedViewModelFactory(ownerId))
+                            viewModel = viewModel(
+                                key = "pelanggan_$ownerId",
+                                factory = ScopedViewModelFactory(ownerId)
+                            )
                         )
                     }
                     
                     "add_pelanggan" -> {
                         val ownerId = loggedInOwnerId ?: return@UTS_TAMTheme
-                        val addViewModel: AddPelangganViewModel = viewModel(factory = ScopedViewModelFactory(ownerId))
+                        val addViewModel: AddPelangganViewModel = viewModel(
+                            key = "add_pelanggan_$ownerId",
+                            factory = ScopedViewModelFactory(ownerId)
+                        )
                         LaunchedEffect(selectedCustomerForEdit) {
                             addViewModel.setInitialData(selectedCustomerForEdit)
                         }
@@ -122,7 +131,10 @@ class MainActivity : ComponentActivity() {
                             },
                             isDarkTheme = isDarkTheme,
                             onThemeToggle = { isDarkTheme = it },
-                            viewModel = viewModel(factory = ScopedViewModelFactory(ownerId))
+                            viewModel = viewModel(
+                                key = "profil_$ownerId",
+                                factory = ScopedViewModelFactory(ownerId)
+                            )
                         )
                     }
                     
@@ -131,7 +143,10 @@ class MainActivity : ComponentActivity() {
                         Kasir(
                             onBack = { currentScreen = "dashboard" },
                             onPrintNota = { currentScreen = "riwayat" },
-                            viewModel = viewModel(factory = ScopedViewModelFactory(ownerId))
+                            viewModel = viewModel(
+                                key = "kasir_$ownerId",
+                                factory = ScopedViewModelFactory(ownerId)
+                            )
                         )
                     }
                     
@@ -140,7 +155,10 @@ class MainActivity : ComponentActivity() {
                         NotaDigital(
                             onBack = { currentScreen = "riwayat" },
                             transaction = selectedTransactionForNota,
-                            profilViewModel = viewModel(factory = ScopedViewModelFactory(ownerId))
+                            profilViewModel = viewModel(
+                                key = "profil_nota_$ownerId",
+                                factory = ScopedViewModelFactory(ownerId)
+                            )
                         )
                     }
                     
@@ -156,7 +174,10 @@ class MainActivity : ComponentActivity() {
                                 selectedTransactionForNota = transaction
                                 currentScreen = "nota_digital"
                             },
-                            viewModel = viewModel(factory = ScopedViewModelFactory(ownerId))
+                            viewModel = viewModel(
+                                key = "riwayat_$ownerId",
+                                factory = ScopedViewModelFactory(ownerId)
+                            )
                         )
                     }
                     
@@ -176,13 +197,19 @@ class MainActivity : ComponentActivity() {
                             onRiwayatClick = { currentScreen = "riwayat" },
                             onStokClick = { currentScreen = "inventaris" },
                             onLaporanClick = { currentScreen = "laporan" },
-                            viewModel = viewModel(factory = ScopedViewModelFactory(ownerId))
+                            viewModel = viewModel(
+                                key = "inventaris_$ownerId",
+                                factory = ScopedViewModelFactory(ownerId)
+                            )
                         )
                     }
                     
                     "edit_stock" -> {
                         val ownerId = loggedInOwnerId ?: return@UTS_TAMTheme
-                        val editViewModel: EditStockViewModel = viewModel(factory = ScopedViewModelFactory(ownerId))
+                        val editViewModel: EditStockViewModel = viewModel(
+                            key = "edit_stock_$ownerId",
+                            factory = ScopedViewModelFactory(ownerId)
+                        )
                         LaunchedEffect(selectedItemForEdit) {
                             editViewModel.setInitialData(selectedItemForEdit)
                         }

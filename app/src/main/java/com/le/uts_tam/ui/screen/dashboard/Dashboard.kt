@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.le.uts_tam.R
+import java.text.NumberFormat
+import java.util.*
 
 @Composable
 fun Dashboard(
@@ -41,10 +43,12 @@ fun Dashboard(
     viewModel: DashboardViewModel = viewModel()
 ) {
     val scrollState = rememberScrollState()
+    val currencyFormatter = NumberFormat.getCurrencyInstance(Locale("id", "ID")).apply {
+        maximumFractionDigits = 0
+    }
 
     Scaffold(
         bottomBar = {
-            // Nav Bar
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -84,7 +88,6 @@ fun Dashboard(
                 .padding(innerPadding)
                 .padding(20.dp)
         ) {
-            //Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -98,7 +101,7 @@ fun Dashboard(
                     )
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "Pak ", 
+                            text = "Halo, ", 
                             color = MaterialTheme.colorScheme.onBackground, 
                             style = MaterialTheme.typography.headlineLarge
                         )
@@ -134,7 +137,6 @@ fun Dashboard(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            //Total Pendapatan
             Card(
                 modifier = Modifier.fillMaxWidth().height(180.dp),
                 shape = RoundedCornerShape(24.dp),
@@ -147,21 +149,28 @@ fun Dashboard(
                         style = MaterialTheme.typography.labelSmall
                     )
                     Text(
-                        text = "RP 4.750.000", 
+                        text = currencyFormatter.format(viewModel.totalIncomeToday).uppercase(), 
                         color = MaterialTheme.colorScheme.onPrimaryContainer, 
                         style = MaterialTheme.typography.headlineLarge
                     )
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        SummaryText("Transaksi", "12")
-                        SummaryText("Servis", "8")
-                        SummaryText("Sparepart", "Rp 1.2jt")
+                        SummaryText("Transaksi", viewModel.transactionCountToday.toString())
+                        SummaryText("Servis", viewModel.serviceCountToday.toString())
+                        
+                        val sparepartFormatted = if (viewModel.sparepartIncomeToday >= 1000000) {
+                            "Rp %.1fjt".format(viewModel.sparepartIncomeToday / 1000000.0)
+                        } else if (viewModel.sparepartIncomeToday >= 1000) {
+                            "Rp ${viewModel.sparepartIncomeToday / 1000}K"
+                        } else {
+                            "Rp ${viewModel.sparepartIncomeToday}"
+                        }
+                        SummaryText("Sparepart", sparepartFormatted)
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            //Statistik
             Row(modifier = Modifier.fillMaxWidth()) {
                 StatCard("JENIS STOK", viewModel.totalItems.toString(), Modifier.weight(1f), onClick = onStokClick)
                 Spacer(modifier = Modifier.width(16.dp))
@@ -171,12 +180,19 @@ fun Dashboard(
             Row(modifier = Modifier.fillMaxWidth()) {
                 StatCard("PELANGGAN", viewModel.totalCustomers.toString(), Modifier.weight(1f), onClick = onPelangganClick)
                 Spacer(modifier = Modifier.width(16.dp))
-                StatCard("BULAN INI", "RP 68JT", Modifier.weight(1f), MaterialTheme.colorScheme.secondary)
+                
+                val monthlyFormatted = if (viewModel.monthlyIncome >= 1000000) {
+                    "RP ${viewModel.monthlyIncome / 1000000}JT"
+                } else if (viewModel.monthlyIncome >= 1000) {
+                    "RP ${viewModel.monthlyIncome / 1000}K"
+                } else {
+                    "RP ${viewModel.monthlyIncome}"
+                }
+                StatCard("BULAN INI", monthlyFormatted, Modifier.weight(1f), MaterialTheme.colorScheme.secondary)
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            //Low-Stock Alert
             Card(
                 modifier = Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.secondary, RoundedCornerShape(16.dp)),
                 shape = RoundedCornerShape(16.dp),
