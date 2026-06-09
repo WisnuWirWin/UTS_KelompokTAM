@@ -30,16 +30,6 @@ fun AddPelanggan(
 ) {
     val scrollState = rememberScrollState()
 
-    var namaLengkap by remember { mutableStateOf("Budi Santoso") }
-    var nomorTelepon by remember { mutableStateOf("812-3456-7890") }
-    var alamat by remember { mutableStateOf("Jl. Melati No.7, Natar") }
-    var nomorPlat by remember { mutableStateOf("B 4821 XZ") }
-    var merkMotor by remember { mutableStateOf("Honda") }
-    var tipeModel by remember { mutableStateOf("CB150R") }
-    var tahun by remember { mutableStateOf("2022") }
-    var warna by remember { mutableStateOf("Merah") }
-    var catatan by remember { mutableStateOf("Sering bunyi di bagian rantai saat digas...") }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -72,7 +62,7 @@ fun AddPelanggan(
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
-                    text = "TAMBAH PELANGGAN",
+                    text = if (viewModel.firebaseKey != null) "EDIT PELANGGAN" else "TAMBAH PELANGGAN",
                     color = Color.White,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
@@ -145,8 +135,8 @@ fun AddPelanggan(
             
             CustomTextField(
                 label = "NAMA LENGKAP *",
-                value = namaLengkap,
-                onValueChange = { namaLengkap = it },
+                value = viewModel.namaLengkap,
+                onValueChange = { viewModel.namaLengkap = it },
                 placeholder = "Budi Santoso"
             )
 
@@ -176,8 +166,8 @@ fun AddPelanggan(
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     TextField(
-                        value = nomorTelepon,
-                        onValueChange = { nomorTelepon = it },
+                        value = viewModel.nomorTelepon,
+                        onValueChange = { viewModel.nomorTelepon = it },
                         modifier = Modifier.weight(1f),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = DarkSurfaceVariant,
@@ -194,8 +184,8 @@ fun AddPelanggan(
 
             CustomTextField(
                 label = "ALAMAT (OPSIONAL)",
-                value = alamat,
-                onValueChange = { alamat = it },
+                value = viewModel.alamat,
+                onValueChange = { viewModel.alamat = it },
                 placeholder = "Jl. Melati No.7, Natar"
             )
 
@@ -215,7 +205,7 @@ fun AddPelanggan(
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
                     Text(
-                        text = nomorPlat.ifEmpty { "B 4821 XZ" },
+                        text = viewModel.nomorPlat.ifEmpty { "B 4821 XZ" },
                         color = Color.Black,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp
@@ -232,8 +222,8 @@ fun AddPelanggan(
 
             CustomTextField(
                 label = "NOMOR PLAT *",
-                value = nomorPlat,
-                onValueChange = { nomorPlat = it },
+                value = viewModel.nomorPlat,
+                onValueChange = { viewModel.nomorPlat = it },
                 placeholder = "B 4821 XZ"
             )
 
@@ -247,8 +237,8 @@ fun AddPelanggan(
                     Text(text = "MERK MOTOR", color = Color.Gray, fontSize = 12.sp)
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
-                        value = merkMotor,
-                        onValueChange = { merkMotor = it },
+                        value = viewModel.merkMotor,
+                        onValueChange = { viewModel.merkMotor = it },
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = DarkSurfaceVariant,
@@ -267,8 +257,8 @@ fun AddPelanggan(
                     Text(text = "TIPE / MODEL", color = Color.Gray, fontSize = 12.sp)
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
-                        value = tipeModel,
-                        onValueChange = { tipeModel = it },
+                        value = viewModel.tipeModel,
+                        onValueChange = { viewModel.tipeModel = it },
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = DarkSurfaceVariant,
@@ -292,8 +282,8 @@ fun AddPelanggan(
                     Text(text = "TAHUN", color = Color.Gray, fontSize = 12.sp)
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
-                        value = tahun,
-                        onValueChange = { tahun = it },
+                        value = viewModel.tahun,
+                        onValueChange = { viewModel.tahun = it },
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = DarkSurfaceVariant,
@@ -311,8 +301,8 @@ fun AddPelanggan(
                     Text(text = "WARNA", color = Color.Gray, fontSize = 12.sp)
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
-                        value = warna,
-                        onValueChange = { warna = it },
+                        value = viewModel.warna,
+                        onValueChange = { viewModel.warna = it },
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = DarkSurfaceVariant,
@@ -331,8 +321,8 @@ fun AddPelanggan(
 
             CustomTextField(
                 label = "CATATAN KELUHAN / RIWAYAT AWAL",
-                value = catatan,
-                onValueChange = { catatan = it },
+                value = viewModel.catatan,
+                onValueChange = { viewModel.catatan = it },
                 placeholder = "Sering bunyi di bagian rantai...",
                 minLines = 3
             )
@@ -350,10 +340,6 @@ fun AddPelanggan(
             Button(
                 onClick = {
                     viewModel.saveCustomer(
-                        name = namaLengkap,
-                        phone = nomorTelepon,
-                        address = alamat,
-                        complaint = catatan,
                         onSuccess = onConfirm
                     )
                 },
@@ -373,7 +359,7 @@ fun AddPelanggan(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "KONFIRMASI",
+                        text = if (viewModel.firebaseKey != null) "UPDATE" else "KONFIRMASI",
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp

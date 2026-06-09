@@ -2,16 +2,28 @@ package com.le.uts_tam.ui.screen.kasir
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.le.uts_tam.data.model.dataclass.Customers
 import com.le.uts_tam.data.model.dataclass.Items
-import com.le.uts_tam.data.remote.retrofit.RetrofitClient
+import com.le.uts_tam.data.repository.FirebaseRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 class KasirViewModel : ViewModel() {
+    private val repository = FirebaseRepository()
+
     private val _items = MutableStateFlow<List<Items>>(emptyList())
+    private val _customers = MutableStateFlow<List<Customers>>(emptyList())
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
+
+    private val _customerSearchQuery = MutableStateFlow("")
+    val customerSearchQuery: StateFlow<String> = _customerSearchQuery
+
+    private val _selectedCustomer = MutableStateFlow<Customers?>(null)
+    val selectedCustomer: StateFlow<Customers?> = _selectedCustomer
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -37,21 +49,26 @@ class KasirViewModel : ViewModel() {
         else items.filter { it.name?.contains(query, ignoreCase = true) == true }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val filteredCustomers: StateFlow<List<Customers>> = combine(_customers, _customerSearchQuery) { customers, query ->
+        if (query.isEmpty()) emptyList()
+        else customers.filter { it.name?.contains(query, ignoreCase = true) == true }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     init {
-        fetchItems()
+        fetchData()
     }
 
-    private fun fetchItems() {
+    private fun fetchData() {
         viewModelScope.launch {
             _isLoading.value = true
-            try {
-                val response = RetrofitClient.instance.getItems()
-                _items.value = response.filterNotNull()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            } finally {
-                _isLoading.value = false
+            // Using collect in launch is fine for UTS as long as we know what we're doing
+            launch {
+                repository.getItems().collect { _items.value = it }
             }
+            launch {
+                repository.getCustomers().collect { _customers.value = it }
+            }
+            _isLoading.value = false
         }
     }
 
@@ -59,8 +76,17 @@ class KasirViewModel : ViewModel() {
         _searchQuery.value = newQuery
     }
 
+    fun onCustomerSearchChange(newQuery: String) {
+        _customerSearchQuery.value = newQuery
+    }
+
+    fun selectCustomer(customer: Customers?) {
+        _selectedCustomer.value = customer
+        _customerSearchQuery.value = ""
+    }
+
     fun addToCart(item: Items) {
-        val id = item.id ?: return
+        val id = item.firebaseKey ?: item.id ?: return
         val currentMap = _cartItems.value.toMutableMap()
         val currentQty = currentMap[id]?.second ?: 0
 
@@ -70,7 +96,7 @@ class KasirViewModel : ViewModel() {
     }
 
     fun updateQty(item: Items, delta: Int) {
-        val id = item.id ?: return
+        val id = item.firebaseKey ?: item.id ?: return
         val currentMap = _cartItems.value.toMutableMap()
         val currentQty = currentMap[id]?.second ?: 0
         val newQty = currentQty + delta
@@ -81,5 +107,49 @@ class KasirViewModel : ViewModel() {
             currentMap[id] = Pair(item, newQty)
         }
         _cartItems.value = currentMap
+    }
+
+    fun processPayment(onSuccess: () -> Unit) {
+        val customer = _selectedCustomer.value
+        val items = _cartItems.value.values.toList()
+        val total = totalBayar.value
+
+        if (items.isEmpty()) return
+
+        viewModelScope.launch {
+            try {
+                val sdfDate = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+                val sdfTime = SimpleDateFormat("HH:mm", Locale.getDefault())
+                val now = Date()
+
+                val transaction = mapOf(
+                    "trxId" to "TRX-${System.currentTimeMillis()}",
+                    "date" to sdfDate.format(now),
+                    "time" to sdfTime.format(now),
+                    "customerId" to (customer?.firebaseKey ?: "anon"),
+                    "customerName" to (customer?.name ?: "Umum"),
+                    "customerPlate" to (customer?.plateNumber ?: "-"),
+                    "motorBrand" to (customer?.motorBrand ?: ""),
+                    "motorModel" to (customer?.motorModel ?: ""),
+                    "totalPrice" to total,
+                    "items" to items.map { (item, qty) ->
+                        mapOf(
+                            "itemId" to (item.firebaseKey ?: item.id),
+                            "name" to item.name,
+                            "price" to item.price,
+                            "qty" to qty
+                        )
+                    },
+                    "status" to "LUNAS"
+                )
+
+                repository.addTransaction(transaction)
+                _cartItems.value = emptyMap()
+                _selectedCustomer.value = null
+                onSuccess()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 }

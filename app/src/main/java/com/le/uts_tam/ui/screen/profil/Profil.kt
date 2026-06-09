@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.le.uts_tam.R
@@ -29,6 +30,7 @@ import com.le.uts_tam.ui.screen.profil.viewmodel.ProfilViewModel
 @Composable
 fun Profil(
     onBack: () -> Unit = {},
+    onLogout: () -> Unit = {},
     isDarkTheme: Boolean = true,
     onThemeToggle: (Boolean) -> Unit = {},
     viewModel: ProfilViewModel = viewModel()
@@ -37,6 +39,11 @@ fun Profil(
     val uiState by viewModel.uiState.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+
+    var showEditDialog by remember { mutableStateOf(false) }
+    var editFieldName by remember { mutableStateOf("") }
+    var editFieldValue by remember { mutableStateOf("") }
+    var editType by remember { mutableStateOf("") } // name, address, phone
 
     Column(
         modifier = Modifier
@@ -114,7 +121,7 @@ fun Profil(
                     
                     Column {
                         Text(
-                            text = uiState.ownerName.uppercase(),
+                            text = uiState.ownerName.uppercase().ifEmpty { "NAMA PEMILIK" },
                             color = MaterialTheme.colorScheme.onSurface,
                             style = MaterialTheme.typography.titleLarge
                         )
@@ -133,7 +140,7 @@ fun Profil(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = uiState.address,
+                                text = uiState.address.ifEmpty { "Belum diatur" },
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.labelSmall
                             )
@@ -147,7 +154,7 @@ fun Profil(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = uiState.phone,
+                                text = uiState.phone.ifEmpty { "-" },
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.labelSmall
                             )
@@ -167,13 +174,41 @@ fun Profil(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 Column {
-                    SettingsItem(icon = Icons.Default.Home, label = "Nama Pemilik", value = uiState.ownerName)
+                    SettingsItem(
+                        icon = Icons.Default.Home, 
+                        label = "Nama Pemilik", 
+                        value = uiState.ownerName.ifEmpty { "Set Name" },
+                        onClick = {
+                            editFieldName = "Nama Pemilik"
+                            editFieldValue = uiState.ownerName
+                            editType = "name"
+                            showEditDialog = true
+                        }
+                    )
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
-                    SettingsItem(icon = Icons.Default.LocationOn, label = "Alamat", value = uiState.address)
+                    SettingsItem(
+                        icon = Icons.Default.LocationOn, 
+                        label = "Alamat", 
+                        value = uiState.address.ifEmpty { "Set Address" },
+                        onClick = {
+                            editFieldName = "Alamat"
+                            editFieldValue = uiState.address
+                            editType = "address"
+                            showEditDialog = true
+                        }
+                    )
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
-                    SettingsItem(icon = Icons.Default.Call, label = "No. Telepon", value = uiState.phone)
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
-                    SettingsItem(icon = Icons.Default.Place, label = "Logo Bengkel", value = "Update")
+                    SettingsItem(
+                        icon = Icons.Default.Call, 
+                        label = "No. Telepon", 
+                        value = uiState.phone.ifEmpty { "Set Phone" },
+                        onClick = {
+                            editFieldName = "No. Telepon"
+                            editFieldValue = uiState.phone
+                            editType = "phone"
+                            showEditDialog = true
+                        }
+                    )
                 }
             }
         }
@@ -233,10 +268,86 @@ fun Profil(
                         )
                     )
                 }
+                
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+                
+                // Logout Button
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onLogout() }
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Logout,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "Keluar Akun",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             }
         }
 
         Spacer(modifier = Modifier.height(40.dp))
+    }
+
+    if (showEditDialog) {
+        Dialog(onDismissRequest = { showEditDialog = false }) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = "Ubah $editFieldName", style = MaterialTheme.typography.titleMedium)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    TextField(
+                        value = editFieldValue,
+                        onValueChange = { editFieldValue = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(onClick = { showEditDialog = false }) {
+                            Text("Batal")
+                        }
+                        Button(onClick = {
+                            when (editType) {
+                                "name" -> viewModel.updateProfile(editFieldValue, uiState.address, uiState.phone)
+                                "address" -> viewModel.updateProfile(uiState.ownerName, editFieldValue, uiState.phone)
+                                "phone" -> viewModel.updateProfile(uiState.ownerName, uiState.address, editFieldValue)
+                            }
+                            showEditDialog = false
+                        }) {
+                            Text("Simpan")
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -257,10 +368,11 @@ fun SectionHeader(icon: ImageVector, title: String) {
 }
 
 @Composable
-fun SettingsItem(icon: ImageVector, label: String, value: String) {
+fun SettingsItem(icon: ImageVector, label: String, value: String, onClick: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { onClick() }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween

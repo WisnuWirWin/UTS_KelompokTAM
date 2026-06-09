@@ -50,6 +50,7 @@ fun Riwayat(
     onRiwayatClick: () -> Unit = {},
     onStokClick: () -> Unit = {},
     onLaporanClick: () -> Unit = {},
+    onTransactionClick: (HistoryItem) -> Unit = {},
     viewModel: RiwayatViewModel = viewModel()
 ) {
     val selectedFilter by viewModel.selectedFilter.collectAsState()
@@ -186,7 +187,7 @@ fun Riwayat(
                     items = filteredRiwayat,
                     key = { it.trxId }
                 ) { item: HistoryItem ->
-                    HistoryCard(item)
+                    HistoryCard(item, onClick = { onTransactionClick(item) })
                 }
             }
         }
@@ -238,9 +239,11 @@ fun TabItem(label: String, isSelected: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-fun HistoryCard(item: HistoryItem) {
+fun HistoryCard(item: HistoryItem, onClick: () -> Unit = {}) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {

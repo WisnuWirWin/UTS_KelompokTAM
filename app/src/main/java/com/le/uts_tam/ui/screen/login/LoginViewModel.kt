@@ -6,11 +6,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.le.uts_tam.data.model.dataclass.Owners
-import com.le.uts_tam.repository.AuthRepository
+import com.le.uts_tam.data.repository.FirebaseRepository
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class LoginViewModel : ViewModel() {
-    private val repository = AuthRepository()
+    private val repository = FirebaseRepository()
 
     var isLoading by mutableStateOf(false)
     var errorMessage by mutableStateOf<String?>(null)
@@ -33,10 +34,11 @@ class LoginViewModel : ViewModel() {
             errorMessage = null
 
             try {
-                val owners = repository.getOwners()
+                // Fetch all owners from Firebase
+                val owners = repository.getOwners().first()
 
                 if (owners.isEmpty()) {
-                    errorMessage = "Gagal mengambil data dari server"
+                    errorMessage = "Belum ada akun terdaftar"
                     return@launch
                 }
 
@@ -52,6 +54,31 @@ class LoginViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 errorMessage = "Error: ${e.message}"
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    fun register(user: String, pass: String, name: String, onSuccess: () -> Unit) {
+        if (user.isEmpty() || pass.isEmpty() || name.isEmpty()) {
+            errorMessage = "Semua field harus diisi"
+            return
+        }
+
+        viewModelScope.launch {
+            isLoading = true
+            try {
+                repository.registerOwner(
+                    Owners(
+                        owner = name,
+                        username = user,
+                        password = pass
+                    )
+                )
+                onSuccess()
+            } catch (e: Exception) {
+                errorMessage = "Gagal daftar: ${e.message}"
             } finally {
                 isLoading = false
             }

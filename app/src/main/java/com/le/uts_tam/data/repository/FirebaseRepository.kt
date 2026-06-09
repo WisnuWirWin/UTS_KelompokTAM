@@ -17,12 +17,15 @@ class FirebaseRepository {
     private val customersRef = database.getReference("customers")
     private val itemsRef = database.getReference("items")
     private val ownerRef = database.getReference("owner")
+    private val transactionsRef = database.getReference("transactions")
 
     // --- Customers ---
     fun getCustomers(): Flow<List<Customers>> = callbackFlow {
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val list = snapshot.children.mapNotNull { it.getValue(Customers::class.java) }
+                val list = snapshot.children.mapNotNull { 
+                    it.getValue(Customers::class.java)?.copy(firebaseKey = it.key) 
+                }
                 trySend(list)
             }
             override fun onCancelled(error: DatabaseError) {
@@ -36,6 +39,14 @@ class FirebaseRepository {
     suspend fun addCustomer(customer: Customers) {
         val key = customersRef.push().key ?: return
         customersRef.child(key).setValue(customer).await()
+    }
+
+    suspend fun updateCustomer(key: String, customer: Customers) {
+        customersRef.child(key).setValue(customer).await()
+    }
+
+    suspend fun deleteCustomer(key: String) {
+        customersRef.child(key).removeValue().await()
     }
 
     // --- Items / Stock ---
@@ -70,12 +81,33 @@ class FirebaseRepository {
     }
 
     // --- Owner / Profile ---
+    fun getOwners(): Flow<List<Owners>> = callbackFlow {
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val list = snapshot.children.mapNotNull {
+                    it.getValue(Owners::class.java)?.copy(firebaseKey = it.key)
+                }
+                trySend(list)
+            }
+            override fun onCancelled(error: DatabaseError) {
+                close(error.toException())
+            }
+        }
+        ownerRef.addValueEventListener(listener)
+        awaitClose { ownerRef.removeEventListener(listener) }
+    }
+
     fun getOwner(): Flow<Owners?> = callbackFlow {
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                // Assuming single owner object or the first one
-                val owner = snapshot.children.firstOrNull()?.getValue(Owners::class.java)
-                    ?: snapshot.getValue(Owners::class.java)
+                // If the root is a list, take the first child, otherwise take value
+                val owner = if (snapshot.hasChildren()) {
+                    snapshot.children.firstOrNull()?.let {
+                        it.getValue(Owners::class.java)?.copy(firebaseKey = it.key)
+                    }
+                } else {
+                    snapshot.getValue(Owners::class.java)
+                }
                 trySend(owner)
             }
             override fun onCancelled(error: DatabaseError) {
@@ -86,8 +118,39 @@ class FirebaseRepository {
         awaitClose { ownerRef.removeEventListener(listener) }
     }
 
-    suspend fun updateOwner(owner: Owners) {
-        // If owner is a single object, we can use setValue
-        ownerRef.setValue(owner).await()
+    suspend fun registerOwner(owner: Owners) {
+        val key = ownerRef.push().key ?: return
+        ownerRef.child(key).setValue(owner).await()
+    }
+
+    suspend fun updateOwner(key: String, owner: Owners) {
+        ownerRef.child(key).setValue(owner).await()
+    }
+
+    suspend fun deleteOwner(key: String) {
+        ownerRef.child(key).removeValue().await()
+    }
+
+    // --- Transactions ---
+    fun getTransactions(): Flow<List<Map<String, Any>>> = callbackFlow {
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val list = snapshot.children.mapNotNull { 
+                    val data = it.value as? Map<String, Any>
+                    data?.plus("firebaseKey" to (it.key ?: ""))
+                }
+                trySend(list)
+            }
+            override fun onCancelled(error: DatabaseError) {
+                close(error.toException())
+            }
+        }
+        transactionsRef.addValueEventListener(listener)
+        awaitClose { transactionsRef.removeEventListener(listener) }
+    }
+
+    suspend fun addTransaction(transaction: Map<String, Any>) {
+        val key = transactionsRef.push().key ?: return
+        transactionsRef.child(key).setValue(transaction).await()
     }
 }

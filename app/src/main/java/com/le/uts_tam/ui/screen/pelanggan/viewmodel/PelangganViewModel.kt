@@ -9,12 +9,18 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 data class PelangganUIState(
+    val firebaseKey: String = "",
     val id: String = "",
     val name: String = "",
     val phone: String = "",
+    val address: String = "",
     val plate: String = "",
-    val motor: String = "",
-    val complaint: String = ""
+    val motorBrand: String = "",
+    val motorModel: String = "",
+    val motorYear: String = "",
+    val motorColor: String = "",
+    val complaint: String = "",
+    val motorDisplay: String = ""
 )
 
 class PelangganViewModel : ViewModel() {
@@ -39,15 +45,31 @@ class PelangganViewModel : ViewModel() {
             repository.getCustomers().collect { customers ->
                 _uiState.value = customers.map { customer ->
                     PelangganUIState(
+                        firebaseKey = customer.firebaseKey ?: "",
                         id = customer.id ?: "",
                         name = customer.name ?: "Tanpa Nama",
                         phone = customer.noHp ?: "-",
-                        plate = "-", // For now, since vehicles might be separate
-                        motor = "-",
-                        complaint = customer.complaint ?: "-"
+                        address = customer.address ?: "",
+                        plate = customer.plateNumber ?: "-",
+                        motorBrand = customer.motorBrand ?: "",
+                        motorModel = customer.motorModel ?: "",
+                        motorYear = customer.motorYear ?: "",
+                        motorColor = customer.motorColor ?: "",
+                        complaint = customer.complaint ?: "-",
+                        motorDisplay = "${customer.motorBrand ?: ""} ${customer.motorModel ?: ""}".trim().ifEmpty { "-" }
                     )
                 }
                 _isLoading.value = false
+            }
+        }
+    }
+
+    fun deleteCustomer(key: String) {
+        viewModelScope.launch {
+            try {
+                repository.deleteCustomer(key)
+            } catch (e: Exception) {
+                _error.value = "Gagal menghapus pelanggan: ${e.message}"
             }
         }
     }

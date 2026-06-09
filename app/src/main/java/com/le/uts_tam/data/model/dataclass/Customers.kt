@@ -7,5 +7,11 @@ data class Customers(
     @SerializedName("name") val name: String? = null,
     @SerializedName("no_hp") val noHp: String? = null,
     @SerializedName("address") val address: String? = null,
-    @SerializedName("complaint") val complaint: String? = null
+    @SerializedName("plate_number") val plateNumber: String? = null,
+    @SerializedName("motor_brand") val motorBrand: String? = null,
+    @SerializedName("motor_model") val motorModel: String? = null,
+    @SerializedName("motor_year") val motorYear: String? = null,
+    @SerializedName("motor_color") val motorColor: String? = null,
+    @SerializedName("complaint") val complaint: String? = null,
+    val firebaseKey: String? = null
 )

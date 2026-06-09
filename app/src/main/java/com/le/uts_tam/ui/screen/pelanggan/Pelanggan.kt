@@ -9,6 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,12 +19,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.le.uts_tam.data.model.dataclass.Customers
 import com.le.uts_tam.ui.screen.pelanggan.viewmodel.PelangganViewModel
 
 @Composable
 fun Pelanggan(
     onBack: () -> Unit = {},
     onAddPelanggan: () -> Unit = {},
+    onEditPelanggan: (Customers) -> Unit = {},
     viewModel: PelangganViewModel = viewModel(),
 ) {
     val scrollState = rememberScrollState()
@@ -132,10 +136,30 @@ fun Pelanggan(
                     plate = customer.plate,
                     name = customer.name,
                     phone = customer.phone,
-                    motor = customer.motor,
+                    motor = customer.motorDisplay,
                     history = listOf(
                         ServiceHistory(customer.complaint, "Hari ini", "-"),
                     ),
+                    onEdit = {
+                        onEditPelanggan(
+                            Customers(
+                                firebaseKey = customer.firebaseKey,
+                                id = customer.id,
+                                name = customer.name,
+                                noHp = customer.phone,
+                                address = customer.address,
+                                plateNumber = customer.plate,
+                                motorBrand = customer.motorBrand,
+                                motorModel = customer.motorModel,
+                                motorYear = customer.motorYear,
+                                motorColor = customer.motorColor,
+                                complaint = customer.complaint
+                            )
+                        )
+                    },
+                    onDelete = {
+                        viewModel.deleteCustomer(customer.firebaseKey)
+                    }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -154,6 +178,8 @@ fun CustomerCard(
     phone: String,
     motor: String,
     history: List<ServiceHistory>,
+    onEdit: () -> Unit = {},
+    onDelete: () -> Unit = {},
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -177,7 +203,7 @@ fun CustomerCard(
                 
                 Spacer(modifier = Modifier.width(16.dp))
                 
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = name, 
                         color = MaterialTheme.colorScheme.onSurface, 
@@ -202,6 +228,25 @@ fun CustomerCard(
                         color = MaterialTheme.colorScheme.secondary, 
                         style = MaterialTheme.typography.labelSmall,
                     )
+                }
+
+                Row {
+                    IconButton(onClick = onEdit, modifier = Modifier.size(32.dp)) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = "Edit",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Delete",
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
 

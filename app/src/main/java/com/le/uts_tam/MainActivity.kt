@@ -32,6 +32,8 @@ class MainActivity : ComponentActivity() {
             UTS_TAMTheme(darkTheme = isDarkTheme) {
                 var currentScreen by remember { mutableStateOf("login") }
                 var selectedItemForEdit by remember { mutableStateOf<com.le.uts_tam.data.model.dataclass.Items?>(null) }
+                var selectedCustomerForEdit by remember { mutableStateOf<com.le.uts_tam.data.model.dataclass.Customers?>(null) }
+                var selectedTransactionForNota by remember { mutableStateOf<com.le.uts_tam.ui.screen.riwayat.HistoryItem?>(null) }
 
                 when (currentScreen) {
                     "login" -> Login(onLoginSuccess = { currentScreen = "dashboard" })
@@ -45,34 +47,59 @@ class MainActivity : ComponentActivity() {
                     )
                     "pelanggan" -> Pelanggan(
                         onBack = { currentScreen = "dashboard" },
-                        onAddPelanggan = { currentScreen = "add_pelanggan" }
+                        onAddPelanggan = {
+                            selectedCustomerForEdit = null
+                            currentScreen = "add_pelanggan"
+                        },
+                        onEditPelanggan = { customer ->
+                            selectedCustomerForEdit = customer
+                            currentScreen = "add_pelanggan"
+                        }
                     )
-                    "add_pelanggan" -> AddPelanggan(
-                        onBack = { currentScreen = "pelanggan" },
-                        onConfirm = { currentScreen = "pelanggan" }
-                    )
+                    "add_pelanggan" -> {
+                        val addPelangganViewModel: com.le.uts_tam.ui.screen.addpelanggan.AddPelangganViewModel = viewModel()
+                        LaunchedEffect(selectedCustomerForEdit) {
+                            addPelangganViewModel.setInitialData(selectedCustomerForEdit)
+                        }
+                        AddPelanggan(
+                            onBack = { currentScreen = "pelanggan" },
+                            onConfirm = { currentScreen = "pelanggan" },
+                            viewModel = addPelangganViewModel
+                        )
+                    }
                     "profil" -> Profil(
                         onBack = { currentScreen = "dashboard" },
+                        onLogout = { currentScreen = "login" },
                         isDarkTheme = isDarkTheme,
                         onThemeToggle = { isDarkTheme = it }
                     )
                     "kasir" -> Kasir(
                         onBack = { currentScreen = "dashboard" },
-                        onPrintNota = { currentScreen = "nota_digital" }
+                        onPrintNota = {
+                            // This would ideally set the last transaction
+                            currentScreen = "riwayat"
+                        }
                     )
-                    "nota_digital" -> NotaDigital(onBack = { currentScreen = "kasir" })
+                    "nota_digital" -> NotaDigital(
+                        onBack = { currentScreen = "riwayat" },
+                        transaction = selectedTransactionForNota
+                    )
                     "riwayat" -> Riwayat(
                         onBack = { currentScreen = "dashboard" },
                         onKasirClick = { currentScreen = "kasir" },
                         onRiwayatClick = { currentScreen = "riwayat" },
                         onStokClick = { currentScreen = "inventaris" },
-                        onLaporanClick = { currentScreen = "laporan" }
+                        onLaporanClick = { currentScreen = "laporan" },
+                        onTransactionClick = { transaction ->
+                            selectedTransactionForNota = transaction
+                            currentScreen = "nota_digital"
+                        }
                     )
                     "inventaris" -> Inventaris(
                         onBack = { currentScreen = "dashboard" },
-                        onAddItem = { 
+                        onAddItem = {
                             selectedItemForEdit = null
-                            currentScreen = "edit_stock" 
+                            currentScreen = "edit_stock"
                         },
                         onEditItem = { item ->
                             selectedItemForEdit = item

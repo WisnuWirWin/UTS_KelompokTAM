@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -30,7 +31,10 @@ fun Kasir(
     viewModel: KasirViewModel = viewModel()
 ) {
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val customerSearchQuery by viewModel.customerSearchQuery.collectAsState()
     val filteredItems by viewModel.filteredItems.collectAsState()
+    val filteredCustomers by viewModel.filteredCustomers.collectAsState()
+    val selectedCustomer by viewModel.selectedCustomer.collectAsState()
     val cartItems by viewModel.cartItems.collectAsState()
     val totalBayar by viewModel.totalBayar.collectAsState()
 
@@ -55,7 +59,7 @@ fun Kasir(
                     }
                     Text("KASIR", color = Color.White, fontSize = 25.sp, fontWeight = FontWeight.Bold)
                 }
-                Text("TRX-20250422-013", color = Color(0xFFFF5722), fontSize = 12.sp)
+                Text("TRX-${System.currentTimeMillis() / 100000}", color = Color(0xFFFF5722), fontSize = 12.sp)
             }
             Box(modifier = Modifier.fillMaxWidth().height(2.dp).background(
                 Brush.horizontalGradient(listOf(Color.Red, Color.Yellow, Color.Transparent))
@@ -63,6 +67,79 @@ fun Kasir(
 
             Spacer(modifier = Modifier.height(20.dp))
 
+            // Customer Selector
+            Text("PELANGGAN", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            if (selectedCustomer == null) {
+                OutlinedTextField(
+                    value = customerSearchQuery,
+                    onValueChange = { viewModel.onCustomerSearchChange(it) },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Cari Pelanggan...", color = Color.Gray) },
+                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFFFF5722)) },
+                    shape = RoundedCornerShape(16.dp),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color(0xFF1E1E1E),
+                        unfocusedContainerColor = Color(0xFF1E1E1E),
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = Color(0xFFFF5722),
+                        unfocusedBorderColor = Color.Transparent
+                    )
+                )
+                if (customerSearchQuery.isNotEmpty() && filteredCustomers.isNotEmpty()) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF262626)),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column {
+                            filteredCustomers.take(3).forEach { customer ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { viewModel.selectCustomer(customer) }
+                                        .padding(12.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(customer.name ?: "", color = Color.White)
+                                    Text(customer.plateNumber ?: "-", color = Color.Gray)
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp).fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFFFF5722))
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(selectedCustomer?.name ?: "", color = Color.White, fontWeight = FontWeight.Bold)
+                                Text(selectedCustomer?.plateNumber ?: "-", color = Color.Gray, fontSize = 12.sp)
+                            }
+                        }
+                        IconButton(onClick = { viewModel.selectCustomer(null) }) {
+                            Icon(Icons.Default.Close, contentDescription = null, tint = Color.Red)
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Item Search
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.onSearchQueryChange(it) },
@@ -162,7 +239,11 @@ fun Kasir(
                         Text("RP ${"%,d".format(totalBayar)}", color = Color(0xFFFFEB3B), fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
                     }
                     Button(
-                        onClick = { onPrintNota() },
+                        onClick = { 
+                            viewModel.processPayment {
+                                onPrintNota()
+                            }
+                        },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
                         shape = RoundedCornerShape(12.dp),
                         enabled = cartItems.isNotEmpty()
