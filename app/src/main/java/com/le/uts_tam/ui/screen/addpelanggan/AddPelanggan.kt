@@ -19,10 +19,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.le.uts_tam.ui.theme.*
 
 @Composable
-fun AddPelanggan(onBack: () -> Unit = {}, onConfirm: () -> Unit = {}) {
+fun AddPelanggan(
+    onBack: () -> Unit = {},
+    onConfirm: () -> Unit = {},
+    viewModel: AddPelangganViewModel = viewModel()
+) {
     val scrollState = rememberScrollState()
 
     var namaLengkap by remember { mutableStateOf("Budi Santoso") }
@@ -343,7 +348,15 @@ fun AddPelanggan(onBack: () -> Unit = {}, onConfirm: () -> Unit = {}) {
                 .padding(20.dp)
         ) {
             Button(
-                onClick = onConfirm,
+                onClick = {
+                    viewModel.saveCustomer(
+                        name = namaLengkap,
+                        phone = nomorTelepon,
+                        address = alamat,
+                        complaint = catatan,
+                        onSuccess = onConfirm
+                    )
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),

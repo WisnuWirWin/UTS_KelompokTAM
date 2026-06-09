@@ -6,11 +6,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.le.uts_tam.data.model.dataclass.Items
-import com.le.uts_tam.repository.DashboardRepository
+import com.le.uts_tam.data.repository.FirebaseRepository
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 class DashboardViewModel : ViewModel() {
-    private val repository = DashboardRepository()
+    private val repository = FirebaseRepository()
 
     var ownerName by mutableStateOf("...")
     var profileImageUrl by mutableStateOf("")
@@ -21,31 +22,32 @@ class DashboardViewModel : ViewModel() {
     var isLoading by mutableStateOf(false)
 
     init {
-        loadDashboardData()
+        observeDashboardData()
     }
 
-    fun loadDashboardData() {
+    private fun observeDashboardData() {
         viewModelScope.launch {
             isLoading = true
-            try {
-                val owners = repository.getOwners()
-                if (owners.isNotEmpty()) {
-                    ownerName = owners[0].owner ?: "Owner"
-                    profileImageUrl = owners[0].imageUrl ?: ""
-                }
-
-                val items = repository.getItems()
+            combine(
+                repository.getOwner(),
+                repository.getItems(),
+                repository.getCustomers()
+            ) { owner, items, customers ->
+                ownerName = owner?.owner ?: "Owner"
+                profileImageUrl = owner?.imageUrl ?: ""
+                
                 totalItems = items.size
                 lowStockList = items.filter { (it.stock?.toIntOrNull() ?: 0) < 3 }
                 lowStockItemsCount = lowStockList.size
-
-                val customers = repository.getCustomers()
+                
                 totalCustomers = customers.size
-
-            } catch (e: Exception) {
-            } finally {
+                
                 isLoading = false
-            }
+            }.collect {}
         }
+    }
+
+    fun loadDashboardData() {
+        observeDashboardData()
     }
 }

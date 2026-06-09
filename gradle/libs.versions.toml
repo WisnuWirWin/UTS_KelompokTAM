@@ -6,9 +6,12 @@ junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.6"
 activityCompose = "1.9.3"
-kotlin = "2.2.10"
+kotlin = "2.0.21"
 composeBom = "2024.04.01"
 core-splashscreen = "1.2.0"
+google-services = "4.4.2"
+firebase-bom = "33.5.1"
+firebaseDatabase = "22.0.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -29,8 +32,14 @@ androidx-compose-material3 = { group = "androidx.compose.material3", name = "mat
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "core-splashscreen" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version = "2.7.0" }
+kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version = "1.11.0" }
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
+firebase-database = { group = "com.google.firebase", name = "firebase-database-ktx" }
+google-firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version = "2.0.21-1.0.27" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }

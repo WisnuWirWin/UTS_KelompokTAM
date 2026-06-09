@@ -3,11 +3,12 @@ package com.le.uts_tam.ui.screen.inventaris
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.le.uts_tam.data.model.dataclass.Items
-import com.le.uts_tam.data.remote.retrofit.RetrofitClient
+import com.le.uts_tam.data.repository.FirebaseRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class InventarisViewModel : ViewModel() {
+    private val repository = FirebaseRepository()
     private val _items = MutableStateFlow<List<Items>>(emptyList())
     
     private val _searchQuery = MutableStateFlow("")
@@ -51,12 +52,8 @@ class InventarisViewModel : ViewModel() {
     fun fetchItems() {
         viewModelScope.launch {
             _isLoading.value = true
-            try {
-                val response = RetrofitClient.instance.getItems()
-                _items.value = response.filterNotNull()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            } finally {
+            repository.getItems().collect { items ->
+                _items.value = items
                 _isLoading.value = false
             }
         }

@@ -3,7 +3,7 @@ package com.le.uts_tam.ui.screen.profil.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.le.uts_tam.data.model.dataclass.Owners
-import com.le.uts_tam.data.remote.retrofit.RetrofitClient
+import com.le.uts_tam.data.repository.FirebaseRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +18,8 @@ data class ProfilUIState(
 )
 
 class ProfilViewModel : ViewModel() {
+    private val repository = FirebaseRepository()
+    
     private val _uiState = MutableStateFlow(ProfilUIState())
     val uiState: StateFlow<ProfilUIState> = _uiState.asStateFlow()
 
@@ -28,17 +30,13 @@ class ProfilViewModel : ViewModel() {
     val error: StateFlow<String?> = _error.asStateFlow()
 
     init {
-        fetchProfilData()
+        observeProfilData()
     }
 
-    fun fetchProfilData() {
+    private fun observeProfilData() {
         viewModelScope.launch {
             _isLoading.value = true
-            _error.value = null
-            try {
-                val response: List<Owners?> = RetrofitClient.instance.getOwners() ?: emptyList()
-                val owner = response.filterNotNull().firstOrNull()
-                
+            repository.getOwner().collect { owner ->
                 if (owner != null) {
                     _uiState.value = ProfilUIState(
                         ownerName = owner.owner ?: "BENGKEL PAK ARLI",
@@ -48,23 +46,38 @@ class ProfilViewModel : ViewModel() {
                         imageUrl = owner.imageUrl ?: ""
                     )
                 }
-            } catch (e: Exception) {
-                _error.value = e.message ?: "Gagal mengambil data profil"
-            } finally {
                 _isLoading.value = false
             }
         }
     }
 
     fun updateOwnerName(newName: String) {
-        _uiState.value = _uiState.value.copy(ownerName = newName)
+        saveChanges(_uiState.value.copy(ownerName = newName))
     }
 
     fun updateAddress(newAddress: String) {
-        _uiState.value = _uiState.value.copy(address = newAddress)
+        saveChanges(_uiState.value.copy(address = newAddress))
     }
 
     fun updatePhone(newPhone: String) {
-        _uiState.value = _uiState.value.copy(phone = newPhone)
+        saveChanges(_uiState.value.copy(phone = newPhone))
+    }
+
+    private fun saveChanges(newState: ProfilUIState) {
+        _uiState.value = newState
+        viewModelScope.launch {
+            try {
+                repository.updateOwner(
+                    Owners(
+                        owner = newState.ownerName,
+                        address = newState.address,
+                        noHp = newState.phone,
+                        imageUrl = newState.imageUrl
+                    )
+                )
+            } catch (e: Exception) {
+                _error.value = "Gagal menyimpan perubahan: ${e.message}"
+            }
+        }
     }
 }

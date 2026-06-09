@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -52,6 +54,7 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.coil.compose)
+    implementation(libs.google.firebase.database)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -61,4 +64,11 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.database)
+    implementation(libs.kotlinx.coroutines.play.services)
 }

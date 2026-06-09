@@ -2,9 +2,7 @@ package com.le.uts_tam.ui.screen.pelanggan.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.le.uts_tam.data.model.dataclass.Customers
-import com.le.uts_tam.data.model.dataclass.Vehicles
-import com.le.uts_tam.data.remote.retrofit.RetrofitClient
+import com.le.uts_tam.data.repository.FirebaseRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,6 +18,8 @@ data class PelangganUIState(
 )
 
 class PelangganViewModel : ViewModel() {
+    private val repository = FirebaseRepository()
+    
     private val _uiState = MutableStateFlow<List<PelangganUIState>>(emptyList())
     val uiState: StateFlow<List<PelangganUIState>> = _uiState.asStateFlow()
 
@@ -30,36 +30,29 @@ class PelangganViewModel : ViewModel() {
     val error: StateFlow<String?> = _error.asStateFlow()
 
     init {
-        fetchData()
+        observeCustomers()
     }
 
-    fun fetchData() {
+    private fun observeCustomers() {
         viewModelScope.launch {
             _isLoading.value = true
-            _error.value = null
-            try {
-                val customersResponse: List<Customers?> = RetrofitClient.instance.getCustomers() ?: emptyList()
-                val vehiclesResponse: List<Vehicles?> = RetrofitClient.instance.getVehicles() ?: emptyList()
-
-                val combinedData = customersResponse.filterNotNull().map { customer ->
-                    val vehicle = vehiclesResponse.filterNotNull().find { it.idCustomers == customer.id }
-                    
+            repository.getCustomers().collect { customers ->
+                _uiState.value = customers.map { customer ->
                     PelangganUIState(
                         id = customer.id ?: "",
                         name = customer.name ?: "Tanpa Nama",
                         phone = customer.noHp ?: "-",
-                        plate = vehicle?.numberPlate ?: "-",
-                        motor = "${vehicle?.brand ?: ""} ${vehicle?.type ?: ""} ${vehicle?.vehicleYear ?: ""}".trim().ifEmpty { "-" },
+                        plate = "-", // For now, since vehicles might be separate
+                        motor = "-",
                         complaint = customer.complaint ?: "-"
                     )
                 }
-
-                _uiState.value = combinedData
-            } catch (e: Exception) {
-                _error.value = e.message ?: "Terjadi kesalahan saat mengambil data"
-            } finally {
                 _isLoading.value = false
             }
         }
+    }
+
+    fun fetchData() {
+        observeCustomers()
     }
 }

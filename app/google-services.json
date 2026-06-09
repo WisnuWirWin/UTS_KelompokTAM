@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "828836596389",
+    "project_id": "uas-tam-6107e",
+    "storage_bucket": "uas-tam-6107e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:828836596389:android:dfd256dabc4811fd6c5b4c",
+        "android_client_info": {
+          "package_name": "com.le.uts_tam"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuqeO_laYAz-JHFDTLGtPTvqYKVr3Q9PE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
