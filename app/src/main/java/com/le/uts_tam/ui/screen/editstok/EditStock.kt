@@ -66,8 +66,9 @@ fun EditStock(
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
+            val isEditMode = viewModel.firebaseKey != null
             Text(
-                "TAMBAH BARANG",
+                if (isEditMode) "EDIT BARANG" else "TAMBAH BARANG",
                 color = Color.White,
                 fontSize = 24.sp,
                 fontFamily = customFontFamily,
@@ -209,7 +210,12 @@ fun EditStock(
             shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6D00))
         ) {
-            Text("SIMPAN PERUBAHAN", fontFamily = customFontFamily, fontWeight = FontWeight.Bold)
+            val isEditMode = viewModel.firebaseKey != null
+            Text(
+                if (isEditMode) "SIMPAN PERUBAHAN" else "TAMBAH KE STOK", 
+                fontFamily = customFontFamily, 
+                fontWeight = FontWeight.Bold
+            )
         }
 
         Spacer(modifier = Modifier.height(40.dp))

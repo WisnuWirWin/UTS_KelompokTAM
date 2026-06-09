@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
 class FirebaseRepository {
-    private val database = FirebaseDatabase.getInstance()
+    private val database = FirebaseDatabase.getInstance("https://uas-tam-6107e-default-rtdb.asia-southeast1.firebasedatabase.app")
     private val customersRef = database.getReference("customers")
     private val itemsRef = database.getReference("items")
     private val ownerRef = database.getReference("owner")
@@ -42,7 +42,10 @@ class FirebaseRepository {
     fun getItems(): Flow<List<Items>> = callbackFlow {
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val list = snapshot.children.mapNotNull { it.getValue(Items::class.java) }
+                val list = snapshot.children.mapNotNull { 
+                    val item = it.getValue(Items::class.java)
+                    item?.copy(firebaseKey = it.key) 
+                }
                 trySend(list)
             }
             override fun onCancelled(error: DatabaseError) {
@@ -56,6 +59,14 @@ class FirebaseRepository {
     suspend fun addItem(item: Items) {
         val key = itemsRef.push().key ?: return
         itemsRef.child(key).setValue(item).await()
+    }
+
+    suspend fun updateItem(key: String, item: Items) {
+        itemsRef.child(key).setValue(item).await()
+    }
+
+    suspend fun deleteItem(key: String) {
+        itemsRef.child(key).removeValue().await()
     }
 
     // --- Owner / Profile ---

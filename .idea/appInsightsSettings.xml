@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.le.uts_tam" />
+                  <option name="mobileSdkAppId" value="1:828836596389:android:dfd256dabc4811fd6c5b4c" />
+                  <option name="projectId" value="uas-tam-6107e" />
+                  <option name="projectNumber" value="828836596389" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

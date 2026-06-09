@@ -38,38 +38,6 @@ fun Profil(
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
 
-    var showEditDialog by remember { mutableStateOf(false) }
-    var editLabel by remember { mutableStateOf("") }
-    var editValue by remember { mutableStateOf("") }
-    var onConfirmEdit by remember { mutableStateOf<(String) -> Unit>({}) }
-
-    if (showEditDialog) {
-        AlertDialog(
-            onDismissRequest = { showEditDialog = false },
-            title = { Text("Edit $editLabel") },
-            text = {
-                TextField(
-                    value = editValue,
-                    onValueChange = { editValue = it },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            },
-            confirmButton = {
-                Button(onClick = {
-                    onConfirmEdit(editValue)
-                    showEditDialog = false
-                }) {
-                    Text("Simpan")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showEditDialog = false }) {
-                    Text("Batal")
-                }
-            }
-        )
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -199,41 +167,11 @@ fun Profil(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 Column {
-                    SettingsItem(
-                        icon = Icons.Default.Home,
-                        label = "Nama Pemilik",
-                        value = uiState.ownerName,
-                        onClick = {
-                            editLabel = "Nama Pemilik"
-                            editValue = uiState.ownerName
-                            onConfirmEdit = { viewModel.updateOwnerName(it) }
-                            showEditDialog = true
-                        }
-                    )
+                    SettingsItem(icon = Icons.Default.Home, label = "Nama Pemilik", value = uiState.ownerName)
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
-                    SettingsItem(
-                        icon = Icons.Default.LocationOn,
-                        label = "Alamat",
-                        value = uiState.address,
-                        onClick = {
-                            editLabel = "Alamat"
-                            editValue = uiState.address
-                            onConfirmEdit = { viewModel.updateAddress(it) }
-                            showEditDialog = true
-                        }
-                    )
+                    SettingsItem(icon = Icons.Default.LocationOn, label = "Alamat", value = uiState.address)
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
-                    SettingsItem(
-                        icon = Icons.Default.Call,
-                        label = "No. Telepon",
-                        value = uiState.phone,
-                        onClick = {
-                            editLabel = "No. Telepon"
-                            editValue = uiState.phone
-                            onConfirmEdit = { viewModel.updatePhone(it) }
-                            showEditDialog = true
-                        }
-                    )
+                    SettingsItem(icon = Icons.Default.Call, label = "No. Telepon", value = uiState.phone)
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
                     SettingsItem(icon = Icons.Default.Place, label = "Logo Bengkel", value = "Update")
                 }
@@ -254,7 +192,7 @@ fun Profil(
                 SettingsItem(icon = Icons.AutoMirrored.Filled.List, label = "Printer Bluetooth", value = "Tidak terhubung")
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
 
-                // Tema Item Toggle
+                // Theme Toggle Item
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -319,11 +257,10 @@ fun SectionHeader(icon: ImageVector, title: String) {
 }
 
 @Composable
-fun SettingsItem(icon: ImageVector, label: String, value: String, onClick: () -> Unit = {}) {
+fun SettingsItem(icon: ImageVector, label: String, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -349,7 +286,8 @@ fun SettingsItem(icon: ImageVector, label: String, value: String, onClick: () ->
             Text(
                 text = value,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.widthIn(max = 150.dp)
             )
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,

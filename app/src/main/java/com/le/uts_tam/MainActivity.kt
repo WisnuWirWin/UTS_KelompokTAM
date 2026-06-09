@@ -17,6 +17,8 @@ import com.le.uts_tam.ui.screen.nota.NotaDigital
 import com.le.uts_tam.ui.screen.pelanggan.Pelanggan
 import com.le.uts_tam.ui.screen.profil.Profil
 import com.le.uts_tam.ui.screen.riwayat.Riwayat
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.le.uts_tam.ui.screen.editstok.EditStockViewModel
 import com.le.uts_tam.ui.theme.UTS_TAMTheme
 
 class MainActivity : ComponentActivity() {
@@ -29,6 +31,7 @@ class MainActivity : ComponentActivity() {
 
             UTS_TAMTheme(darkTheme = isDarkTheme) {
                 var currentScreen by remember { mutableStateOf("login") }
+                var selectedItemForEdit by remember { mutableStateOf<com.le.uts_tam.data.model.dataclass.Items?>(null) }
 
                 when (currentScreen) {
                     "login" -> Login(onLoginSuccess = { currentScreen = "dashboard" })
@@ -67,13 +70,29 @@ class MainActivity : ComponentActivity() {
                     )
                     "inventaris" -> Inventaris(
                         onBack = { currentScreen = "dashboard" },
-                        onAddItem = { currentScreen = "edit_stock" },
+                        onAddItem = { 
+                            selectedItemForEdit = null
+                            currentScreen = "edit_stock" 
+                        },
+                        onEditItem = { item ->
+                            selectedItemForEdit = item
+                            currentScreen = "edit_stock"
+                        },
                         onKasirClick = { currentScreen = "kasir" },
                         onRiwayatClick = { currentScreen = "riwayat" },
                         onStokClick = { currentScreen = "inventaris" },
                         onLaporanClick = { currentScreen = "laporan" }
                     )
-                    "edit_stock" -> EditStock(onBack = { currentScreen = "inventaris" })
+                    "edit_stock" -> {
+                        val editViewModel: EditStockViewModel = viewModel()
+                        LaunchedEffect(selectedItemForEdit) {
+                            editViewModel.setInitialData(selectedItemForEdit)
+                        }
+                        EditStock(
+                            onBack = { currentScreen = "inventaris" },
+                            viewModel = editViewModel
+                        )
+                    }
                     "laporan" -> Laporan(
                         onBack = { currentScreen = "dashboard" },
                         onKasirClick = { currentScreen = "kasir" },

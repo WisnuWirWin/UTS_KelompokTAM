@@ -49,11 +49,28 @@ class InventarisViewModel : ViewModel() {
         _selectedCategory.value = newCategory
     }
 
+    fun deleteItem(item: Items) {
+        viewModelScope.launch {
+            item.firebaseKey?.let { key ->
+                repository.deleteItem(key)
+            }
+        }
+    }
+
     fun fetchItems() {
         viewModelScope.launch {
             _isLoading.value = true
-            repository.getItems().collect { items ->
-                _items.value = items
+            try {
+                repository.getItems()
+                    .catch { e ->
+                        _isLoading.value = false
+                        // You could add an error state flow here if needed
+                    }
+                    .collect { items ->
+                        _items.value = items
+                        _isLoading.value = false
+                    }
+            } catch (e: Exception) {
                 _isLoading.value = false
             }
         }

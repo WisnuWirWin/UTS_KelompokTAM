@@ -33,6 +33,7 @@ import com.le.uts_tam.data.model.dataclass.Items
 fun Inventaris(
     onBack: () -> Unit = {},
     onAddItem: () -> Unit = {},
+    onEditItem: (Items) -> Unit = {},
     onKasirClick: () -> Unit = {},
     onRiwayatClick: () -> Unit = {},
     onStokClick: () -> Unit = {},
@@ -208,7 +209,11 @@ fun Inventaris(
                         contentPadding = PaddingValues(bottom = 30.dp)
                     ) {
                         items(items) { item ->
-                            InventoryCard(item)
+                            InventoryCard(
+                                item = item,
+                                onEdit = { onEditItem(item) },
+                                onDelete = { viewModel.deleteItem(item) }
+                            )
                         }
                     }
                 }
@@ -240,9 +245,13 @@ fun QuickActionButton(icon: ImageVector, label: String) {
 }
 
 @Composable
-fun InventoryCard(item: Items) {
+fun InventoryCard(
+    item: Items,
+    onEdit: () -> Unit = {},
+    onDelete: () -> Unit = {}
+) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable { onEdit() },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
@@ -282,6 +291,15 @@ fun InventoryCard(item: Items) {
             }
 
             Column(horizontalAlignment = Alignment.End) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onEdit, modifier = Modifier.size(32.dp)) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edit", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                    }
+                    IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
+                        Icon(Icons.Default.Close, contentDescription = "Delete", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))
+                    }
+                }
+
                 Text(
                     text = "Rp ${item.price ?: "0"}",
                     color = MaterialTheme.colorScheme.secondary,

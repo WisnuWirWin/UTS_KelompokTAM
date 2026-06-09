@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 class EditStockViewModel : ViewModel() {
     private val repository = FirebaseRepository()
 
+    var firebaseKey by mutableStateOf<String?>(null)
     var idItems by mutableStateOf("")
     var name by mutableStateOf("")
     var price by mutableStateOf("")
@@ -23,11 +24,26 @@ class EditStockViewModel : ViewModel() {
     var supplier by mutableStateOf("")
 
     fun setInitialData(item: Items?) {
-        item?.let {
-            idItems = it.id ?: ""
-            name = it.name ?: ""
-            price = it.price ?: ""
-            stock = it.stock ?: ""
+        if (item != null) {
+            firebaseKey = item.firebaseKey
+            idItems = item.id ?: ""
+            name = item.name ?: ""
+            price = item.price ?: ""
+            stock = item.stock ?: ""
+            
+            // Other fields if they exist in Items model
+            // But they seem to be local state in VM for now
+        } else {
+            // Reset fields for new item
+            firebaseKey = null
+            idItems = ""
+            name = ""
+            price = ""
+            stock = ""
+            hargaBeli = ""
+            minStok = ""
+            kategori = "Semua"
+            supplier = ""
         }
     }
 
@@ -40,7 +56,13 @@ class EditStockViewModel : ViewModel() {
                     price = price,
                     stock = stock
                 )
-                repository.addItem(item)
+                
+                firebaseKey?.let { key ->
+                    repository.updateItem(key, item)
+                } ?: run {
+                    repository.addItem(item)
+                }
+
                 onSuccess()
             } catch (e: Exception) {
                 // Handle error
