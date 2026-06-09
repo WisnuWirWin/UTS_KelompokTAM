@@ -35,6 +35,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun Laporan(
@@ -42,9 +43,12 @@ fun Laporan(
     onKasirClick: () -> Unit = {},
     onRiwayatClick: () -> Unit = {},
     onStokClick: () -> Unit = {},
-    onLaporanClick: () -> Unit = {}
+    onLaporanClick: () -> Unit = {},
+    viewModel: LaporanViewModel = viewModel()
 ) {
-    var selectedTab by remember { mutableStateOf("HARIAN") }
+    val reportState by viewModel.reportData.collectAsState()
+    val selectedTab by viewModel.selectedTab.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -140,7 +144,7 @@ fun Laporan(
                     .background(MaterialTheme.colorScheme.surface)
                     .padding(4.dp)
             ) {
-                val tabs = listOf("HARIAN", "MINGGUAN", "BULANAN")
+                val tabs = listOf("HARIAN", "MINGGUAN", "BULAN INI")
                 tabs.forEach { tab ->
                     val isSelected = selectedTab == tab
                     Box(
@@ -148,7 +152,7 @@ fun Laporan(
                             .weight(1f)
                             .clip(RoundedCornerShape(8.dp))
                             .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
-                            .clickable { selectedTab = tab }
+                            .clickable { viewModel.setSelectedTab(tab) }
                             .padding(vertical = 12.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -163,11 +167,12 @@ fun Laporan(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            AnimatedContent(
-                targetState = selectedTab,
-                label = "ReportContent"
-            ) { targetTab ->
-                Column {
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                Column(modifier = Modifier.weight(1f)) {
                     Surface(
                         color = MaterialTheme.colorScheme.surface,
                         shape = RoundedCornerShape(24.dp),
@@ -180,7 +185,7 @@ fun Laporan(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "PENDAPATAN $targetTab",
+                                    text = "PENDAPATAN $selectedTab",
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     style = MaterialTheme.typography.labelSmall,
                                     letterSpacing = 1.sp
@@ -194,24 +199,12 @@ fun Laporan(
                             }
                             
                             Spacer(modifier = Modifier.height(24.dp))
-                            
-                            val chartData = when(targetTab) {
-                                "HARIAN" -> listOf(4.2f, 3.1f, 1.8f, 5.1f, 2.4f, 3.2f, 4.75f)
-                                "MINGGUAN" -> listOf(15f, 22f, 18f, 25f, 20f, 28f, 32f)
-                                else -> listOf(120f, 145f, 130f, 160f, 150f, 175f, 180f)
-                            }
-                            
-                            val labels = when(targetTab) {
-                                "HARIAN" -> listOf("16", "17", "18", "19", "20", "21", "22")
-                                "MINGGUAN" -> listOf("W1", "W2", "W3", "W4", "W5", "W6", "W7")
-                                else -> listOf("JAN", "FEB", "MAR", "APR", "MEI", "JUN", "JUL")
-                            }
 
                             InteractiveBarChart(
-                                data = chartData,
-                                labels = labels,
-                                prefix = if (targetTab == "HARIAN") "Rp " else "Rp ",
-                                suffix = if (targetTab == "HARIAN") "jt" else "jt",
+                                data = reportState.chartData,
+                                labels = reportState.labels,
+                                prefix = "Rp ",
+                                suffix = "jt",
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(180.dp)
@@ -232,31 +225,14 @@ fun Laporan(
                         Text(text = "LABA BERSIH", modifier = Modifier.weight(1.5f), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                     }
 
-                    val reportItems = when(targetTab) {
-                        "HARIAN" -> listOf(
-                            ReportItem("22 Apr", "Rp 4.750.000", "Rp 1.820.000", true),
-                            ReportItem("21 Apr", "Rp 3.200.000", "Rp 1.150.000"),
-                            ReportItem("20 Apr", "Rp 1.800.000", "Rp 620.000"),
-                            ReportItem("19 Apr", "Rp 5.100.000", "Rp 2.040.000"),
-                            ReportItem("18 Apr", "Rp 2.400.000", "Rp 890.000")
-                        )
-                        else -> listOf(
-                            ReportItem("Apr 2025", "Rp 68.500.000", "Rp 24.150.000", true),
-                            ReportItem("Mar 2025", "Rp 54.200.000", "Rp 19.420.000"),
-                            ReportItem("Feb 2025", "Rp 48.100.000", "Rp 16.890.000"),
-                            ReportItem("Jan 2025", "Rp 61.300.000", "Rp 21.540.000"),
-                            ReportItem("Des 2024", "Rp 57.800.000", "Rp 20.210.000")
-                        )
-                    }
-
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(250.dp)
+                            .weight(1f)
                             .clip(RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
                             .background(MaterialTheme.colorScheme.surface)
                     ) {
-                        items(reportItems) { item ->
+                        items(reportState.items) { item ->
                             ReportRow(item)
                             HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), thickness = 0.5.dp)
                         }
@@ -264,7 +240,7 @@ fun Laporan(
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Surface(
                 color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.1f),
@@ -283,7 +259,7 @@ fun Laporan(
                         style = MaterialTheme.typography.labelMedium
                     )
                     Text(
-                        text = "RP 68.500.000",
+                        text = reportState.totalEstimasi.uppercase(),
                         color = MaterialTheme.colorScheme.tertiary,
                         style = MaterialTheme.typography.headlineMedium
                     )
@@ -335,7 +311,7 @@ fun InteractiveBarChart(
     val tooltipText = MaterialTheme.colorScheme.inverseOnSurface
 
     var selectedBarIndex by remember { mutableStateOf(-1) }
-    val maxVal = data.maxOrNull() ?: 1f
+    val maxVal = if (data.isEmpty()) 1f else data.maxOrNull() ?: 1f
 
     var animationTriggered by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { animationTriggered = true }
@@ -350,11 +326,12 @@ fun InteractiveBarChart(
             Canvas(
                 modifier = Modifier
                     .fillMaxSize()
-                    .pointerInput(Unit) {
+                    .pointerInput(data) {
                         detectTapGestures(
                             onTap = { offset ->
                                 val canvasWidth = size.width
                                 val barCount = data.size
+                                if (barCount == 0) return@detectTapGestures
                                 val spacing = canvasWidth / (barCount * 2)
                                 val barWidth = (canvasWidth - (spacing * (barCount + 1))) / barCount
                                 
@@ -371,10 +348,10 @@ fun InteractiveBarChart(
                 val canvasWidth = size.width
                 val canvasHeight = size.height
                 val barCount = data.size
+                if (barCount == 0) return@Canvas
                 val spacing = canvasWidth / (barCount * 2)
                 val barWidth = (canvasWidth - (spacing * (barCount + 1))) / barCount
 
-                // Draw Background Grid Lines
                 val gridLines = 4
                 for (i in 0..gridLines) {
                     val y = canvasHeight - (canvasHeight / gridLines) * i
@@ -417,7 +394,7 @@ fun InteractiveBarChart(
                 }
             }
 
-            if (selectedBarIndex != -1) {
+            if (selectedBarIndex != -1 && selectedBarIndex < data.size) {
                 val valText = "$prefix${data[selectedBarIndex]}$suffix"
                 Surface(
                     color = tooltipBg,
@@ -464,7 +441,7 @@ fun InteractiveBarChart(
 }
 
 @Composable
-fun ReportRow(item: ReportItem) {
+fun ReportRow(item: com.le.uts_tam.ui.screen.laporan.ReportItem) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -492,5 +469,3 @@ fun ReportRow(item: ReportItem) {
         )
     }
 }
-
-data class ReportItem(val date: String, val income: String, val profit: String, val isToday: Boolean = false)

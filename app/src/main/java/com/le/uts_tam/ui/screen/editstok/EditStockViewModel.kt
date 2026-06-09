@@ -30,11 +30,8 @@ class EditStockViewModel(ownerId: String) : ViewModel() {
             name = item.name ?: ""
             price = item.price ?: ""
             stock = item.stock ?: ""
-            
-            // Other fields if they exist in Items model
-            // But they seem to be local state in VM for now
+            hargaBeli = item.purchasePrice ?: ""
         } else {
-            // Reset fields for new item
             firebaseKey = null
             idItems = ""
             name = ""
@@ -54,6 +51,7 @@ class EditStockViewModel(ownerId: String) : ViewModel() {
                     id = idItems,
                     name = name,
                     price = price,
+                    purchasePrice = hargaBeli,
                     stock = stock
                 )
                 

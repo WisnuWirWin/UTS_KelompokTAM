@@ -13,6 +13,20 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
+data class ReportItem(
+    val date: String,
+    val income: String,
+    val profit: String,
+    val isToday: Boolean = false
+)
+
+data class ReportState(
+    val labels: List<String> = emptyList(),
+    val chartData: List<Float> = emptyList(),
+    val items: List<ReportItem> = emptyList(),
+    val totalEstimasi: String = "Rp 0"
+)
+
 class LaporanViewModel(ownerId: String) : ViewModel() {
     private val repository = FirebaseRepository(ownerId)
 
@@ -42,6 +56,14 @@ class LaporanViewModel(ownerId: String) : ViewModel() {
         _selectedTab.value = tab
     }
 
+    private fun parseMoney(value: Any?): Long {
+        return when (value) {
+            is Number -> value.toLong()
+            is String -> value.replace(Regex("[^0-9]"), "").toLongOrNull() ?: 0L
+            else -> 0L
+        }
+    }
+
     val reportData = combine(_transactions, _selectedTab) { transactions, tab ->
         val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
         val today = Calendar.getInstance()
@@ -51,9 +73,30 @@ class LaporanViewModel(ownerId: String) : ViewModel() {
 
         transactions.forEach { trx ->
             val dateStr = trx["date"] as? String ?: ""
-            val total = (trx["totalPrice"] as? Number ?: 0).toLong()
+            val total = parseMoney(trx["totalPrice"])
+            
+            val itemsRaw = trx["items"]
+            var transactionProfit = 0L
 
-            val profit = (total * 0.4).toLong()
+            val itemsList = when (itemsRaw) {
+                is List<*> -> itemsRaw.filterIsInstance<Map<String, Any>>()
+                is Map<*, *> -> itemsRaw.values.filterIsInstance<Map<String, Any>>()
+                else -> emptyList()
+            }
+
+            itemsList.forEach { item ->
+                val price = parseMoney(item["price"])
+                val purchasePrice = parseMoney(item["purchasePrice"])
+                val qty = (item["qty"] as? Number ?: item["quantity"] as? Number ?: 1).toLong()
+
+                // Jika purchasePrice 0 (data lama), kita gunakan estimasi 40% agar laba tidak sama dengan omzet
+                val effectivePurchasePrice = if (purchasePrice == 0L) (price * 0.6).toLong() else purchasePrice
+                
+                transactionProfit += (price - effectivePurchasePrice) * qty
+            }
+
+            // Jika total transaksi ada tapi profit masih 0, fallback ke estimasi
+            val profit = if (transactionProfit == 0L && total > 0) (total * 0.4).toLong() else transactionProfit
 
             when (tab) {
                 "HARIAN" -> {
@@ -61,7 +104,6 @@ class LaporanViewModel(ownerId: String) : ViewModel() {
                     profitData[dateStr] = (profitData[dateStr] ?: 0) + profit
                 }
                 "MINGGUAN" -> {
-                    // Group by week (e.g., "W1", "W2" of current month)
                     try {
                         val date = sdf.parse(dateStr)
                         val cal = Calendar.getInstance().apply { time = date!! }
@@ -73,9 +115,11 @@ class LaporanViewModel(ownerId: String) : ViewModel() {
                     } catch (e: Exception) {}
                 }
                 "BULAN INI" -> {
-                    val month = dateStr.substring(3) // MM-yyyy
-                    filteredData[month] = (filteredData[month] ?: 0) + total
-                    profitData[month] = (profitData[month] ?: 0) + profit
+                    if (dateStr.length >= 10) {
+                        val month = dateStr.substring(3)
+                        filteredData[month] = (filteredData[month] ?: 0) + total
+                        profitData[month] = (profitData[month] ?: 0) + profit
+                    }
                 }
             }
         }
@@ -142,10 +186,3 @@ class LaporanViewModel(ownerId: String) : ViewModel() {
         return java.text.NumberFormat.getInstance(Locale("id", "ID")).format(num)
     }
 }
-
-data class ReportState(
-    val labels: List<String> = emptyList(),
-    val chartData: List<Float> = emptyList(),
-    val items: List<ReportItem> = emptyList(),
-    val totalEstimasi: String = "Rp 0"
-)

@@ -61,7 +61,6 @@ class KasirViewModel(ownerId: String) : ViewModel() {
     private fun fetchData() {
         viewModelScope.launch {
             _isLoading.value = true
-            // Using collect in launch is fine for UTS as long as we know what we're doing
             launch {
                 repository.getItems().collect { _items.value = it }
             }
@@ -137,6 +136,7 @@ class KasirViewModel(ownerId: String) : ViewModel() {
                             "itemId" to (item.firebaseKey ?: item.id),
                             "name" to item.name,
                             "price" to item.price,
+                            "purchasePrice" to item.purchasePrice,
                             "qty" to qty
                         )
                     },

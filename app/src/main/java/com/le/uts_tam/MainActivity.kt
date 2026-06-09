@@ -28,6 +28,7 @@ import com.le.uts_tam.ui.screen.profil.viewmodel.ProfilViewModel
 import com.le.uts_tam.ui.screen.addpelanggan.AddPelangganViewModel
 import com.le.uts_tam.ui.screen.editstok.EditStockViewModel
 import com.le.uts_tam.ui.screen.inventaris.InventarisViewModel
+import com.le.uts_tam.ui.screen.laporan.LaporanViewModel
 import com.le.uts_tam.ui.theme.UTS_TAMTheme
 
 class MainActivity : ComponentActivity() {
@@ -58,6 +59,7 @@ class MainActivity : ComponentActivity() {
                             modelClass.isAssignableFrom(AddPelangganViewModel::class.java) -> AddPelangganViewModel(ownerId)
                             modelClass.isAssignableFrom(EditStockViewModel::class.java) -> EditStockViewModel(ownerId)
                             modelClass.isAssignableFrom(InventarisViewModel::class.java) -> InventarisViewModel(ownerId)
+                            modelClass.isAssignableFrom(LaporanViewModel::class.java) -> LaporanViewModel(ownerId)
                             else -> throw IllegalArgumentException("Unknown ViewModel class")
                         }
                         return viewModel as T
@@ -219,13 +221,20 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    "laporan" -> Laporan(
-                        onBack = { currentScreen = "dashboard" },
-                        onKasirClick = { currentScreen = "kasir" },
-                        onRiwayatClick = { currentScreen = "riwayat" },
-                        onStokClick = { currentScreen = "inventaris" },
-                        onLaporanClick = { currentScreen = "laporan" }
-                    )
+                    "laporan" -> {
+                        val ownerId = loggedInOwnerId ?: return@UTS_TAMTheme
+                        Laporan(
+                            onBack = { currentScreen = "dashboard" },
+                            onKasirClick = { currentScreen = "kasir" },
+                            onRiwayatClick = { currentScreen = "riwayat" },
+                            onStokClick = { currentScreen = "inventaris" },
+                            onLaporanClick = { currentScreen = "laporan" },
+                            viewModel = viewModel(
+                                key = "laporan_$ownerId",
+                                factory = ScopedViewModelFactory(ownerId)
+                            )
+                        )
+                    }
                 }
             }
         }
