@@ -1,5 +1,6 @@
 package com.le.uts_tam.ui.screen.inventaris
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,6 +16,7 @@ import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
@@ -24,10 +26,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.le.uts_tam.data.model.dataclass.Items
+import com.le.uts_tam.utils.QRUtils
 
 @Composable
 fun Inventaris(
@@ -47,10 +55,75 @@ fun Inventaris(
     val items by viewModel.filteredItems.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
+    var showQRDialog by remember { mutableStateOf(false) }
+    var selectedItemForQR by remember { mutableStateOf<Items?>(null) }
+
+    if (showQRDialog && selectedItemForQR != null) {
+        Dialog(onDismissRequest = { showQRDialog = false }) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "QR CODE BARANG",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = selectedItemForQR?.name ?: "",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    val qrBitmap = remember(selectedItemForQR) {
+                        QRUtils.generateQRCode(selectedItemForQR?.id ?: selectedItemForQR?.firebaseKey ?: "")
+                    }
+                    
+                    qrBitmap?.let {
+                        Image(
+                            bitmap = it.asImageBitmap(),
+                            contentDescription = "QR Code",
+                            modifier = Modifier
+                                .size(200.dp)
+                                .background(Color.White)
+                                .padding(8.dp)
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "ID: ${selectedItemForQR?.id ?: "-"}",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Button(
+                        onClick = { showQRDialog = false },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("TUTUP")
+                    }
+                }
+            }
+        }
+    }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            // Nav Bar
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -212,7 +285,11 @@ fun Inventaris(
                             InventoryCard(
                                 item = item,
                                 onEdit = { onEditItem(item) },
-                                onDelete = { viewModel.deleteItem(item) }
+                                onDelete = { viewModel.deleteItem(item) },
+                                onShowQR = {
+                                    selectedItemForQR = item
+                                    showQRDialog = true
+                                }
                             )
                         }
                     }
@@ -248,7 +325,8 @@ fun QuickActionButton(icon: ImageVector, label: String) {
 fun InventoryCard(
     item: Items,
     onEdit: () -> Unit = {},
-    onDelete: () -> Unit = {}
+    onDelete: () -> Unit = {},
+    onShowQR: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().clickable { onEdit() },
@@ -292,6 +370,9 @@ fun InventoryCard(
 
             Column(horizontalAlignment = Alignment.End) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onShowQR, modifier = Modifier.size(32.dp)) {
+                        Icon(Icons.Default.QrCode, contentDescription = "QR Code", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                    }
                     IconButton(onClick = onEdit, modifier = Modifier.size(32.dp)) {
                         Icon(Icons.Default.Edit, contentDescription = "Edit", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                     }
@@ -305,11 +386,19 @@ fun InventoryCard(
                     color = MaterialTheme.colorScheme.secondary,
                     style = MaterialTheme.typography.labelLarge
                 )
-                Text(
-                    text = item.stock ?: "0",
-                    color = MaterialTheme.colorScheme.secondary,
-                    style = MaterialTheme.typography.titleMedium
-                )
+                
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "Stok: ",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                    Text(
+                        text = item.stock ?: "0",
+                        color = MaterialTheme.colorScheme.secondary,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(4.dp))
 

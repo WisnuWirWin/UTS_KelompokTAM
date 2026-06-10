@@ -12,6 +12,9 @@ core-splashscreen = "1.2.0"
 google-services = "4.4.2"
 firebase-bom = "33.5.1"
 firebaseDatabase = "22.0.1"
+camerax = "1.4.0"
+barcodeScanning = "17.3.0"
+zxing = "3.5.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -36,6 +39,18 @@ kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "ko
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
 firebase-database = { group = "com.google.firebase", name = "firebase-database-ktx" }
 google-firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
+
+# CameraX
+androidx-camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "camerax" }
+androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camerax" }
+androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "camerax" }
+androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "camerax" }
+
+# ML Kit Barcode
+mlkit-barcode-scanning = { group = "com.google.mlkit", name = "barcode-scanning", version.ref = "barcodeScanning" }
+
+# ZXing
+zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -46,12 +46,12 @@ class KasirViewModel(ownerId: String) : ViewModel() {
 
     val filteredItems: StateFlow<List<Items>> = combine(_items, _searchQuery) { items, query ->
         if (query.isEmpty()) emptyList()
-        else items.filter { it.name?.contains(query, ignoreCase = true) == true }
+        else items.filter { it.name?.contains(query, ignoreCase = true) == true || it.id?.contains(query, ignoreCase = true) == true }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val filteredCustomers: StateFlow<List<Customers>> = combine(_customers, _customerSearchQuery) { customers, query ->
         if (query.isEmpty()) emptyList()
-        else customers.filter { it.name?.contains(query, ignoreCase = true) == true }
+        else customers.filter { it.name?.contains(query, ignoreCase = true) == true || it.plateNumber?.contains(query, ignoreCase = true) == true }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
@@ -92,6 +92,16 @@ class KasirViewModel(ownerId: String) : ViewModel() {
         currentMap[id] = Pair(item, currentQty + 1)
         _cartItems.value = currentMap
         _searchQuery.value = ""
+    }
+
+    fun addToCartByQr(code: String): Boolean {
+        val item = _items.value.find { it.id == code || it.firebaseKey == code }
+        return if (item != null) {
+            addToCart(item)
+            true
+        } else {
+            false
+        }
     }
 
     fun updateQty(item: Items, delta: Int) {
