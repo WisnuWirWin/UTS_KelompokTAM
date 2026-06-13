@@ -2,6 +2,7 @@ package com.le.uts_tam.ui.screen.laporan
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.le.uts_tam.data.local.AppDatabase
 import com.le.uts_tam.data.repository.FirebaseRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -27,8 +28,8 @@ data class ReportState(
     val totalEstimasi: String = "Rp 0"
 )
 
-class LaporanViewModel(ownerId: String) : ViewModel() {
-    private val repository = FirebaseRepository(ownerId)
+class LaporanViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
+    private val repository = FirebaseRepository(ownerId, database)
 
     private val _transactions = MutableStateFlow<List<Map<String, Any>>>(emptyList())
 

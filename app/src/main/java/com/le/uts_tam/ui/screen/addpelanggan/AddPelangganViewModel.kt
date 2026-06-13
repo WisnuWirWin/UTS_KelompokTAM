@@ -5,12 +5,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.le.uts_tam.data.local.AppDatabase
 import com.le.uts_tam.data.model.dataclass.Customers
 import com.le.uts_tam.data.repository.FirebaseRepository
 import kotlinx.coroutines.launch
 
-class AddPelangganViewModel(ownerId: String) : ViewModel() {
-    private val repository = FirebaseRepository(ownerId)
+class AddPelangganViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
+    private val repository = FirebaseRepository(ownerId, database)
 
     var firebaseKey by mutableStateOf<String?>(null)
     var namaLengkap by mutableStateOf("")

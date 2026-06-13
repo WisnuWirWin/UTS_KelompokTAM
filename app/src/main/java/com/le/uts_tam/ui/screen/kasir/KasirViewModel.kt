@@ -2,6 +2,7 @@ package com.le.uts_tam.ui.screen.kasir
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.le.uts_tam.data.local.AppDatabase
 import com.le.uts_tam.data.model.dataclass.Customers
 import com.le.uts_tam.data.model.dataclass.Items
 import com.le.uts_tam.data.repository.FirebaseRepository
@@ -10,8 +11,8 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-class KasirViewModel(ownerId: String) : ViewModel() {
-    private val repository = FirebaseRepository(ownerId)
+class KasirViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
+    private val repository = FirebaseRepository(ownerId, database)
 
     private val _items = MutableStateFlow<List<Items>>(emptyList())
     private val _customers = MutableStateFlow<List<Customers>>(emptyList())

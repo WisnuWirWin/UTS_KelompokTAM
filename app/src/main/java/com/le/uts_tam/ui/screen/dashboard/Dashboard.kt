@@ -40,7 +40,7 @@ fun Dashboard(
     onRiwayatClick: () -> Unit = {},
     onStokClick: () -> Unit = {},
     onLaporanClick: () -> Unit = {},
-    viewModel: DashboardViewModel = viewModel()
+    viewModel: DashboardViewModel
 ) {
     val scrollState = rememberScrollState()
     val currencyFormatter = NumberFormat.getCurrencyInstance(Locale("id", "ID")).apply {
@@ -174,7 +174,7 @@ fun Dashboard(
             Row(modifier = Modifier.fillMaxWidth()) {
                 StatCard("JENIS STOK", viewModel.totalItems.toString(), Modifier.weight(1f), onClick = onStokClick)
                 Spacer(modifier = Modifier.width(16.dp))
-                StatCard("STOK HAMPIR HABIS", viewModel.lowStockItemsCount.toString(), Modifier.weight(1f), MaterialTheme.colorScheme.error)
+                StatCard("STOK HAMPIR HABIS", viewModel.lowStockItemsCount.toString(), Modifier.weight(1f), MaterialTheme.colorScheme.error, onClick = onStokClick)
             }
             Spacer(modifier = Modifier.height(16.dp))
             Row(modifier = Modifier.fillMaxWidth()) {
@@ -188,13 +188,16 @@ fun Dashboard(
                 } else {
                     "RP ${viewModel.monthlyIncome}"
                 }
-                StatCard("BULAN INI", monthlyFormatted, Modifier.weight(1f), MaterialTheme.colorScheme.secondary)
+                StatCard("BULAN INI", monthlyFormatted, Modifier.weight(1f), MaterialTheme.colorScheme.secondary, onClick = onLaporanClick)
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
             Card(
-                modifier = Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.secondary, RoundedCornerShape(16.dp)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, MaterialTheme.colorScheme.secondary, RoundedCornerShape(16.dp))
+                    .clickable { onStokClick() },
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {

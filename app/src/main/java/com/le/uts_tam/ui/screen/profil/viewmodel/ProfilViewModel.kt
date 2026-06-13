@@ -2,6 +2,7 @@ package com.le.uts_tam.ui.screen.profil.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.le.uts_tam.data.local.AppDatabase
 import com.le.uts_tam.data.model.dataclass.Owners
 import com.le.uts_tam.data.repository.FirebaseRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,8 +21,8 @@ data class ProfilUIState(
     val password: String = ""
 )
 
-class ProfilViewModel(ownerId: String) : ViewModel() {
-    private val repository = FirebaseRepository(ownerId)
+class ProfilViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
+    private val repository = FirebaseRepository(ownerId, database)
     
     private val _uiState = MutableStateFlow(ProfilUIState())
     val uiState: StateFlow<ProfilUIState> = _uiState.asStateFlow()

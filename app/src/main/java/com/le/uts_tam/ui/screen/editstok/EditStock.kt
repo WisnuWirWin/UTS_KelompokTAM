@@ -16,6 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -222,6 +223,7 @@ fun EditStock(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditField(
     label: String,
@@ -231,6 +233,9 @@ fun EditField(
     isHighlighted: Boolean = false,
     isDropdown: Boolean = false
 ) {
+    var expanded by remember { mutableStateOf(false) }
+    val categories = listOf("Sparepart", "Jasa/Servis", "Oli", "Ban", "Lain-lain")
+
     Column(modifier = Modifier.padding(bottom = 16.dp)) {
         Text(
             text = label,
@@ -240,21 +245,81 @@ fun EditField(
             fontFamily = fontFamily
         )
         Spacer(modifier = Modifier.height(8.dp))
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-                .background(Color(0xFF1E1E1E), RoundedCornerShape(14.dp))
-                .then(
-                    if (isHighlighted) Modifier.border(1.dp, Color(0xFFFF6D00), RoundedCornerShape(14.dp))
-                    else Modifier
-                )
-                .padding(horizontal = 16.dp),
-            contentAlignment = Alignment.CenterStart
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+        
+        if (isDropdown) {
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .background(Color(0xFF1E1E1E), RoundedCornerShape(14.dp))
+                        .then(
+                            if (isHighlighted) Modifier.border(1.dp, Color(0xFFFF6D00), RoundedCornerShape(14.dp))
+                            else Modifier
+                        )
+                        .padding(horizontal = 16.dp)
+                        .menuAnchor(),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = value.ifEmpty { "Pilih Kategori" },
+                            color = if (value.isEmpty()) Color.Gray else Color.White,
+                            fontSize = 14.sp,
+                            fontFamily = fontFamily,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Icon(
+                            Icons.Default.ArrowDropDown,
+                            contentDescription = null,
+                            tint = Color.Gray,
+                            modifier = Modifier.rotate(if (expanded) 180f else 0f)
+                        )
+                    }
+                }
+                
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.background(Color(0xFF1E1E1E))
+                ) {
+                    categories.forEach { category ->
+                        DropdownMenuItem(
+                            text = { 
+                                Text(
+                                    text = category,
+                                    color = Color.White,
+                                    fontFamily = fontFamily
+                                ) 
+                            },
+                            onClick = {
+                                onValueChange(category)
+                                expanded = false
+                            },
+                            modifier = Modifier.background(Color(0xFF1E1E1E))
+                        )
+                    }
+                }
+            }
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .background(Color(0xFF1E1E1E), RoundedCornerShape(14.dp))
+                    .then(
+                        if (isHighlighted) Modifier.border(1.dp, Color(0xFFFF6D00), RoundedCornerShape(14.dp))
+                        else Modifier
+                    )
+                    .padding(horizontal = 16.dp),
+                contentAlignment = Alignment.CenterStart
             ) {
                 BasicTextField(
                     value = value,
@@ -265,14 +330,9 @@ fun EditField(
                         fontFamily = fontFamily
                     ),
                     cursorBrush = SolidColor(Color.White),
-                    modifier = Modifier.weight(1f),
-                    singleLine = true,
-                    readOnly = isDropdown
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
                 )
-
-                if (isDropdown) {
-                    Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = Color.Gray)
-                }
             }
         }
     }

@@ -2,6 +2,7 @@ package com.le.uts_tam.ui.screen.pelanggan.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.le.uts_tam.data.local.AppDatabase
 import com.le.uts_tam.data.repository.FirebaseRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,8 +24,8 @@ data class PelangganUIState(
     val motorDisplay: String = ""
 )
 
-class PelangganViewModel(ownerId: String) : ViewModel() {
-    private val repository = FirebaseRepository(ownerId)
+class PelangganViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
+    private val repository = FirebaseRepository(ownerId, database)
     
     private val _uiState = MutableStateFlow<List<PelangganUIState>>(emptyList())
     val uiState: StateFlow<List<PelangganUIState>> = _uiState.asStateFlow()

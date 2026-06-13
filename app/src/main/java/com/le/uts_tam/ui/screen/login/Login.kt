@@ -15,12 +15,21 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.le.uts_tam.data.local.AppDatabase
 import com.le.uts_tam.data.model.dataclass.Owners
 
 @Composable
-fun Login(onLoginSuccess: (Owners) -> Unit) {
-    val viewModel: LoginViewModel = viewModel()
+fun Login(onLoginSuccess: (Owners) -> Unit, database: AppDatabase) {
+    val viewModel: LoginViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return LoginViewModel(database) as T
+            }
+        }
+    )
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 

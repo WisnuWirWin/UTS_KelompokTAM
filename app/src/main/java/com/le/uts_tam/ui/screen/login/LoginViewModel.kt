@@ -5,13 +5,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.le.uts_tam.data.local.AppDatabase
 import com.le.uts_tam.data.model.dataclass.Owners
 import com.le.uts_tam.data.repository.FirebaseRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-class LoginViewModel : ViewModel() {
-    private val repository = FirebaseRepository()
+class LoginViewModel(private val database: AppDatabase) : ViewModel() {
+    private val repository = FirebaseRepository(null, database)
 
     var isLoading by mutableStateOf(false)
     var errorMessage by mutableStateOf<String?>(null)
@@ -43,6 +44,9 @@ class LoginViewModel : ViewModel() {
                 }
 
                 if (matchedOwner != null) {
+                    // Save to local database to ensure Dashboard can read it immediately
+                    database.ownerDao().deleteAll()
+                    database.ownerDao().upsertOwner(matchedOwner)
                     onSuccess(matchedOwner)
                 } else {
                     errorMessage = "Username atau Password salah"

@@ -2,13 +2,14 @@ package com.le.uts_tam.ui.screen.inventaris
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.le.uts_tam.data.local.AppDatabase
 import com.le.uts_tam.data.model.dataclass.Items
 import com.le.uts_tam.data.repository.FirebaseRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class InventarisViewModel(ownerId: String) : ViewModel() {
-    private val repository = FirebaseRepository(ownerId)
+class InventarisViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
+    private val repository = FirebaseRepository(ownerId, database)
     private val _items = MutableStateFlow<List<Items>>(emptyList())
     
     private val _searchQuery = MutableStateFlow("")

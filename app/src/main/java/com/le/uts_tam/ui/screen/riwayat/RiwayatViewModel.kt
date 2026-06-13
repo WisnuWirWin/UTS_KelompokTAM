@@ -3,6 +3,7 @@ package com.le.uts_tam.ui.screen.riwayat
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.le.uts_tam.data.local.AppDatabase
 import com.le.uts_tam.data.model.dataclass.Customers
 import com.le.uts_tam.data.model.dataclass.Vehicles
 import com.le.uts_tam.data.repository.FirebaseRepository
@@ -11,8 +12,8 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-class RiwayatViewModel(ownerId: String) : ViewModel() {
-    private val repository = FirebaseRepository(ownerId)
+class RiwayatViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
+    private val repository = FirebaseRepository(ownerId, database)
     private val _allHistory = MutableStateFlow<List<HistoryItem>>(emptyList())
     private val _selectedFilter = MutableStateFlow("HARI INI")
     val selectedFilter: StateFlow<String> = _selectedFilter.asStateFlow()

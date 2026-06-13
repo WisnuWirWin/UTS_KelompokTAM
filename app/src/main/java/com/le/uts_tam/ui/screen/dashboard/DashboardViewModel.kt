@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.le.uts_tam.data.local.AppDatabase
 import com.le.uts_tam.data.model.dataclass.Items
 import com.le.uts_tam.data.repository.FirebaseRepository
 import kotlinx.coroutines.flow.combine
@@ -14,23 +15,35 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-class DashboardViewModel(private val ownerId: String) : ViewModel() {
-    private val repository = FirebaseRepository(ownerId)
+class DashboardViewModel(private val ownerId: String, database: AppDatabase) : ViewModel() {
+    private val repository = FirebaseRepository(ownerId, database)
 
     var ownerName by mutableStateOf("...")
+        private set
     var profileImageUrl by mutableStateOf("")
+        private set
     var totalItems by mutableStateOf(0)
+        private set
     var lowStockItemsCount by mutableStateOf(0)
+        private set
     var totalCustomers by mutableStateOf(0)
+        private set
     var lowStockList by mutableStateOf<List<Items>>(emptyList())
+        private set
 
     var totalIncomeToday by mutableLongStateOf(0L)
+        private set
     var transactionCountToday by mutableStateOf(0)
+        private set
     var serviceCountToday by mutableStateOf(0)
+        private set
     var sparepartIncomeToday by mutableLongStateOf(0L)
+        private set
     var monthlyIncome by mutableLongStateOf(0L)
+        private set
 
     var isLoading by mutableStateOf(false)
+        private set
 
     init {
         Log.d("DashboardVM", "DashboardViewModel created for ownerId: $ownerId")
@@ -67,7 +80,7 @@ class DashboardViewModel(private val ownerId: String) : ViewModel() {
     private fun calculateFinanceData(transactions: List<Map<String, Any>>) {
         val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
         val todayStr = sdf.format(Date())
-        val currentMonth = todayStr.substring(3) // MM-yyyy
+        val currentMonth = if (todayStr.length >= 3) todayStr.substring(3) else "" // MM-yyyy
 
         var incomeToday = 0L
         var countToday = 0
@@ -80,7 +93,7 @@ class DashboardViewModel(private val ownerId: String) : ViewModel() {
             val totalRaw = data["totalPrice"] as? Number ?: 0
             val total = totalRaw.toLong()
 
-            if (date.endsWith(currentMonth)) {
+            if (currentMonth.isNotEmpty() && date.endsWith(currentMonth)) {
                 incomeMonth += total
             }
 
@@ -88,6 +101,7 @@ class DashboardViewModel(private val ownerId: String) : ViewModel() {
                 incomeToday += total
                 countToday++
                 
+                @Suppress("UNCHECKED_CAST")
                 val items = data["items"] as? List<Map<String, Any>>
                 items?.forEach { item ->
                     val name = (item["name"] as? String)?.lowercase() ?: ""
