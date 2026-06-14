@@ -48,17 +48,18 @@ fun Inventaris(
     viewModel: InventarisViewModel = viewModel()
 ) {
     val categories = listOf("SEMUA", "OLI & CAIRAN", "FILTER", "REM")
-    
+
     val searchQuery by viewModel.searchQuery.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val items by viewModel.filteredItems.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
-    var showQRDialog by remember { mutableStateOf(false) }
-    var selectedItemForQR by remember { mutableStateOf<Items?>(null) }
+    // State untuk Dialog QR
+    val selectedItemForQR = remember { mutableStateOf<Items?>(null) }
 
-    if (showQRDialog && selectedItemForQR != null) {
-        Dialog(onDismissRequest = { }) {
+    // Tampilkan Dialog jika ada item yang dipilih
+    selectedItemForQR.value?.let { item ->
+        Dialog(onDismissRequest = { selectedItemForQR.value = null }) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -78,17 +79,17 @@ fun Inventaris(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = selectedItemForQR?.name ?: "",
+                        text = item.name ?: "",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(24.dp))
-                    
-                    val qrBitmap = remember(selectedItemForQR) {
-                        QRUtils.generateQRCode(selectedItemForQR?.id ?: selectedItemForQR?.firebaseKey ?: "")
+
+                    val qrBitmap = remember(item) {
+                        QRUtils.generateQRCode(item.id ?: item.firebaseKey)
                     }
-                    
+
                     qrBitmap?.let {
                         Image(
                             bitmap = it.asImageBitmap(),
@@ -99,17 +100,17 @@ fun Inventaris(
                                 .padding(8.dp)
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "ID: ${selectedItemForQR?.id ?: "-"}",
+                        text = "ID: ${item.id ?: "-"}",
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
-                        onClick = { },
+                        onClick = { selectedItemForQR.value = null },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                     ) {
@@ -174,16 +175,13 @@ fun Inventaris(
                         modifier = Modifier.size(32.dp)
                     )
                 }
-
                 Spacer(modifier = Modifier.width(8.dp))
-
                 Text(
                     text = "INVENTARIS",
                     color = MaterialTheme.colorScheme.onBackground,
                     style = MaterialTheme.typography.headlineLarge,
                     modifier = Modifier.weight(1f)
                 )
-
                 Box(
                     modifier = Modifier
                         .size(48.dp)
@@ -205,30 +203,9 @@ fun Inventaris(
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.onSearchQueryChange(it) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(60.dp),
-                placeholder = {
-                    Text(
-                        text = "Cari suku cadang...",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                },
-                trailingIcon = {
-                    if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
-                            Icon(Icons.Default.Close, contentDescription = "Clear", tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    }
-                },
+                modifier = Modifier.fillMaxWidth().height(60.dp),
+                placeholder = { Text("Cari suku cadang...") },
+                leadingIcon = { Icon(Icons.Default.Search, null, tint = MaterialTheme.colorScheme.primary) },
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = MaterialTheme.colorScheme.surface,
@@ -241,9 +218,7 @@ fun Inventaris(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 items(categories) { category ->
                     val isSelected = category == selectedCategory
                     Box(
@@ -271,25 +246,17 @@ fun Inventaris(
                     CircularProgressIndicator()
                 }
             } else {
-                if (items.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Tidak ada barang ditemukan", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                } else {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        contentPadding = PaddingValues(bottom = 30.dp)
-                    ) {
-                        items(items) { item ->
-                            InventoryCard(
-                                item = item,
-                                onEdit = { onEditItem(item) },
-                                onDelete = { viewModel.deleteItem(item) },
-                                onShowQR = {
-                                    selectedItemForQR = item
-                                }
-                            )
-                        }
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(bottom = 30.dp)
+                ) {
+                    items(items) { item ->
+                        InventoryCard(
+                            item = item,
+                            onEdit = { onEditItem(item) },
+                            onDelete = { viewModel.deleteItem(item) },
+                            onShowQR = { selectedItemForQR.value = item }
+                        )
                     }
                 }
             }
@@ -301,18 +268,10 @@ fun Inventaris(
 fun QuickActionButton(icon: ImageVector, label: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
-            modifier = Modifier
-                .size(60.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant),
+            modifier = Modifier.size(60.dp).clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.size(28.dp)
-            )
+            Icon(icon, label, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(28.dp))
         }
         Spacer(modifier = Modifier.height(8.dp))
         Text(text = label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
@@ -331,89 +290,32 @@ fun InventoryCard(
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp)),
+                modifier = Modifier.size(56.dp).background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Build,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(28.dp)
-                )
+                Icon(Icons.Default.Build, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(28.dp))
             }
-
             Spacer(modifier = Modifier.width(16.dp))
-
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = item.name ?: "Unknown",
-                    color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Text(
-                    text = "ID: ${item.id ?: "-"}",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.labelSmall
-                )
+                Text(item.name ?: "Unknown", style = MaterialTheme.typography.titleMedium)
+                Text("ID: ${item.id ?: "-"}", style = MaterialTheme.typography.labelSmall)
             }
-
             Column(horizontalAlignment = Alignment.End) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row {
                     IconButton(onClick = onShowQR, modifier = Modifier.size(32.dp)) {
-                        Icon(Icons.Default.QrCode, contentDescription = "QR Code", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                        Icon(Icons.Default.QrCode, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                     }
                     IconButton(onClick = onEdit, modifier = Modifier.size(32.dp)) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                        Icon(Icons.Default.Edit, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                     }
                     IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
-                        Icon(Icons.Default.Close, contentDescription = "Delete", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))
+                        Icon(Icons.Default.Close, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))
                     }
                 }
-
-                Text(
-                    text = "Rp ${item.price ?: "0"}",
-                    color = MaterialTheme.colorScheme.secondary,
-                    style = MaterialTheme.typography.labelLarge
-                )
-                
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "Stok: ",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.labelSmall
-                    )
-                    Text(
-                        text = item.stock ?: "0",
-                        color = MaterialTheme.colorScheme.secondary,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                val stockInt = item.stock?.toIntOrNull() ?: 0
-                val status = if (stockInt < 5) "LOW" else "OK"
-                val badgeColor = if (status == "LOW") MaterialTheme.colorScheme.error else Color(0xFF4CAF50)
-                Box(
-                    modifier = Modifier
-                        .background(badgeColor.copy(alpha = 0.1f), RoundedCornerShape(4.dp))
-                        .padding(horizontal = 12.dp, vertical = 2.dp)
-                ) {
-                    Text(
-                        text = status,
-                        color = badgeColor,
-                        style = MaterialTheme.typography.labelSmall
-                    )
-                }
+                Text("Rp ${item.price ?: "0"}", color = MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.labelLarge)
+                Text("Stok: ${item.stock ?: "0"}", style = MaterialTheme.typography.titleMedium)
             }
         }
     }

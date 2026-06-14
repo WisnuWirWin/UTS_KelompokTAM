@@ -12,6 +12,8 @@ import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -34,6 +36,8 @@ fun QRScanner(
     val executor = remember { Executors.newSingleThreadExecutor() }
     val scanner: BarcodeScanner = remember { BarcodeScanning.getClient() }
 
+    var isProcessed by remember { mutableStateOf(false) }
+
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
             factory = { ctx ->
@@ -55,7 +59,16 @@ fun QRScanner(
                         .build()
 
                     imageAnalysis.setAnalyzer(executor) { imageProxy: ImageProxy ->
-                        processImageProxy(scanner, imageProxy, onScan)
+                        if (!isProcessed) {
+                            processImageProxy(scanner, imageProxy) { code ->
+                                if (!isProcessed) {
+                                    isProcessed = true
+                                    onScan(code)
+                                }
+                            }
+                        } else {
+                            imageProxy.close()
+                        }
                     }
 
                     val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
