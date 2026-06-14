@@ -1,29 +1,19 @@
-package com.le.uts_tam.ui.screen.profil.viewmodel
+package com.le.uts_tam.ui.screen.profil
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.le.uts_tam.data.local.AppDatabase
 import com.le.uts_tam.data.model.dataclass.Owners
+import com.le.uts_tam.data.model.dataclass.ProfilUIState
 import com.le.uts_tam.data.repository.FirebaseRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-data class ProfilUIState(
-    val firebaseKey: String = "",
-    val ownerName: String = "",
-    val businessType: String = "BENGKEL MOTOR",
-    val address: String = "",
-    val phone: String = "",
-    val imageUrl: String = "",
-    val username: String = "",
-    val password: String = ""
-)
-
 class ProfilViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
     private val repository = FirebaseRepository(ownerId, database)
-    
+
     private val _uiState = MutableStateFlow(ProfilUIState())
     val uiState: StateFlow<ProfilUIState> = _uiState.asStateFlow()
 

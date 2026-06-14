@@ -3,6 +3,8 @@ package com.le.uts_tam.ui.screen.laporan
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.le.uts_tam.data.local.AppDatabase
+import com.le.uts_tam.data.model.dataclass.ReportItem
+import com.le.uts_tam.data.model.dataclass.ReportState
 import com.le.uts_tam.data.repository.FirebaseRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -13,20 +15,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
-
-data class ReportItem(
-    val date: String,
-    val income: String,
-    val profit: String,
-    val isToday: Boolean = false
-)
-
-data class ReportState(
-    val labels: List<String> = emptyList(),
-    val chartData: List<Float> = emptyList(),
-    val items: List<ReportItem> = emptyList(),
-    val totalEstimasi: String = "Rp 0"
-)
 
 class LaporanViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
     private val repository = FirebaseRepository(ownerId, database)

@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.le.uts_tam.ui.screen.profil.viewmodel.ProfilViewModel
+import com.le.uts_tam.ui.screen.profil.ProfilViewModel
 import com.le.uts_tam.ui.screen.riwayat.HistoryItem
 import kotlin.random.Random
 

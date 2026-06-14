@@ -22,10 +22,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.le.uts_tam.ui.screen.dashboard.DashboardViewModel
-import com.le.uts_tam.ui.screen.pelanggan.viewmodel.PelangganViewModel
+import com.le.uts_tam.ui.screen.pelanggan.PelangganViewModel
 import com.le.uts_tam.ui.screen.kasir.KasirViewModel
 import com.le.uts_tam.ui.screen.riwayat.RiwayatViewModel
-import com.le.uts_tam.ui.screen.profil.viewmodel.ProfilViewModel
+import com.le.uts_tam.ui.screen.profil.ProfilViewModel
 import com.le.uts_tam.ui.screen.addpelanggan.AddPelangganViewModel
 import com.le.uts_tam.ui.screen.editstok.EditStockViewModel
 import com.le.uts_tam.ui.screen.inventaris.InventarisViewModel

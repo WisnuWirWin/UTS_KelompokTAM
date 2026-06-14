@@ -25,7 +25,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.le.uts_tam.R
-import com.le.uts_tam.ui.screen.profil.viewmodel.ProfilViewModel
+import com.le.uts_tam.ui.screen.profil.ProfilViewModel
 
 @Composable
 fun Profil(

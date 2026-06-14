@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.le.uts_tam.data.model.dataclass.Customers
-import com.le.uts_tam.ui.screen.pelanggan.viewmodel.PelangganViewModel
+import com.le.uts_tam.ui.screen.pelanggan.PelangganViewModel
 
 @Composable
 fun Pelanggan(
