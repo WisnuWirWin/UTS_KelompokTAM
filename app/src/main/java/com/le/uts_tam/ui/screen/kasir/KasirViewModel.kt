@@ -1,6 +1,5 @@
 package com.le.uts_tam.ui.screen.kasir
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.le.uts_tam.data.local.AppDatabase
@@ -87,13 +86,16 @@ class KasirViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
     }
 
     fun addToCart(item: Items) {
-        val id = item.firebaseKey ?: item.id ?: return
+        val id = if (item.firebaseKey.isNotEmpty()) item.firebaseKey else item.id ?: return
         val currentMap = _cartItems.value.toMutableMap()
         val currentQty = currentMap[id]?.second ?: 0
+        val stockAvailable = item.stock?.toIntOrNull() ?: 0
 
-        currentMap[id] = Pair(item, currentQty + 1)
-        _cartItems.value = currentMap
-        _searchQuery.value = ""
+        if (currentQty + 1 <= stockAvailable) {
+            currentMap[id] = Pair(item, currentQty + 1)
+            _cartItems.value = currentMap
+            _searchQuery.value = ""
+        }
     }
 
     fun addToCartByQr(code: String): Boolean {
@@ -107,14 +109,15 @@ class KasirViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
     }
 
     fun updateQty(item: Items, delta: Int) {
-        val id = item.firebaseKey ?: item.id ?: return
+        val id = if (item.firebaseKey.isNotEmpty()) item.firebaseKey else item.id ?: return
         val currentMap = _cartItems.value.toMutableMap()
         val currentQty = currentMap[id]?.second ?: 0
         val newQty = currentQty + delta
+        val stockAvailable = item.stock?.toIntOrNull() ?: 0
 
         if (newQty <= 0) {
             currentMap.remove(id)
-        } else {
+        } else if (newQty <= stockAvailable) {
             currentMap[id] = Pair(item, newQty)
         }
         _cartItems.value = currentMap
@@ -145,7 +148,7 @@ class KasirViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                     "totalPrice" to total,
                     "items" to cartList.map { (item, qty) ->
                         mapOf(
-                            "itemId" to (item.firebaseKey ?: item.id),
+                            "itemId" to if (item.firebaseKey.isNotEmpty()) item.firebaseKey else item.id,
                             "name" to item.name,
                             "price" to item.price,
                             "purchasePrice" to item.purchasePrice,
@@ -159,13 +162,12 @@ class KasirViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
 
                 cartList.forEach { (item, qtySold) ->
                     val key = item.firebaseKey
-                    if (key != null) {
+                    if (key.isNotEmpty()) {
                         val currentStock = item.stock?.toIntOrNull() ?: 0
                         val newStock = (currentStock - qtySold).coerceAtLeast(0)
                         
                         val updatedItem = item.copy(stock = newStock.toString())
                         repository.updateItem(key, updatedItem)
-                        Log.d("KasirVM", "Updated stock for ${item.name}: $newStock")
                     }
                 }
 
@@ -173,7 +175,6 @@ class KasirViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                 _selectedCustomer.value = null
                 onSuccess()
             } catch (e: Exception) {
-                Log.e("KasirVM", "Error during payment: ${e.message}")
             }
         }
     }

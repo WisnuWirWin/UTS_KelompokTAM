@@ -50,7 +50,6 @@ fun Pelanggan(
     ) {
         Spacer(modifier = Modifier.height(50.dp))
 
-        // Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Start,
@@ -82,7 +81,6 @@ fun Pelanggan(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Search Bar
         TextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
@@ -130,7 +128,6 @@ fun Pelanggan(
                 }
             }
         } else {
-            // Customer Cards
             filteredList.forEach { customer ->
                 CustomerCard(
                     plate = customer.plate,
@@ -188,7 +185,6 @@ fun CustomerCard(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Plate Number Box
                 Box(
                     modifier = Modifier
                         .background(MaterialTheme.colorScheme.tertiary, RoundedCornerShape(8.dp))

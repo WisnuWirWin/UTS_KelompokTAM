@@ -22,10 +22,8 @@ class FirebaseRepository(private val ownerId: String? = null, databaseInstance: 
     private val localDb = databaseInstance
     private val repositoryScope = CoroutineScope(Dispatchers.IO)
 
-    // Global path for all owners (users)
     private val allOwnersRef = database.getReference("owners_list")
     
-    // Scoped paths for a specific owner's data
     private val ownerDataRef = if (ownerId != null) database.getReference("data").child(ownerId) else null
     
     private val customersRef = ownerDataRef?.child("customers")
@@ -40,12 +38,11 @@ class FirebaseRepository(private val ownerId: String? = null, databaseInstance: 
     }
 
     private fun startSyncing() {
-        // Sync Customers
         customersRef?.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 repositoryScope.launch {
                     val list = snapshot.children.mapNotNull { 
-                        it.getValue(Customers::class.java)?.copy(firebaseKey = it.key) 
+                        it.getValue(Customers::class.java)?.copy(firebaseKey = it.key ?: "") 
                     }
                     localDb?.customerDao()?.upsertCustomers(list)
                 }
@@ -53,12 +50,11 @@ class FirebaseRepository(private val ownerId: String? = null, databaseInstance: 
             override fun onCancelled(error: DatabaseError) {}
         })
 
-        // Sync Items
         itemsRef?.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 repositoryScope.launch {
                     val list = snapshot.children.mapNotNull { 
-                        it.getValue(Items::class.java)?.copy(firebaseKey = it.key) 
+                        it.getValue(Items::class.java)?.copy(firebaseKey = it.key ?: "") 
                     }
                     localDb?.itemDao()?.upsertItems(list)
                 }
@@ -66,11 +62,10 @@ class FirebaseRepository(private val ownerId: String? = null, databaseInstance: 
             override fun onCancelled(error: DatabaseError) {}
         })
 
-        // Sync Profile
         profileRef?.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 repositoryScope.launch {
-                    val owner = snapshot.getValue(Owners::class.java)?.copy(firebaseKey = snapshot.key)
+                    val owner = snapshot.getValue(Owners::class.java)?.copy(firebaseKey = snapshot.key ?: "")
                     if (owner != null) {
                         localDb?.ownerDao()?.upsertOwner(owner)
                     }
@@ -80,12 +75,11 @@ class FirebaseRepository(private val ownerId: String? = null, databaseInstance: 
         })
     }
 
-    // --- Login & Registration (Global) ---
     fun getOwnersForLogin(): Flow<List<Owners>> = callbackFlow {
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val list = snapshot.children.mapNotNull {
-                    it.getValue(Owners::class.java)?.copy(firebaseKey = it.key)
+                    it.getValue(Owners::class.java)?.copy(firebaseKey = it.key ?: "")
                 }
                 trySend(list)
             }
@@ -99,58 +93,53 @@ class FirebaseRepository(private val ownerId: String? = null, databaseInstance: 
 
     suspend fun registerNewOwner(owner: Owners) {
         val key = allOwnersRef.push().key ?: return
-        allOwnersRef.child(key).setValue(owner).await()
+        val ownerWithKey = owner.copy(firebaseKey = key)
+        allOwnersRef.child(key).setValue(ownerWithKey).await()
         
-        // Initialize profile data for the new owner
-        database.getReference("data").child(key).child("profile").setValue(owner).await()
+        database.getReference("data").child(key).child("profile").setValue(ownerWithKey).await()
     }
 
-    // --- Customers (Scoped) ---
     fun getCustomers(): Flow<List<Customers>> {
         return localDb?.customerDao()?.getAllCustomers() ?: callbackFlow { trySend(emptyList()); awaitClose() }
     }
 
     suspend fun addCustomer(customer: Customers) {
-        // Save to Room first (as unsynced)
-        localDb?.customerDao()?.upsertCustomer(customer)
-        // Then push to Firebase
-        val ref = customersRef?.push()
-        if (ref != null) {
-            ref.setValue(customer).await()
-            // Room will be updated by the listener once Firebase confirms
-        }
+        val ref = customersRef?.push() ?: return
+        val key = ref.key ?: return
+        val customerWithKey = customer.copy(firebaseKey = key)
+        
+        localDb?.customerDao()?.upsertCustomer(customerWithKey)
+        ref.setValue(customerWithKey).await()
     }
 
     suspend fun updateCustomer(key: String, customer: Customers) {
-        // Update local first
-        localDb?.customerDao()?.upsertCustomer(customer.copy(firebaseKey = key))
-        // Update Firebase
-        customersRef?.child(key)?.setValue(customer)?.await()
+        val customerWithKey = customer.copy(firebaseKey = key)
+        localDb?.customerDao()?.upsertCustomer(customerWithKey)
+        customersRef?.child(key)?.setValue(customerWithKey)?.await()
     }
 
     suspend fun deleteCustomer(key: String) {
-        // Delete local
         localDb?.customerDao()?.deleteByFirebaseKey(key)
-        // Delete Firebase
         customersRef?.child(key)?.removeValue()?.await()
     }
 
-    // --- Items / Stock (Scoped) ---
     fun getItems(): Flow<List<Items>> {
         return localDb?.itemDao()?.getAllItems() ?: callbackFlow { trySend(emptyList()); awaitClose() }
     }
 
     suspend fun addItem(item: Items) {
-        localDb?.itemDao()?.upsertItem(item)
-        val ref = itemsRef?.push()
-        if (ref != null) {
-            ref.setValue(item).await()
-        }
+        val ref = itemsRef?.push() ?: return
+        val key = ref.key ?: return
+        val itemWithKey = item.copy(firebaseKey = key)
+        
+        localDb?.itemDao()?.upsertItem(itemWithKey)
+        ref.setValue(itemWithKey).await()
     }
 
     suspend fun updateItem(key: String, item: Items) {
-        localDb?.itemDao()?.upsertItem(item.copy(firebaseKey = key))
-        itemsRef?.child(key)?.setValue(item)?.await()
+        val itemWithKey = item.copy(firebaseKey = key)
+        localDb?.itemDao()?.upsertItem(itemWithKey)
+        itemsRef?.child(key)?.setValue(itemWithKey)?.await()
     }
 
     suspend fun deleteItem(key: String) {
@@ -158,17 +147,17 @@ class FirebaseRepository(private val ownerId: String? = null, databaseInstance: 
         itemsRef?.child(key)?.removeValue()?.await()
     }
 
-    // --- Owner / Profile (Scoped) ---
     fun getOwner(): Flow<Owners?> {
         return localDb?.ownerDao()?.getOwner() ?: callbackFlow { trySend(null); awaitClose() }
     }
 
     suspend fun updateOwner(owner: Owners) {
-        localDb?.ownerDao()?.upsertOwner(owner)
-        profileRef?.setValue(owner)?.await()
+        val ownerId = this.ownerId ?: return
+        val ownerWithKey = owner.copy(firebaseKey = ownerId)
+        localDb?.ownerDao()?.upsertOwner(ownerWithKey)
+        profileRef?.setValue(ownerWithKey)?.await()
     }
 
-    // --- Transactions (Scoped) ---
     fun getTransactions(): Flow<List<Map<String, Any>>> = callbackFlow {
         if (transactionsRef == null) { trySend(emptyList()); return@callbackFlow }
         val listener = object : ValueEventListener {

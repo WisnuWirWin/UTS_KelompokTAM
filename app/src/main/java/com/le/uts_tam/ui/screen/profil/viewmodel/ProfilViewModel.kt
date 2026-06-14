@@ -43,7 +43,7 @@ class ProfilViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
             repository.getOwner().collect { owner ->
                 if (owner != null) {
                     _uiState.value = ProfilUIState(
-                        firebaseKey = owner.firebaseKey ?: "",
+                        firebaseKey = owner.firebaseKey,
                         ownerName = owner.owner ?: "",
                         businessType = "BENGKEL MOTOR",
                         address = owner.address ?: "",
@@ -69,6 +69,7 @@ class ProfilViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
             try {
                 repository.updateOwner(
                     Owners(
+                        firebaseKey = currentState.firebaseKey,
                         owner = name,
                         address = address,
                         noHp = phone,

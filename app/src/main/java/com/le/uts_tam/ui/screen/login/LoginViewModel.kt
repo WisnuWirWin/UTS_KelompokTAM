@@ -35,7 +35,6 @@ class LoginViewModel(private val database: AppDatabase) : ViewModel() {
             errorMessage = null
 
             try {
-                // Fetch all owners to find match
                 val owners = repository.getOwnersForLogin().first()
 
                 val matchedOwner = owners.find {
@@ -44,7 +43,6 @@ class LoginViewModel(private val database: AppDatabase) : ViewModel() {
                 }
 
                 if (matchedOwner != null) {
-                    // Save to local database to ensure Dashboard can read it immediately
                     database.ownerDao().deleteAll()
                     database.ownerDao().upsertOwner(matchedOwner)
                     onSuccess(matchedOwner)

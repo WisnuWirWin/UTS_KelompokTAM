@@ -6,14 +6,13 @@ import com.google.gson.annotations.SerializedName
 
 @Entity(tableName = "owners")
 data class Owners(
-    @PrimaryKey(autoGenerate = true)
-    val idInt: Int = 0,
+    @PrimaryKey
+    val firebaseKey: String = "",
     @SerializedName("owner") val owner: String? = null,
     @SerializedName("address") val address: String? = null,
     @SerializedName("no_hp") val noHp: String? = null,
     @SerializedName("username") val username: String? = null,
     @SerializedName("password") val password: String? = null,
     @SerializedName("image_url") val imageUrl: String? = null,
-    val firebaseKey: String? = null,
-    val lastSync: Long = 0
+    val lastSync: Long = 0,
 )

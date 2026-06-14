@@ -13,7 +13,7 @@ import com.le.uts_tam.data.model.dataclass.Items
 import com.le.uts_tam.data.model.dataclass.Owners
 import com.le.uts_tam.data.model.dataclass.Vehicles
 
-@Database(entities = [Customers::class, Vehicles::class, Items::class, Owners::class], version = 1, exportSchema = false)
+@Database(entities = [Customers::class, Vehicles::class, Items::class, Owners::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun customerDao(): CustomerDao
     abstract fun vehicleDao(): VehicleDao

@@ -6,8 +6,8 @@ import com.google.gson.annotations.SerializedName
 
 @Entity(tableName = "customers")
 data class Customers(
-    @PrimaryKey(autoGenerate = true)
-    val idInt: Int = 0,
+    @PrimaryKey
+    val firebaseKey: String = "",
     @SerializedName("id_customers") val id: String? = null,
     @SerializedName("name") val name: String? = null,
     @SerializedName("no_hp") val noHp: String? = null,
@@ -18,6 +18,5 @@ data class Customers(
     @SerializedName("motor_year") val motorYear: String? = null,
     @SerializedName("motor_color") val motorColor: String? = null,
     @SerializedName("complaint") val complaint: String? = null,
-    val firebaseKey: String? = null,
-    val lastSync: Long = 0
+    val lastSync: Long = 0,
 )

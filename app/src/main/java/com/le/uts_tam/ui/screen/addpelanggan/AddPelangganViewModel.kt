@@ -58,6 +58,7 @@ class AddPelangganViewModel(ownerId: String, database: AppDatabase) : ViewModel(
         viewModelScope.launch {
             try {
                 val customer = Customers(
+                    firebaseKey = firebaseKey ?: "",
                     name = namaLengkap,
                     noHp = nomorTelepon,
                     address = alamat,
@@ -66,7 +67,7 @@ class AddPelangganViewModel(ownerId: String, database: AppDatabase) : ViewModel(
                     motorModel = tipeModel,
                     motorYear = tahun,
                     motorColor = warna,
-                    complaint = catatan
+                    complaint = catatan,
                 )
                 
                 if (firebaseKey != null) {
@@ -76,7 +77,6 @@ class AddPelangganViewModel(ownerId: String, database: AppDatabase) : ViewModel(
                 }
                 onSuccess()
             } catch (e: Exception) {
-                // Handle error
             }
         }
     }

@@ -51,8 +51,12 @@ class RiwayatViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                         tgl = tgl,
                         bln = bln,
                         jam = data["time"] as? String ?: "00:00",
-                        customer = Customers(name = data["customerName"] as? String),
+                        customer = Customers(
+                            firebaseKey = data["customerId"] as? String ?: "",
+                            name = data["customerName"] as? String
+                        ),
                         vehicle = Vehicles(
+                            firebaseKey = "",
                             brand = motorDisplay,
                             numberPlate = data["customerPlate"] as? String
                         ),

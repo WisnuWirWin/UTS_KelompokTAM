@@ -49,11 +49,12 @@ class EditStockViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
         viewModelScope.launch {
             try {
                 val item = Items(
+                    firebaseKey = firebaseKey ?: "",
                     id = idItems,
                     name = name,
                     price = price,
                     purchasePrice = hargaBeli,
-                    stock = stock
+                    stock = stock,
                 )
                 
                 firebaseKey?.let { key ->
@@ -64,7 +65,6 @@ class EditStockViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
 
                 onSuccess()
             } catch (e: Exception) {
-                // Handle error
             }
         }
     }

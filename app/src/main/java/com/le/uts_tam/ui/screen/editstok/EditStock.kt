@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -28,6 +29,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -97,7 +99,7 @@ fun EditStock(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(140.dp)
-                .clickable { /* Upload action */ },
+                .clickable { },
             contentAlignment = Alignment.Center
         ) {
             Canvas(modifier = Modifier.fillMaxSize()) {
@@ -147,8 +149,9 @@ fun EditStock(
                 EditField(
                     label = "HARGA BELI",
                     value = viewModel.hargaBeli,
-                    onValueChange = { viewModel.hargaBeli = it },
-                    fontFamily = customFontFamily
+                    onValueChange = { if (it.all { char -> char.isDigit() }) viewModel.hargaBeli = it },
+                    fontFamily = customFontFamily,
+                    keyboardType = KeyboardType.Number
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
@@ -156,8 +159,9 @@ fun EditStock(
                 EditField(
                     label = "HARGA JUAL",
                     value = viewModel.price,
-                    onValueChange = { viewModel.price = it },
-                    fontFamily = customFontFamily
+                    onValueChange = { if (it.all { char -> char.isDigit() }) viewModel.price = it },
+                    fontFamily = customFontFamily,
+                    keyboardType = KeyboardType.Number
                 )
             }
         }
@@ -167,8 +171,9 @@ fun EditStock(
                 EditField(
                     label = "STOK",
                     value = viewModel.stock,
-                    onValueChange = { viewModel.stock = it },
-                    fontFamily = customFontFamily
+                    onValueChange = { if (it.all { char -> char.isDigit() }) viewModel.stock = it },
+                    fontFamily = customFontFamily,
+                    keyboardType = KeyboardType.Number
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
@@ -176,8 +181,9 @@ fun EditStock(
                 EditField(
                     label = "MIN. STOK",
                     value = viewModel.minStok,
-                    onValueChange = { viewModel.minStok = it },
-                    fontFamily = customFontFamily
+                    onValueChange = { if (it.all { char -> char.isDigit() }) viewModel.minStok = it },
+                    fontFamily = customFontFamily,
+                    keyboardType = KeyboardType.Number
                 )
             }
         }
@@ -231,7 +237,8 @@ fun EditField(
     onValueChange: (String) -> Unit,
     fontFamily: FontFamily,
     isHighlighted: Boolean = false,
-    isDropdown: Boolean = false
+    isDropdown: Boolean = false,
+    keyboardType: KeyboardType = KeyboardType.Text
 ) {
     var expanded by remember { mutableStateOf(false) }
     val categories = listOf("Sparepart", "Jasa/Servis", "Oli", "Ban", "Lain-lain")
@@ -331,7 +338,8 @@ fun EditField(
                     ),
                     cursorBrush = SolidColor(Color.White),
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
                 )
             }
         }

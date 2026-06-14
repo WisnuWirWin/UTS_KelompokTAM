@@ -23,8 +23,8 @@ class InventarisViewModel(ownerId: String, database: AppDatabase) : ViewModel() 
 
     val filteredItems: StateFlow<List<Items>> = combine(_items, _searchQuery, _selectedCategory) { items, query, category ->
         items.filter { item ->
-            val matchesQuery = item.name?.contains(query, ignoreCase = true) == true || 
-                               item.id?.contains(query, ignoreCase = true) == true
+            val matchesQuery = (item.name?.contains(query, ignoreCase = true) == true) || 
+                               (item.id?.contains(query, ignoreCase = true) == true)
             
             val matchesCategory = when (category) {
                 "SEMUA" -> true
@@ -52,28 +52,19 @@ class InventarisViewModel(ownerId: String, database: AppDatabase) : ViewModel() 
 
     fun deleteItem(item: Items) {
         viewModelScope.launch {
-            item.firebaseKey?.let { key ->
-                repository.deleteItem(key)
-            }
+            repository.deleteItem(item.firebaseKey)
         }
     }
 
     fun fetchItems() {
         viewModelScope.launch {
             _isLoading.value = true
-            try {
-                repository.getItems()
-                    .catch { e ->
-                        _isLoading.value = false
-                        // You could add an error state flow here if needed
-                    }
-                    .collect { items ->
-                        _items.value = items
-                        _isLoading.value = false
-                    }
-            } catch (e: Exception) {
-                _isLoading.value = false
-            }
+            repository.getItems()
+                .catch { _isLoading.value = false }
+                .collect { items ->
+                    _items.value = items
+                    _isLoading.value = false
+                }
         }
     }
 }
