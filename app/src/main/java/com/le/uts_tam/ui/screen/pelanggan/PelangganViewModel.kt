@@ -32,7 +32,7 @@ class PelangganViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
             repository.getCustomers().collect { customers ->
                 _uiState.value = customers.map { customer ->
                     PelangganUIState(
-                        firebaseKey = customer.firebaseKey ?: "",
+                        firebaseKey = customer.firebaseKey,
                         id = customer.id ?: "",
                         name = customer.name ?: "Tanpa Nama",
                         phone = customer.noHp ?: "-",

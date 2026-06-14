@@ -43,33 +43,33 @@ fun Kasir(
     val cartItems by viewModel.cartItems.collectAsState()
     val totalBayar by viewModel.totalBayar.collectAsState()
 
-    var showScanner by remember { mutableStateOf(false) }
+    val showScanner = remember { mutableStateOf(false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            showScanner = true
+            showScanner.value = true
         } else {
             Toast.makeText(context, "Izin kamera diperlukan untuk scan QR", Toast.LENGTH_SHORT).show()
         }
     }
 
-    if (showScanner) {
+    if (showScanner.value) {
         Box(modifier = Modifier.fillMaxSize()) {
             QRScanner(
                 onScan = { code ->
                     if (viewModel.addToCartByQr(code)) {
-                        showScanner = false
+                        showScanner.value = false
                         Toast.makeText(context, "Barang berhasil ditambahkan", Toast.LENGTH_SHORT).show()
                     }
                 },
-                onClose = { showScanner = false }
+                onClose = { showScanner.value = false }
             )
             
             // Overlay Close Button
             IconButton(
-                onClick = { showScanner = false },
+                onClick = { showScanner.value = false },
                 modifier = Modifier.align(Alignment.TopEnd).padding(16.dp).background(Color.Black.copy(alpha = 0.5f), CircleShape)
             ) {
                 Icon(Icons.Default.Close, contentDescription = "Close Scanner", tint = Color.White)
@@ -199,7 +199,7 @@ fun Kasir(
                     IconButton(
                         onClick = {
                             if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-                                showScanner = true
+                                showScanner.value = true
                             } else {
                                 permissionLauncher.launch(Manifest.permission.CAMERA)
                             }

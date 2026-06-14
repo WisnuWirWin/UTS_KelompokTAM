@@ -24,6 +24,6 @@ val LightTextPrimary = Color(0xFF212121)
 val LightTextSecondary = Color(0xFF757575)
 
 // Functional Colors
-val SuccessGreen = Color(0xFF4CAF50)
-val DarkSuccessGreen = Color(0xFF1B5E20)
-val ErrorRed = Color(0xFFD32F2F)
+//val SuccessGreen = Color(0xFF4CAF50)
+//val DarkSuccessGreen = Color(0xFF1B5E20)
+//val ErrorRed = Color(0xFFD32F2F)

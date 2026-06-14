@@ -42,7 +42,7 @@ fun Dashboard(
     viewModel: DashboardViewModel
 ) {
     val scrollState = rememberScrollState()
-    val currencyFormatter = NumberFormat.getCurrencyInstance(Locale("id", "ID")).apply {
+    val currencyFormatter = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("id-ID")).apply {
         maximumFractionDigits = 0
     }
 

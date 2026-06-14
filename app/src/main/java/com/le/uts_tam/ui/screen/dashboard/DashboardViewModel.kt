@@ -1,6 +1,7 @@
 package com.le.uts_tam.ui.screen.dashboard
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -14,19 +15,19 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-class DashboardViewModel(private val ownerId: String, database: AppDatabase) : ViewModel() {
+class DashboardViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
     private val repository = FirebaseRepository(ownerId, database)
 
     var ownerName by mutableStateOf("...")
     var profileImageUrl by mutableStateOf("")
-    var totalItems by mutableStateOf(0)
-    var lowStockItemsCount by mutableStateOf(0)
-    var totalCustomers by mutableStateOf(0)
+    var totalItems by mutableIntStateOf(0)
+    var lowStockItemsCount by mutableIntStateOf(0)
+    var totalCustomers by mutableIntStateOf(0)
     var lowStockList by mutableStateOf<List<Items>>(emptyList())
 
     var totalIncomeToday by mutableLongStateOf(0L)
-    var transactionCountToday by mutableStateOf(0)
-    var serviceCountToday by mutableStateOf(0)
+    var transactionCountToday by mutableIntStateOf(0)
+    var serviceCountToday by mutableIntStateOf(0)
     var sparepartIncomeToday by mutableLongStateOf(0L)
     var monthlyIncome by mutableLongStateOf(0L)
 
@@ -80,6 +81,7 @@ class DashboardViewModel(private val ownerId: String, database: AppDatabase) : V
                 incomeToday += total
                 countToday++
                 
+                @Suppress("UNCHECKED_CAST")
                 val items = data["items"] as? List<Map<String, Any>>
                 items?.forEach { item ->
                     val name = (item["name"] as? String)?.lowercase() ?: ""

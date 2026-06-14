@@ -58,7 +58,7 @@ fun Inventaris(
     var selectedItemForQR by remember { mutableStateOf<Items?>(null) }
 
     if (showQRDialog && selectedItemForQR != null) {
-        Dialog(onDismissRequest = { showQRDialog = false }) {
+        Dialog(onDismissRequest = { }) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -109,7 +109,7 @@ fun Inventaris(
                     )
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
-                        onClick = { showQRDialog = false },
+                        onClick = { },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                     ) {
@@ -287,7 +287,6 @@ fun Inventaris(
                                 onDelete = { viewModel.deleteItem(item) },
                                 onShowQR = {
                                     selectedItemForQR = item
-                                    showQRDialog = true
                                 }
                             )
                         }

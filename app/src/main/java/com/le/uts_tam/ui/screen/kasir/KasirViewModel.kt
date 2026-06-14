@@ -86,7 +86,7 @@ class KasirViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
     }
 
     fun addToCart(item: Items) {
-        val id = if (item.firebaseKey.isNotEmpty()) item.firebaseKey else item.id ?: return
+        val id = item.firebaseKey.ifEmpty { item.id ?: return }
         val currentMap = _cartItems.value.toMutableMap()
         val currentQty = currentMap[id]?.second ?: 0
         val stockAvailable = item.stock?.toIntOrNull() ?: 0
@@ -109,7 +109,7 @@ class KasirViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
     }
 
     fun updateQty(item: Items, delta: Int) {
-        val id = if (item.firebaseKey.isNotEmpty()) item.firebaseKey else item.id ?: return
+        val id = item.firebaseKey.ifEmpty { item.id ?: return }
         val currentMap = _cartItems.value.toMutableMap()
         val currentQty = currentMap[id]?.second ?: 0
         val newQty = currentQty + delta
@@ -148,7 +148,7 @@ class KasirViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                     "totalPrice" to total,
                     "items" to cartList.map { (item, qty) ->
                         mapOf(
-                            "itemId" to if (item.firebaseKey.isNotEmpty()) item.firebaseKey else item.id,
+                            "itemId" to item.firebaseKey.ifEmpty { item.id },
                             "name" to item.name,
                             "price" to item.price,
                             "purchasePrice" to item.purchasePrice,
@@ -174,7 +174,7 @@ class KasirViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                 _cartItems.value = emptyMap()
                 _selectedCustomer.value = null
                 onSuccess()
-            } catch (e: Exception) {
+            } catch (_: Exception) {
             }
         }
     }

@@ -93,7 +93,7 @@ fun NotaDigital(
             shopName = shopInfo.ownerName.ifEmpty { "TAM MOTOR" },
             shopAddress = shopInfo.address.ifEmpty { "Jl. Raya Natar No.12, Lampung Selatan" },
             shopPhone = shopInfo.phone.ifEmpty { "0857-6494-8010" },
-            onDismiss = { showPrintDialog = false }
+            onDismiss = { }
         )
     }
 }

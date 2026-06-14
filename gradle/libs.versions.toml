@@ -15,6 +15,8 @@ firebaseDatabase = "22.0.1"
 camerax = "1.4.0"
 barcodeScanning = "17.3.0"
 zxing = "3.5.3"
+retrofit = "2.9.0"
+room = "2.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -51,6 +53,15 @@ mlkit-barcode-scanning = { group = "com.google.mlkit", name = "barcode-scanning"
 
 # ZXing
 zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
+
+# Retrofit
+retrofit-core = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+
+# Room
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

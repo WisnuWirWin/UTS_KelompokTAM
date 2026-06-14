@@ -47,7 +47,7 @@ fun QRScanner(
                 cameraProviderFuture.addListener({
                     val cameraProvider = cameraProviderFuture.get()
                     val preview = Preview.Builder().build().also {
-                        it.setSurfaceProvider(previewView.surfaceProvider)
+                        it.surfaceProvider = previewView.surfaceProvider
                     }
 
                     val imageAnalysis = ImageAnalysis.Builder()
@@ -70,6 +70,7 @@ fun QRScanner(
                         )
                     } catch (e: Exception) {
                         Log.e("QRScanner", "Use case binding failed", e)
+                        onClose()
                     }
                 }, ContextCompat.getMainExecutor(ctx))
 

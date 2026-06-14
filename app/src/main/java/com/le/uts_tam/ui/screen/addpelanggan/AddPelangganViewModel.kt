@@ -76,7 +76,7 @@ class AddPelangganViewModel(ownerId: String, database: AppDatabase) : ViewModel(
                     repository.addCustomer(customer)
                 }
                 onSuccess()
-            } catch (e: Exception) {
+            } catch (_: Exception) {
             }
         }
     }

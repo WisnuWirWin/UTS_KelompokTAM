@@ -64,7 +64,7 @@ class EditStockViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                 }
 
                 onSuccess()
-            } catch (e: Exception) {
+            } catch (_: Exception) {
             }
         }
     }

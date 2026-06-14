@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 @JvmSuppressWildcards
+@Suppress("unused")
 interface VehicleDao {
     @Query("SELECT * FROM vehicles")
     fun getAllVehicles(): Flow<List<Vehicles>>

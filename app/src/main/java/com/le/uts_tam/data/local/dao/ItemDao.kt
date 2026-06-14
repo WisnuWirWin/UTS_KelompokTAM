@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 @JvmSuppressWildcards
+@Suppress("unused")
 interface ItemDao {
     @Query("SELECT * FROM items")
     fun getAllItems(): Flow<List<Items>>

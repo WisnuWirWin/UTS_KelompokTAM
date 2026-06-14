@@ -101,7 +101,7 @@ class LaporanViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                             filteredData[week] = (filteredData[week] ?: 0) + total
                             profitData[week] = (profitData[week] ?: 0) + profit
                         }
-                    } catch (e: Exception) {}
+                    } catch (_: Exception) {}
                 }
                 "BULAN INI" -> {
                     if (dateStr.length >= 10) {
@@ -118,53 +118,84 @@ class LaporanViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
         val reportItems = mutableListOf<ReportItem>()
         var totalEstimasi = 0L
 
-        if (tab == "HARIAN") {
-            for (i in 6 downTo 0) {
-                val cal = Calendar.getInstance().apply { add(Calendar.DATE, -i) }
-                val label = SimpleDateFormat("dd", Locale.getDefault()).format(cal.time)
-                val fullDate = sdf.format(cal.time)
+        when (tab) {
+            "HARIAN" -> {
+                for (i in 6 downTo 0) {
+                    val cal = Calendar.getInstance().apply { add(Calendar.DATE, -i) }
+                    val label = SimpleDateFormat("dd", Locale.getDefault()).format(cal.time)
+                    val fullDate = sdf.format(cal.time)
 
-                val income = filteredData[fullDate] ?: 0L
-                val profit = profitData[fullDate] ?: 0L
+                    val income = filteredData[fullDate] ?: 0L
+                    val profit = profitData[fullDate] ?: 0L
 
-                labels.add(label)
-                chartValues.add(income / 1000000f)
+                    labels.add(label)
+                    chartValues.add(income / 1000000f)
 
-                if (income > 0) {
-                    reportItems.add(0, ReportItem(
-                        date = SimpleDateFormat("dd MMM", Locale.getDefault()).format(cal.time),
-                        income = "Rp ${formatNumber(income)}",
-                        profit = "Rp ${formatNumber(profit)}",
-                        isToday = i == 0
-                    ))
+                    if (income > 0) {
+                        reportItems.add(
+                            0, ReportItem(
+                                date = SimpleDateFormat("dd MMM", Locale.getDefault()).format(cal.time),
+                                income = "Rp ${formatNumber(income)}",
+                                profit = "Rp ${formatNumber(profit)}",
+                                isToday = i == 0
+                            )
+                        )
+                    }
+                    totalEstimasi += income
                 }
-                totalEstimasi += income
             }
-        } else if (tab == "MINGGUAN") {
-            for (i in 1..5) {
-                val week = "W$i"
-                val income = filteredData[week] ?: 0L
-                val profit = profitData[week] ?: 0L
-                labels.add(week)
-                chartValues.add(income / 1000000f)
-                if (income > 0) {
-                    reportItems.add(ReportItem("Minggu $i", "Rp ${formatNumber(income)}", "Rp ${formatNumber(profit)}"))
+            "MINGGUAN" -> {
+                for (i in 1..5) {
+                    val week = "W$i"
+                    val income = filteredData[week] ?: 0L
+                    val profit = profitData[week] ?: 0L
+                    labels.add(week)
+                    chartValues.add(income / 1000000f)
+                    if (income > 0) {
+                        reportItems.add(
+                            ReportItem(
+                                "Minggu $i",
+                                "Rp ${formatNumber(income)}",
+                                "Rp ${formatNumber(profit)}"
+                            )
+                        )
+                    }
+                    totalEstimasi += income
                 }
-                totalEstimasi += income
             }
-        } else {
-            val months = listOf("JAN", "FEB", "MAR", "APR", "MEI", "JUN", "JUL", "AGU", "SEP", "OKT", "NOV", "DES")
-            val year = today.get(Calendar.YEAR)
-            months.forEachIndexed { index, m ->
-                val key = "%02d-%d".format(index + 1, year)
-                val income = filteredData[key] ?: 0L
-                val profit = profitData[key] ?: 0L
-                labels.add(m)
-                chartValues.add(income / 1000000f)
-                if (income > 0) {
-                    reportItems.add(ReportItem(m, "Rp ${formatNumber(income)}", "Rp ${formatNumber(profit)}"))
+            else -> {
+                val months = listOf(
+                    "JAN",
+                    "FEB",
+                    "MAR",
+                    "APR",
+                    "MEI",
+                    "JUN",
+                    "JUL",
+                    "AGU",
+                    "SEP",
+                    "OKT",
+                    "NOV",
+                    "DES"
+                )
+                val year = today.get(Calendar.YEAR)
+                months.forEachIndexed { index, m ->
+                    val key = "%02d-%d".format(index + 1, year)
+                    val income = filteredData[key] ?: 0L
+                    val profit = profitData[key] ?: 0L
+                    labels.add(m)
+                    chartValues.add(income / 1000000f)
+                    if (income > 0) {
+                        reportItems.add(
+                            ReportItem(
+                                m,
+                                "Rp ${formatNumber(income)}",
+                                "Rp ${formatNumber(profit)}"
+                            )
+                        )
+                    }
+                    totalEstimasi += income
                 }
-                totalEstimasi += income
             }
         }
 
@@ -172,6 +203,6 @@ class LaporanViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ReportState())
 
     private fun formatNumber(num: Long): String {
-        return java.text.NumberFormat.getInstance(Locale("id", "ID")).format(num)
+        return java.text.NumberFormat.getInstance(Locale.forLanguageTag("id-ID")).format(num)
     }
 }

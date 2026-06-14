@@ -39,6 +39,7 @@ class RiwayatViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                         else totalRaw.toString()
                     } else "0"
 
+                    @Suppress("UNCHECKED_CAST")
                     val items = data["items"] as? List<Map<String, Any>>
                     val layanan = items?.joinToString(", ") { it["name"] as? String ?: "" } ?: "-"
 
@@ -98,7 +99,7 @@ class RiwayatViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                 itemCal.get(Calendar.MONTH) == now.get(Calendar.MONTH)) {
                 return "BULAN INI"
             }
-        } catch (e: Exception) {}
+        } catch (_: Exception) {}
 
         return "LAINNYA"
     }

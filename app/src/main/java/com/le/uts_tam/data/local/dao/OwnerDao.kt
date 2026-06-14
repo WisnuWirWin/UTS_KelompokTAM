@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 @JvmSuppressWildcards
+@Suppress("unused")
 interface OwnerDao {
     @Query("SELECT * FROM owners LIMIT 1")
     fun getOwner(): Flow<Owners?>
