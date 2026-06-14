@@ -1,5 +1,6 @@
 package com.le.uts_tam.ui.screen.kasir
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.le.uts_tam.data.local.AppDatabase
@@ -121,10 +122,10 @@ class KasirViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
 
     fun processPayment(onSuccess: () -> Unit) {
         val customer = _selectedCustomer.value
-        val items = _cartItems.value.values.toList()
+        val cartList = _cartItems.value.values.toList()
         val total = totalBayar.value
 
-        if (items.isEmpty()) return
+        if (cartList.isEmpty()) return
 
         viewModelScope.launch {
             try {
@@ -142,7 +143,7 @@ class KasirViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                     "motorBrand" to (customer?.motorBrand ?: ""),
                     "motorModel" to (customer?.motorModel ?: ""),
                     "totalPrice" to total,
-                    "items" to items.map { (item, qty) ->
+                    "items" to cartList.map { (item, qty) ->
                         mapOf(
                             "itemId" to (item.firebaseKey ?: item.id),
                             "name" to item.name,
@@ -155,11 +156,24 @@ class KasirViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                 )
 
                 repository.addTransaction(transaction)
+
+                cartList.forEach { (item, qtySold) ->
+                    val key = item.firebaseKey
+                    if (key != null) {
+                        val currentStock = item.stock?.toIntOrNull() ?: 0
+                        val newStock = (currentStock - qtySold).coerceAtLeast(0)
+                        
+                        val updatedItem = item.copy(stock = newStock.toString())
+                        repository.updateItem(key, updatedItem)
+                        Log.d("KasirVM", "Updated stock for ${item.name}: $newStock")
+                    }
+                }
+
                 _cartItems.value = emptyMap()
                 _selectedCustomer.value = null
                 onSuccess()
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e("KasirVM", "Error during payment: ${e.message}")
             }
         }
     }
