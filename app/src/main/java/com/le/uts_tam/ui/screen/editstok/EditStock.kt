@@ -1,6 +1,5 @@
 package com.le.uts_tam.ui.screen.editstok
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,13 +17,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -91,42 +86,6 @@ fun EditStock(
                     )
                 )
         )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        val stroke = Stroke(width = 2f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f))
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(140.dp)
-                .clickable { },
-            contentAlignment = Alignment.Center
-        ) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                drawRoundRect(
-                    color = Color.Gray.copy(alpha = 0.5f),
-                    style = stroke,
-                    cornerRadius = CornerRadius(16.dp.toPx())
-                )
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(
-                    painter = painterResource(android.R.drawable.ic_menu_camera),
-                    contentDescription = null,
-                    tint = Color.Gray,
-                    modifier = Modifier.size(40.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    "TAP UNTUK UPLOAD FOTO",
-                    color = Color.Gray,
-                    fontSize = 10.sp,
-                    fontFamily = customFontFamily,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-
         Spacer(modifier = Modifier.height(24.dp))
 
         EditField(
