@@ -50,7 +50,9 @@ class DashboardViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                 profileImageUrl = owner?.imageUrl ?: ""
                 
                 totalItems = items.size
-                lowStockList = items.filter { (it.stock?.toIntOrNull() ?: 0) < 3 }
+                lowStockList = items.filter { 
+                    !it.name.isNullOrBlank() && (it.stock?.toIntOrNull() ?: 0) < 3 
+                }
                 lowStockItemsCount = lowStockList.size
                 totalCustomers = customers.size
 

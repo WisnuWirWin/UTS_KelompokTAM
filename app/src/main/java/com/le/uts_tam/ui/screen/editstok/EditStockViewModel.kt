@@ -12,17 +12,18 @@ import kotlinx.coroutines.launch
 
 class EditStockViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
     private val repository = FirebaseRepository(ownerId, database)
-
     var firebaseKey by mutableStateOf<String?>(null)
     var idItems by mutableStateOf("")
     var name by mutableStateOf("")
     var price by mutableStateOf("")
     var stock by mutableStateOf("")
-
     var hargaBeli by mutableStateOf("")
     var minStok by mutableStateOf("")
     var kategori by mutableStateOf("Semua")
     var supplier by mutableStateOf("")
+    var nameError by mutableStateOf<String?>(null)
+    var priceError by mutableStateOf<String?>(null)
+    var stockError by mutableStateOf<String?>(null)
 
     fun setInitialData(item: Items?) {
         if (item != null) {
@@ -43,9 +44,31 @@ class EditStockViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
             kategori = "Semua"
             supplier = ""
         }
+        clearErrors()
+    }
+    
+    private fun clearErrors() {
+        nameError = null
+        priceError = null
+        stockError = null
     }
 
-    fun saveChanges(onSuccess: () -> Unit) {
+    fun saveChanges(onSuccess: (String) -> Unit) {
+        clearErrors()
+        var hasError = false
+        if (name.isBlank()) {
+            nameError = "Nama barang tidak boleh kosong"
+            hasError = true
+        }
+        if (price.isBlank()) {
+            priceError = "Harga jual tidak boleh kosong"
+            hasError = true
+        }
+        if (stock.isBlank()) {
+            stockError = "Stok tidak boleh kosong"
+            hasError = true
+        }
+        if (hasError) return
         viewModelScope.launch {
             try {
                 val item = Items(
@@ -56,16 +79,15 @@ class EditStockViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                     purchasePrice = hargaBeli,
                     stock = stock,
                 )
-                
+                val currentName = name
                 firebaseKey?.let { key ->
                     repository.updateItem(key, item)
+                    onSuccess("Barang '$currentName' berhasil diperbarui")
                 } ?: run {
                     repository.addItem(item)
+                    onSuccess("Barang '$currentName' berhasil ditambahkan")
                 }
-
-                onSuccess()
-            } catch (_: Exception) {
-            }
+            } catch (_: Exception) {}
         }
     }
 }

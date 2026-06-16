@@ -11,13 +11,10 @@ import kotlinx.coroutines.launch
 class InventarisViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
     private val repository = FirebaseRepository(ownerId, database)
     private val _items = MutableStateFlow<List<Items>>(emptyList())
-    
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
-
     private val _selectedCategory = MutableStateFlow("SEMUA")
     val selectedCategory: StateFlow<String> = _selectedCategory
-
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
@@ -25,7 +22,6 @@ class InventarisViewModel(ownerId: String, database: AppDatabase) : ViewModel() 
         items.filter { item ->
             val matchesQuery = (item.name?.contains(query, ignoreCase = true) == true) || 
                                (item.id?.contains(query, ignoreCase = true) == true)
-            
             val matchesCategory = when (category) {
                 "SEMUA" -> true
                 "OLI & CAIRAN" -> item.name?.contains("oli", ignoreCase = true) == true || item.name?.contains("oil", ignoreCase = true) == true
@@ -33,7 +29,6 @@ class InventarisViewModel(ownerId: String, database: AppDatabase) : ViewModel() 
                 "REM" -> item.name?.contains("rem", ignoreCase = true) == true || item.name?.contains("brake", ignoreCase = true) == true
                 else -> true
             }
-
             matchesQuery && matchesCategory
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())

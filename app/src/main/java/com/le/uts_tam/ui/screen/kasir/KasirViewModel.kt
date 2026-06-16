@@ -13,22 +13,16 @@ import java.util.*
 
 class KasirViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
     private val repository = FirebaseRepository(ownerId, database)
-
     private val _items = MutableStateFlow<List<Items>>(emptyList())
     private val _customers = MutableStateFlow<List<Customers>>(emptyList())
-
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
-
     private val _customerSearchQuery = MutableStateFlow("")
     val customerSearchQuery: StateFlow<String> = _customerSearchQuery
-
     private val _selectedCustomer = MutableStateFlow<Customers?>(null)
     val selectedCustomer: StateFlow<Customers?> = _selectedCustomer
-
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
-
     private val _cartItems = MutableStateFlow<Map<String, Pair<Items, Int>>>(emptyMap())
 
     val cartItems: StateFlow<List<Pair<Items, Int>>> = _cartItems
@@ -142,6 +136,7 @@ class KasirViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                     "time" to sdfTime.format(now),
                     "customerId" to (customer?.firebaseKey ?: "anon"),
                     "customerName" to (customer?.name ?: "Umum"),
+                    "customerPhone" to (customer?.noHp ?: ""),
                     "customerPlate" to (customer?.plateNumber ?: "-"),
                     "motorBrand" to (customer?.motorBrand ?: ""),
                     "motorModel" to (customer?.motorModel ?: ""),
@@ -165,7 +160,6 @@ class KasirViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                     if (key.isNotEmpty()) {
                         val currentStock = item.stock?.toIntOrNull() ?: 0
                         val newStock = (currentStock - qtySold).coerceAtLeast(0)
-                        
                         val updatedItem = item.copy(stock = newStock.toString())
                         repository.updateItem(key, updatedItem)
                     }
@@ -174,8 +168,7 @@ class KasirViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                 _cartItems.value = emptyMap()
                 _selectedCustomer.value = null
                 onSuccess()
-            } catch (_: Exception) {
-            }
+            } catch (_: Exception) {}
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.le.uts_tam.ui.screen.editstok
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,6 +21,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -35,6 +37,7 @@ fun EditStock(
     onBack: () -> Unit = {},
     viewModel: EditStockViewModel = viewModel()
 ) {
+    val context = LocalContext.current
     val customFontFamily = FontFamily(Font(R.font.poppins))
     val scrollState = rememberScrollState()
 
@@ -89,11 +92,15 @@ fun EditStock(
         Spacer(modifier = Modifier.height(24.dp))
 
         EditField(
-            label = "NAMA BARANG",
+            label = "NAMA BARANG *",
             value = viewModel.name,
-            onValueChange = { viewModel.name = it },
+            onValueChange = { 
+                viewModel.name = it
+                if (it.isNotBlank()) viewModel.nameError = null
+            },
             fontFamily = customFontFamily,
-            isHighlighted = true
+            isHighlighted = true,
+            errorText = viewModel.nameError
         )
         
         EditField(
@@ -116,11 +123,17 @@ fun EditStock(
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 EditField(
-                    label = "HARGA JUAL",
+                    label = "HARGA JUAL *",
                     value = viewModel.price,
-                    onValueChange = { if (it.all { char -> char.isDigit() }) viewModel.price = it },
+                    onValueChange = { 
+                        if (it.all { char -> char.isDigit() }) {
+                            viewModel.price = it
+                            if (it.isNotBlank()) viewModel.priceError = null
+                        }
+                    },
                     fontFamily = customFontFamily,
-                    keyboardType = KeyboardType.Number
+                    keyboardType = KeyboardType.Number,
+                    errorText = viewModel.priceError
                 )
             }
         }
@@ -128,11 +141,17 @@ fun EditStock(
         Row(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.weight(1f)) {
                 EditField(
-                    label = "STOK",
+                    label = "STOK *",
                     value = viewModel.stock,
-                    onValueChange = { if (it.all { char -> char.isDigit() }) viewModel.stock = it },
+                    onValueChange = { 
+                        if (it.all { char -> char.isDigit() }) {
+                            viewModel.stock = it
+                            if (it.isNotBlank()) viewModel.stockError = null
+                        }
+                    },
                     fontFamily = customFontFamily,
-                    keyboardType = KeyboardType.Number
+                    keyboardType = KeyboardType.Number,
+                    errorText = viewModel.stockError
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
@@ -166,7 +185,8 @@ fun EditStock(
 
         Button(
             onClick = {
-                viewModel.saveChanges {
+                viewModel.saveChanges { message ->
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                     onBack()
                 }
             },
@@ -197,7 +217,8 @@ fun EditField(
     fontFamily: FontFamily,
     isHighlighted: Boolean = false,
     isDropdown: Boolean = false,
-    keyboardType: KeyboardType = KeyboardType.Text
+    keyboardType: KeyboardType = KeyboardType.Text,
+    errorText: String? = null
 ) {
     var expanded by remember { mutableStateOf(false) }
     val categories = listOf("Sparepart", "Jasa/Servis", "Oli", "Ban", "Lain-lain")
@@ -205,7 +226,7 @@ fun EditField(
     Column(modifier = Modifier.padding(bottom = 16.dp)) {
         Text(
             text = label,
-            color = Color.Gray,
+            color = if (errorText != null) Color.Red else Color.Gray,
             fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
             fontFamily = fontFamily
@@ -275,31 +296,43 @@ fun EditField(
                 }
             }
         } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .background(Color(0xFF1E1E1E), RoundedCornerShape(14.dp))
-                    .then(
-                        if (isHighlighted) Modifier.border(1.dp, Color(0xFFFF6D00), RoundedCornerShape(14.dp))
-                        else Modifier
+            Column {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .background(Color(0xFF1E1E1E), RoundedCornerShape(14.dp))
+                        .then(
+                            if (errorText != null) Modifier.border(1.dp, Color.Red, RoundedCornerShape(14.dp))
+                            else if (isHighlighted) Modifier.border(1.dp, Color(0xFFFF6D00), RoundedCornerShape(14.dp))
+                            else Modifier
+                        )
+                        .padding(horizontal = 16.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    BasicTextField(
+                        value = value,
+                        onValueChange = onValueChange,
+                        textStyle = TextStyle(
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontFamily = fontFamily
+                        ),
+                        cursorBrush = SolidColor(Color.White),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
                     )
-                    .padding(horizontal = 16.dp),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                BasicTextField(
-                    value = value,
-                    onValueChange = onValueChange,
-                    textStyle = TextStyle(
-                        color = Color.White,
-                        fontSize = 14.sp,
-                        fontFamily = fontFamily
-                    ),
-                    cursorBrush = SolidColor(Color.White),
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
-                )
+                }
+                if (errorText != null) {
+                    Text(
+                        text = errorText,
+                        color = Color.Red,
+                        fontSize = 10.sp,
+                        fontFamily = fontFamily,
+                        modifier = Modifier.padding(top = 4.dp, start = 4.dp)
+                    )
+                }
             }
         }
     }

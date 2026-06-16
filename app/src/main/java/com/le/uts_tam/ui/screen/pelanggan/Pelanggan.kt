@@ -1,5 +1,6 @@
 package com.le.uts_tam.ui.screen.pelanggan
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,17 +23,7 @@ import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -42,9 +33,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.le.uts_tam.data.model.dataclass.Customers
+import com.le.uts_tam.data.model.dataclass.PelangganUIState
 
 @Composable
 fun Pelanggan(
@@ -53,6 +46,7 @@ fun Pelanggan(
     onEditPelanggan: (Customers) -> Unit = {},
     viewModel: PelangganViewModel = viewModel(),
 ) {
+    val context = LocalContext.current
     val scrollState = rememberScrollState()
     var searchQuery by remember { mutableStateOf("") }
     
@@ -63,6 +57,34 @@ fun Pelanggan(
     val filteredList = uiState.filter {
         it.name.contains(searchQuery, ignoreCase = true) || 
         it.plate.contains(searchQuery, ignoreCase = true)
+    }
+
+    var selectedCustomerForDelete by remember { mutableStateOf<PelangganUIState?>(null) }
+
+    // Dialog Konfirmasi Hapus
+    selectedCustomerForDelete?.let { customer ->
+        AlertDialog(
+            onDismissRequest = { selectedCustomerForDelete = null },
+            title = { Text("Hapus Pelanggan") },
+            text = { Text("Apakah Anda yakin ingin menghapus data pelanggan '${customer.name}' beserta riwayatnya?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.deleteCustomer(customer.firebaseKey)
+                        Toast.makeText(context, "Data pelanggan '${customer.name}' berhasil dihapus", Toast.LENGTH_SHORT).show()
+                        selectedCustomerForDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Hapus")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { selectedCustomerForDelete = null }) {
+                    Text("Batal")
+                }
+            }
+        )
     }
 
     Column(
@@ -179,7 +201,7 @@ fun Pelanggan(
                         )
                     },
                     onDelete = {
-                        viewModel.deleteCustomer(customer.firebaseKey)
+                        selectedCustomerForDelete = customer
                     }
                 )
                 Spacer(modifier = Modifier.height(16.dp))

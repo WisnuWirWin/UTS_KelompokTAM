@@ -1,5 +1,12 @@
 package com.le.uts_tam.ui.screen.profil
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.pm.PackageManager
+import android.os.Build
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,6 +22,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -29,6 +38,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Print
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -48,36 +58,58 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.le.uts_tam.R
+import com.le.uts_tam.utils.BluetoothPrinterManager
+import kotlinx.coroutines.launch
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun Profil(
     onBack: () -> Unit = {},
     onLogout: () -> Unit = {},
     isDarkTheme: Boolean = true,
     onThemeToggle: (Boolean) -> Unit = {},
-    viewModel: ProfilViewModel = viewModel()
+    viewModel: ProfilViewModel = viewModel(),
+    printerManager: BluetoothPrinterManager? = null
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     val uiState by viewModel.uiState.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
 
     var showEditDialog by remember { mutableStateOf(false) }
-    var editFieldName by remember { mutableStateOf("") }
-    var editFieldValue by remember { mutableStateOf("") }
-    var editType by remember { mutableStateOf("") } // name, address, phone
+    var editName by remember { mutableStateOf("") }
+    var editAddress by remember { mutableStateOf("") }
+    var editPhone by remember { mutableStateOf("") }
+    var nameError by remember { mutableStateOf<String?>(null) }
+    var phoneError by remember { mutableStateOf<String?>(null) }
+
+    var showPrinterDialog by remember { mutableStateOf(false) }
+    val isPrinterConnected by printerManager?.isConnected?.collectAsState() ?: mutableStateOf(false)
+    val connectedPrinterName by printerManager?.connectedDeviceName?.collectAsState() ?: mutableStateOf(null)
+
+    val bluetoothPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) showPrinterDialog = true
+        else Toast.makeText(context, "Izin Bluetooth diperlukan", Toast.LENGTH_SHORT).show()
+    }
 
     Column(
         modifier = Modifier
@@ -203,7 +235,14 @@ fun Profil(
             SectionHeader(icon = Icons.Default.Settings, title = "INFORMASI BENGKEL")
             
             Card(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().clickable {
+                    editName = uiState.ownerName
+                    editAddress = uiState.address
+                    editPhone = uiState.phone
+                    nameError = null
+                    phoneError = null
+                    showEditDialog = true
+                },
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
@@ -213,9 +252,11 @@ fun Profil(
                         label = "Nama Pemilik", 
                         value = uiState.ownerName.ifEmpty { "Set Name" },
                         onClick = {
-                            editFieldName = "Nama Pemilik"
-                            editFieldValue = uiState.ownerName
-                            editType = "name"
+                            editName = uiState.ownerName
+                            editAddress = uiState.address
+                            editPhone = uiState.phone
+                            nameError = null
+                            phoneError = null
                             showEditDialog = true
                         }
                     )
@@ -225,9 +266,11 @@ fun Profil(
                         label = "Alamat", 
                         value = uiState.address.ifEmpty { "Set Address" },
                         onClick = {
-                            editFieldName = "Alamat"
-                            editFieldValue = uiState.address
-                            editType = "address"
+                            editName = uiState.ownerName
+                            editAddress = uiState.address
+                            editPhone = uiState.phone
+                            nameError = null
+                            phoneError = null
                             showEditDialog = true
                         }
                     )
@@ -237,9 +280,11 @@ fun Profil(
                         label = "No. Telepon", 
                         value = uiState.phone.ifEmpty { "Set Phone" },
                         onClick = {
-                            editFieldName = "No. Telepon"
-                            editFieldValue = uiState.phone
-                            editType = "phone"
+                            editName = uiState.ownerName
+                            editAddress = uiState.address
+                            editPhone = uiState.phone
+                            nameError = null
+                            phoneError = null
                             showEditDialog = true
                         }
                     )
@@ -258,7 +303,22 @@ fun Profil(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column {
-                SettingsItem(icon = Icons.AutoMirrored.Filled.List, label = "Printer Bluetooth", value = "Tidak terhubung")
+                SettingsItem(
+                    icon = Icons.Default.Print, 
+                    label = "Printer Bluetooth", 
+                    value = if (isPrinterConnected) connectedPrinterName ?: "Terhubung" else "Tidak terhubung",
+                    onClick = {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
+                                showPrinterDialog = true
+                            } else {
+                                bluetoothPermissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
+                            }
+                        } else {
+                            showPrinterDialog = true
+                        }
+                    }
+                )
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
 
                 // Theme Toggle Item
@@ -341,7 +401,7 @@ fun Profil(
     }
 
     if (showEditDialog) {
-        Dialog(onDismissRequest = { }) {
+        Dialog(onDismissRequest = { showEditDialog = false }) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -352,30 +412,131 @@ fun Profil(
                     modifier = Modifier.padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(text = "Ubah $editFieldName", style = MaterialTheme.typography.titleMedium)
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(text = "Ubah Profil Bengkel", style = MaterialTheme.typography.titleLarge)
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
                     TextField(
-                        value = editFieldValue,
-                        onValueChange = { editFieldValue = it },
+                        value = editName,
+                        onValueChange = { 
+                            editName = it
+                            nameError = if (it.isBlank()) "Nama tidak boleh kosong" else null
+                        },
+                        label = { Text("Nama Pemilik") },
+                        modifier = Modifier.fillMaxWidth(),
+                        isError = nameError != null,
+                        supportingText = { nameError?.let { Text(it) } },
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    TextField(
+                        value = editAddress,
+                        onValueChange = { editAddress = it },
+                        label = { Text("Alamat") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    TextField(
+                        value = editPhone,
+                        onValueChange = { 
+                            editPhone = it
+                            phoneError = if (it.length < 10) "Nomor telepon tidak valid" else null
+                        },
+                        label = { Text("No. Telepon") },
+                        modifier = Modifier.fillMaxWidth(),
+                        isError = phoneError != null,
+                        supportingText = { phoneError?.let { Text(it) } },
+                        singleLine = true
+                    )
+                    
                     Spacer(modifier = Modifier.height(24.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        TextButton(onClick = { }) {
+                        TextButton(onClick = { showEditDialog = false }) {
                             Text("Batal")
                         }
-                        Button(onClick = {
-                            when (editType) {
-                                "name" -> viewModel.updateProfile(editFieldValue, uiState.address, uiState.phone)
-                                "address" -> viewModel.updateProfile(uiState.ownerName, editFieldValue, uiState.phone)
-                                "phone" -> viewModel.updateProfile(uiState.ownerName, uiState.address, editFieldValue)
-                            }
-                        }) {
+                        Button(
+                            onClick = {
+                                if (editName.isNotBlank() && editPhone.length >= 10) {
+                                    viewModel.updateProfile(editName, editAddress, editPhone) {
+                                        Toast.makeText(context, "Profil berhasil diperbarui", Toast.LENGTH_SHORT).show()
+                                        showEditDialog = false
+                                    }
+                                } else {
+                                    if (editName.isBlank()) nameError = "Nama tidak boleh kosong"
+                                    if (editPhone.length < 10) phoneError = "Nomor telepon tidak valid"
+                                }
+                            },
+                            enabled = nameError == null && phoneError == null
+                        ) {
                             Text("Simpan")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (showPrinterDialog && printerManager != null) {
+        val pairedDevices = printerManager.getPairedDevices()
+        Dialog(onDismissRequest = { showPrinterDialog = false }) {
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    Text("Pilih Printer Bluetooth", style = MaterialTheme.typography.titleLarge)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    if (pairedDevices.isEmpty()) {
+                        Text("Tidak ada perangkat Bluetooth yang terpasang.", color = Color.Gray)
+                    } else {
+                        LazyColumn(modifier = Modifier.height(200.dp)) {
+                            items(pairedDevices) { device ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            scope.launch {
+                                                val success = printerManager.connectToDevice(device)
+                                                if (success) {
+                                                    Toast.makeText(context, "Berhasil terhubung ke ${device.name}", Toast.LENGTH_SHORT).show()
+                                                    showPrinterDialog = false
+                                                } else {
+                                                    Toast.makeText(context, "Gagal terhubung", Toast.LENGTH_SHORT).show()
+                                                }
+                                            }
+                                        }
+                                        .padding(vertical = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(Icons.Default.Print, null, tint = MaterialTheme.colorScheme.primary)
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Column {
+                                        @SuppressLint("MissingPermission")
+                                        val deviceName = device.name ?: "Unknown Device"
+                                        Text(deviceName, style = MaterialTheme.typography.bodyLarge)
+                                        Text(device.address, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                                    }
+                                }
+                                HorizontalDivider(color = Color.LightGray.copy(alpha = 0.2f))
+                            }
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        if (isPrinterConnected) {
+                            TextButton(onClick = { printerManager.disconnect() }) {
+                                Text("Putus Koneksi", color = MaterialTheme.colorScheme.error)
+                            }
+                        }
+                        TextButton(onClick = { showPrinterDialog = false }) {
+                            Text("Tutup")
                         }
                     }
                 }

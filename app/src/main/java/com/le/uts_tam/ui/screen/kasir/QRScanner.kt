@@ -12,8 +12,6 @@ import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -46,34 +44,36 @@ fun QRScanner(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT
                     )
+                    // Fix for emulator/unusual hardware: specify implementation mode
+                    implementationMode = PreviewView.ImplementationMode.COMPATIBLE
                 }
 
                 cameraProviderFuture.addListener({
-                    val cameraProvider = cameraProviderFuture.get()
-                    val preview = Preview.Builder().build().also {
-                        it.surfaceProvider = previewView.surfaceProvider
-                    }
-
-                    val imageAnalysis = ImageAnalysis.Builder()
-                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                        .build()
-
-                    imageAnalysis.setAnalyzer(executor) { imageProxy: ImageProxy ->
-                        if (!isProcessed) {
-                            processImageProxy(scanner, imageProxy) { code ->
-                                if (!isProcessed) {
-                                    isProcessed = true
-                                    onScan(code)
-                                }
-                            }
-                        } else {
-                            imageProxy.close()
-                        }
-                    }
-
-                    val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
                     try {
+                        val cameraProvider = cameraProviderFuture.get()
+                        val preview = Preview.Builder().build().also {
+                            it.surfaceProvider = previewView.surfaceProvider
+                        }
+
+                        val imageAnalysis = ImageAnalysis.Builder()
+                            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                            .build()
+
+                        imageAnalysis.setAnalyzer(executor) { imageProxy: ImageProxy ->
+                            if (!isProcessed) {
+                                processImageProxy(scanner, imageProxy) { code ->
+                                    if (!isProcessed) {
+                                        isProcessed = true
+                                        onScan(code)
+                                    }
+                                }
+                            } else {
+                                imageProxy.close()
+                            }
+                        }
+
+                        val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
                         cameraProvider.unbindAll()
                         cameraProvider.bindToLifecycle(
                             lifecycleOwner,
@@ -82,7 +82,7 @@ fun QRScanner(
                             imageAnalysis
                         )
                     } catch (e: Exception) {
-                        Log.e("QRScanner", "Use case binding failed", e)
+                        Log.e("QRScanner", "Camera initialization failed", e)
                         onClose()
                     }
                 }, ContextCompat.getMainExecutor(ctx))

@@ -12,7 +12,6 @@ import kotlinx.coroutines.launch
 
 class AddPelangganViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
     private val repository = FirebaseRepository(ownerId, database)
-
     var firebaseKey by mutableStateOf<String?>(null)
     var namaLengkap by mutableStateOf("")
     var nomorTelepon by mutableStateOf("")
@@ -23,6 +22,9 @@ class AddPelangganViewModel(ownerId: String, database: AppDatabase) : ViewModel(
     var tahun by mutableStateOf("")
     var warna by mutableStateOf("")
     var catatan by mutableStateOf("")
+    var nameError by mutableStateOf<String?>(null)
+    var phoneError by mutableStateOf<String?>(null)
+    var plateError by mutableStateOf<String?>(null)
 
     fun setInitialData(customer: Customers?) {
         if (customer != null) {
@@ -39,6 +41,7 @@ class AddPelangganViewModel(ownerId: String, database: AppDatabase) : ViewModel(
         } else {
             resetFields()
         }
+        clearErrors()
     }
 
     private fun resetFields() {
@@ -53,8 +56,29 @@ class AddPelangganViewModel(ownerId: String, database: AppDatabase) : ViewModel(
         warna = ""
         catatan = ""
     }
+    
+    private fun clearErrors() {
+        nameError = null
+        phoneError = null
+        plateError = null
+    }
 
     fun saveCustomer(onSuccess: () -> Unit) {
+        clearErrors()
+        var hasError = false
+        if (namaLengkap.isBlank()) {
+            nameError = "Nama lengkap wajib diisi"
+            hasError = true
+        }
+        if (nomorTelepon.isBlank() || nomorTelepon.length < 10) {
+            phoneError = "Nomor telepon tidak valid"
+            hasError = true
+        }
+        if (nomorPlat.isBlank()) {
+            plateError = "Nomor plat wajib diisi"
+            hasError = true
+        }
+        if (hasError) return
         viewModelScope.launch {
             try {
                 val customer = Customers(
@@ -67,17 +91,15 @@ class AddPelangganViewModel(ownerId: String, database: AppDatabase) : ViewModel(
                     motorModel = tipeModel,
                     motorYear = tahun,
                     motorColor = warna,
-                    complaint = catatan,
+                    complaint = catatan
                 )
-                
-                if (firebaseKey != null) {
-                    repository.updateCustomer(firebaseKey!!, customer)
-                } else {
+                firebaseKey?.let { key ->
+                    repository.updateCustomer(key, customer)
+                } ?: run {
                     repository.addCustomer(customer)
                 }
                 onSuccess()
-            } catch (_: Exception) {
-            }
+            } catch (_: Exception) {}
         }
     }
 }

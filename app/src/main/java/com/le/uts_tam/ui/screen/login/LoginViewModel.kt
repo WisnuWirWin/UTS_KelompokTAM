@@ -13,35 +13,24 @@ import kotlinx.coroutines.launch
 
 class LoginViewModel(private val database: AppDatabase) : ViewModel() {
     private val repository = FirebaseRepository(null, database)
-
     var isLoading by mutableStateOf(false)
     var errorMessage by mutableStateOf<String?>(null)
 
-    fun login(
-        usernameInput: String,
-        passwordInput: String,
-        onSuccess: (Owners) -> Unit
-    ) {
+    fun login(usernameInput: String, passwordInput: String, onSuccess: (Owners) -> Unit) {
         val u = usernameInput.trim()
         val p = passwordInput.trim()
-
         if (u.isEmpty() || p.isEmpty()) {
             errorMessage = "Username dan Password tidak boleh kosong"
             return
         }
-
         viewModelScope.launch {
             isLoading = true
             errorMessage = null
-
             try {
                 val owners = repository.getOwnersForLogin().first()
-
                 val matchedOwner = owners.find {
-                    it.username?.equals(u, ignoreCase = true) == true &&
-                            it.password == p
+                    it.username?.equals(u, ignoreCase = true) == true && it.password == p
                 }
-
                 if (matchedOwner != null) {
                     database.ownerDao().deleteAll()
                     database.ownerDao().upsertOwner(matchedOwner)
@@ -62,17 +51,10 @@ class LoginViewModel(private val database: AppDatabase) : ViewModel() {
             errorMessage = "Semua field harus diisi"
             return
         }
-
         viewModelScope.launch {
             isLoading = true
             try {
-                repository.registerNewOwner(
-                    Owners(
-                        owner = name,
-                        username = user,
-                        password = pass
-                    )
-                )
+                repository.registerNewOwner(Owners(owner = name, username = user, password = pass))
                 onSuccess()
             } catch (e: Exception) {
                 errorMessage = "Gagal daftar: ${e.message}"

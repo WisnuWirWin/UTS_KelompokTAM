@@ -13,13 +13,10 @@ import kotlinx.coroutines.launch
 
 class ProfilViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
     private val repository = FirebaseRepository(ownerId, database)
-
     private val _uiState = MutableStateFlow(ProfilUIState())
     val uiState: StateFlow<ProfilUIState> = _uiState.asStateFlow()
-
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
@@ -48,13 +45,12 @@ class ProfilViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
         }
     }
 
-    fun updateProfile(name: String, address: String, phone: String) {
+    fun updateProfile(name: String, address: String, phone: String, onSuccess: () -> Unit) {
         val currentState = _uiState.value
         if (currentState.firebaseKey.isEmpty()) {
             _error.value = "Data profil tidak ditemukan"
             return
         }
-
         viewModelScope.launch {
             try {
                 repository.updateOwner(
@@ -68,6 +64,7 @@ class ProfilViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                         password = currentState.password
                     )
                 )
+                onSuccess()
             } catch (e: Exception) {
                 _error.value = "Gagal menyimpan perubahan: ${e.message}"
             }

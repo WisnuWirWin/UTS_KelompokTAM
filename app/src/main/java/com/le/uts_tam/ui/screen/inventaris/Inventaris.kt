@@ -1,7 +1,9 @@
 package com.le.uts_tam.ui.screen.inventaris
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -28,6 +30,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -47,6 +50,7 @@ fun Inventaris(
     onLaporanClick: () -> Unit = {},
     viewModel: InventarisViewModel = viewModel()
 ) {
+    val context = LocalContext.current
     val categories = listOf("SEMUA", "OLI & CAIRAN", "FILTER", "REM")
 
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -54,8 +58,35 @@ fun Inventaris(
     val items by viewModel.filteredItems.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
-    // State untuk Dialog QR
+    // State untuk Dialog
     val selectedItemForQR = remember { mutableStateOf<Items?>(null) }
+    val selectedItemForDelete = remember { mutableStateOf<Items?>(null) }
+
+    // Dialog Konfirmasi Hapus
+    selectedItemForDelete.value?.let { item ->
+        AlertDialog(
+            onDismissRequest = { selectedItemForDelete.value = null },
+            title = { Text("Hapus Barang") },
+            text = { Text("Apakah Anda yakin ingin menghapus '${item.name}' dari inventaris?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.deleteItem(item)
+                        Toast.makeText(context, "Barang '${item.name}' berhasil dihapus", Toast.LENGTH_SHORT).show()
+                        selectedItemForDelete.value = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Hapus")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { selectedItemForDelete.value = null }) {
+                    Text("Batal")
+                }
+            }
+        )
+    }
 
     // Tampilkan Dialog jika ada item yang dipilih
     selectedItemForQR.value?.let { item ->
@@ -254,7 +285,7 @@ fun Inventaris(
                         InventoryCard(
                             item = item,
                             onEdit = { onEditItem(item) },
-                            onDelete = { viewModel.deleteItem(item) },
+                            onDelete = { selectedItemForDelete.value = item },
                             onShowQR = { selectedItemForQR.value = item }
                         )
                     }
@@ -271,7 +302,7 @@ fun QuickActionButton(icon: ImageVector, label: String) {
             modifier = Modifier.size(60.dp).clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
-            Icon(icon, label, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(28.dp))
+            Icon(imageVector = icon, contentDescription = label, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(28.dp))
         }
         Spacer(modifier = Modifier.height(8.dp))
         Text(text = label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)

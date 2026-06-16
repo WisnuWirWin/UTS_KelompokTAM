@@ -7,6 +7,7 @@ import com.le.uts_tam.data.local.AppDatabase
 import com.le.uts_tam.data.model.dataclass.Customers
 import com.le.uts_tam.data.model.dataclass.Vehicles
 import com.le.uts_tam.data.repository.FirebaseRepository
+import com.le.uts_tam.utils.FormatUtils
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -31,12 +32,11 @@ class RiwayatViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                     val dateStr = data["date"] as? String ?: ""
                     val tgl = dateStr.split("-").firstOrNull() ?: ""
                     val blnNum = dateStr.split("-").getOrNull(1) ?: ""
-                    val bln = getMonthName(blnNum)
+                    val bln = FormatUtils.getMonthName(blnNum)
 
                     val totalRaw = data["totalPrice"]
                     val totalFormatted = if (totalRaw is Number) {
-                        if (totalRaw.toLong() >= 1000) "${totalRaw.toLong() / 1000}K"
-                        else totalRaw.toString()
+                        FormatUtils.formatShortAmount(totalRaw.toLong()).replace("Rp ", "")
                     } else "0"
 
                     @Suppress("UNCHECKED_CAST")
@@ -54,7 +54,8 @@ class RiwayatViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                         jam = data["time"] as? String ?: "00:00",
                         customer = Customers(
                             firebaseKey = data["customerId"] as? String ?: "",
-                            name = data["customerName"] as? String
+                            name = data["customerName"] as? String,
+                            noHp = data["customerPhone"] as? String
                         ),
                         vehicle = Vehicles(
                             firebaseKey = "",
@@ -70,13 +71,6 @@ class RiwayatViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                 }.sortedByDescending { it.trxId }
             }
         }
-    }
-
-    private fun getMonthName(num: String): String = when(num) {
-        "01" -> "JAN"; "02" -> "FEB"; "03" -> "MAR"; "04" -> "APR"
-        "05" -> "MEI"; "06" -> "JUN"; "07" -> "JUL"; "08" -> "AGU"
-        "09" -> "SEP"; "10" -> "OKT"; "11" -> "NOV"; "12" -> "DES"
-        else -> "..."
     }
 
     private fun determineCategory(dateStr: String): String {

@@ -2,31 +2,10 @@ package com.le.uts_tam.ui.screen.login
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -34,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -199,9 +179,10 @@ fun Login(onLoginSuccess: (Owners) -> Unit, database: AppDatabase) {
 
     if (showRegisterDialog) {
         RegisterDialog(
-            onDismiss = { },
+            onDismiss = { showRegisterDialog = false },
             onRegister = { user, pass, name ->
                 viewModel.register(user, pass, name) {
+                    showRegisterDialog = false
                 }
             }
         )
@@ -213,6 +194,10 @@ fun RegisterDialog(onDismiss: () -> Unit, onRegister: (String, String, String) -
     var user by remember { mutableStateOf("") }
     var pass by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
+    
+    var userError by remember { mutableStateOf<String?>(null) }
+    var passError by remember { mutableStateOf<String?>(null) }
+    var nameError by remember { mutableStateOf<String?>(null) }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -222,15 +207,68 @@ fun RegisterDialog(onDismiss: () -> Unit, onRegister: (String, String, String) -
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(text = "Daftar Akun Baru", style = MaterialTheme.typography.titleLarge)
                 Spacer(modifier = Modifier.height(16.dp))
-                TextField(value = name, onValueChange = { name = it }, label = { Text("Nama Pemilik") }, modifier = Modifier.fillMaxWidth())
+                
+                TextField(
+                    value = name, 
+                    onValueChange = { 
+                        name = it
+                        if (it.isNotBlank()) nameError = null
+                    }, 
+                    label = { Text("Nama Pemilik") }, 
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = nameError != null,
+                    supportingText = { nameError?.let { Text(it) } }
+                )
                 Spacer(modifier = Modifier.height(8.dp))
-                TextField(value = user, onValueChange = { user = it }, label = { Text("Username") }, modifier = Modifier.fillMaxWidth())
+                
+                TextField(
+                    value = user, 
+                    onValueChange = { 
+                        user = it
+                        if (it.isNotBlank()) userError = null
+                    }, 
+                    label = { Text("Username") }, 
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = userError != null,
+                    supportingText = { userError?.let { Text(it) } }
+                )
                 Spacer(modifier = Modifier.height(8.dp))
-                TextField(value = pass, onValueChange = { pass = it }, label = { Text("Password") }, modifier = Modifier.fillMaxWidth(), visualTransformation = PasswordVisualTransformation())
+                
+                TextField(
+                    value = pass, 
+                    onValueChange = { 
+                        pass = it
+                        if (it.length >= 6) passError = null
+                    }, 
+                    label = { Text("Password") }, 
+                    modifier = Modifier.fillMaxWidth(), 
+                    visualTransformation = PasswordVisualTransformation(),
+                    isError = passError != null,
+                    supportingText = { passError?.let { Text(it) } }
+                )
+                
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     TextButton(onClick = onDismiss) { Text("Batal") }
-                    Button(onClick = { onRegister(user, pass, name) }) { Text("Daftar") }
+                    Button(onClick = { 
+                        var hasError = false
+                        if (name.isBlank()) {
+                            nameError = "Nama wajib diisi"
+                            hasError = true
+                        }
+                        if (user.isBlank()) {
+                            userError = "Username wajib diisi"
+                            hasError = true
+                        }
+                        if (pass.length < 6) {
+                            passError = "Password minimal 6 karakter"
+                            hasError = true
+                        }
+                        
+                        if (!hasError) {
+                            onRegister(user, pass, name)
+                        }
+                    }) { Text("Daftar") }
                 }
             }
         }

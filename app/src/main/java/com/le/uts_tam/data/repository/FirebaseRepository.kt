@@ -18,14 +18,10 @@ import kotlinx.coroutines.tasks.await
 
 class FirebaseRepository(private val ownerId: String? = null, databaseInstance: AppDatabase? = null) {
     private val database = FirebaseDatabase.getInstance("https://uas-tam-6107e-default-rtdb.asia-southeast1.firebasedatabase.app")
-    
     private val localDb = databaseInstance
     private val repositoryScope = CoroutineScope(Dispatchers.IO)
-
     private val allOwnersRef = database.getReference("owners_list")
-    
     private val ownerDataRef = if (ownerId != null) database.getReference("data").child(ownerId) else null
-    
     private val customersRef = ownerDataRef?.child("customers")
     private val itemsRef = ownerDataRef?.child("items")
     private val profileRef = ownerDataRef?.child("profile")
@@ -95,7 +91,6 @@ class FirebaseRepository(private val ownerId: String? = null, databaseInstance: 
         val key = allOwnersRef.push().key ?: return
         val ownerWithKey = owner.copy(firebaseKey = key)
         allOwnersRef.child(key).setValue(ownerWithKey).await()
-        
         database.getReference("data").child(key).child("profile").setValue(ownerWithKey).await()
     }
 
@@ -107,7 +102,6 @@ class FirebaseRepository(private val ownerId: String? = null, databaseInstance: 
         val ref = customersRef?.push() ?: return
         val key = ref.key ?: return
         val customerWithKey = customer.copy(firebaseKey = key)
-        
         localDb?.customerDao()?.upsertCustomer(customerWithKey)
         ref.setValue(customerWithKey).await()
     }
@@ -131,7 +125,6 @@ class FirebaseRepository(private val ownerId: String? = null, databaseInstance: 
         val ref = itemsRef?.push() ?: return
         val key = ref.key ?: return
         val itemWithKey = item.copy(firebaseKey = key)
-        
         localDb?.itemDao()?.upsertItem(itemWithKey)
         ref.setValue(itemWithKey).await()
     }

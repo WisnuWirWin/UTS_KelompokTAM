@@ -49,6 +49,8 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
@@ -198,17 +200,17 @@ fun Laporan(
                     ) {
                         Column(modifier = Modifier.padding(20.dp)) {
                             Text(
-                                text = "PENDAPATAN $selectedTab",
+                                text = "PENDAPATAN $selectedTab (dalam Jutaan)",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.labelSmall,
                                 letterSpacing = 1.sp
                             )
                             Spacer(modifier = Modifier.height(24.dp))
 
-                            InteractiveBarChart(
+                            ProfessionalBarChart(
                                 data = reportState.chartData,
                                 labels = reportState.labels,
-                                modifier = Modifier.fillMaxWidth().height(180.dp)
+                                modifier = Modifier.fillMaxWidth().height(200.dp)
                             )
                         }
                     }
@@ -279,35 +281,96 @@ fun QuickActionButton(icon: ImageVector, label: String) {
 }
 
 @Composable
-fun InteractiveBarChart(data: List<Float>, labels: List<String>, modifier: Modifier) {
+fun ProfessionalBarChart(data: List<Float>, labels: List<String>, modifier: Modifier) {
     var selectedIndex by remember { mutableIntStateOf(-1) }
-    val maxVal = if (data.isEmpty()) 1f else data.maxOrNull() ?: 1f
+    val maxVal = if (data.isEmpty()) 1f else (data.maxOrNull()?.coerceAtLeast(1f) ?: 1f)
+    
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val secondaryColor = MaterialTheme.colorScheme.secondary
+    val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
+    val labelColor = Color.Gray
 
     Column(modifier = modifier) {
-        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-            Canvas(modifier = Modifier.fillMaxSize().pointerInput(data) {
+        Canvas(modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(data) {
                 detectTapGestures { offset ->
-                    val barWidth = size.width / (data.size * 1.5f)
-                    val spacing = barWidth / 2
-                    val index = (offset.x / (barWidth + spacing)).toInt()
-                    if (index in data.indices) selectedIndex = if (selectedIndex == index) -1 else index
+                    if (data.isEmpty()) return@detectTapGestures
+                    val barWidthWithSpacing = size.width / data.size
+                    val index = (offset.x / barWidthWithSpacing).toInt()
+                    if (index in data.indices) {
+                        selectedIndex = if (selectedIndex == index) -1 else index
+                    }
                 }
-            }) {
-                val barWidth = size.width / (data.size * 1.5f)
-                val spacing = barWidth / 2
-                data.forEachIndexed { i, v ->
-                    val h = (v / maxVal) * size.height
-                    drawRoundRect(
-                        color = if (selectedIndex == i) Color(0xFFFF6D00) else Color(0xFF6200EE),
-                        topLeft = Offset(i * (barWidth + spacing), size.height - h),
-                        size = Size(barWidth, h),
-                        cornerRadius = CornerRadius(4.dp.toPx())
+            }
+        ) {
+            val canvasWidth = size.width
+            val canvasHeight = size.height - 25.dp.toPx()
+            val barCount = data.size
+            if (barCount == 0) return@Canvas
+            
+            val barWidthWithSpacing = canvasWidth / barCount
+            val barWidth = barWidthWithSpacing * 0.6f
+            val spacing = barWidthWithSpacing * 0.4f
+            
+            // Draw horizontal grid lines
+            val gridLines = 4
+            for (i in 0..gridLines) {
+                val y = canvasHeight - (i * (canvasHeight / gridLines))
+                drawLine(
+                    color = onSurfaceVariant.copy(alpha = 0.1f),
+                    start = Offset(0f, y),
+                    end = Offset(canvasWidth, y),
+                    strokeWidth = 1.dp.toPx()
+                )
+            }
+
+            data.forEachIndexed { i, value ->
+                val barHeight = (value / maxVal) * canvasHeight
+                val left = i * barWidthWithSpacing + (spacing / 2)
+                val top = canvasHeight - barHeight
+                
+                // Draw Bar
+                drawRoundRect(
+                    color = if (selectedIndex == i) secondaryColor else primaryColor,
+                    topLeft = Offset(left, top),
+                    size = Size(barWidth, barHeight),
+                    cornerRadius = CornerRadius(4.dp.toPx())
+                )
+
+                // Draw Label Text
+                val labelText = labels.getOrNull(i) ?: ""
+                val textPaint = android.graphics.Paint().apply {
+                    color = labelColor.toArgb()
+                    textSize = 10.sp.toPx()
+                    textAlign = android.graphics.Paint.Align.CENTER
+                    isAntiAlias = true
+                }
+                
+                drawContext.canvas.nativeCanvas.drawText(
+                    labelText,
+                    left + (barWidth / 2),
+                    size.height - 5.dp.toPx(),
+                    textPaint
+                )
+                
+                // Draw value on top if selected
+                if (selectedIndex == i) {
+                    val valueText = "%.1f".format(value)
+                    val valuePaint = android.graphics.Paint().apply {
+                        color = secondaryColor.toArgb()
+                        textSize = 10.sp.toPx()
+                        textAlign = android.graphics.Paint.Align.CENTER
+                        typeface = android.graphics.Typeface.DEFAULT_BOLD
+                    }
+                    drawContext.canvas.nativeCanvas.drawText(
+                        valueText,
+                        left + (barWidth / 2),
+                        top - 10.dp.toPx(),
+                        valuePaint
                     )
                 }
             }
-        }
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            labels.forEach { Text(it, style = MaterialTheme.typography.labelSmall, color = Color.Gray) }
         }
     }
 }

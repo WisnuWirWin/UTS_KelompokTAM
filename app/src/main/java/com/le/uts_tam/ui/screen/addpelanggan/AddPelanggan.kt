@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -39,7 +41,7 @@ fun AddPelanggan(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(bottom = 80.dp)
+                .padding(bottom = 100.dp)
         ) {
             Spacer(modifier = Modifier.height(40.dp))
 
@@ -136,8 +138,12 @@ fun AddPelanggan(
             CustomTextField(
                 label = "NAMA LENGKAP *",
                 value = viewModel.namaLengkap,
-                onValueChange = { viewModel.namaLengkap = it },
-                placeholder = "Budi Santoso"
+                onValueChange = { 
+                    viewModel.namaLengkap = it 
+                    if (it.isNotBlank()) viewModel.nameError = null
+                },
+                placeholder = "Budi Santoso",
+                errorText = viewModel.nameError
             )
 
             Column(
@@ -147,7 +153,7 @@ fun AddPelanggan(
             ) {
                 Text(
                     text = "NOMOR TELEPON / WHATSAPP *",
-                    color = Color.Gray,
+                    color = if (viewModel.phoneError != null) Color.Red else Color.Gray,
                     fontSize = 12.sp
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -167,7 +173,12 @@ fun AddPelanggan(
                     Spacer(modifier = Modifier.width(12.dp))
                     TextField(
                         value = viewModel.nomorTelepon,
-                        onValueChange = { viewModel.nomorTelepon = it },
+                        onValueChange = { 
+                            if (it.all { char -> char.isDigit() }) {
+                                viewModel.nomorTelepon = it
+                                if (it.length >= 10) viewModel.phoneError = null
+                            }
+                        },
                         modifier = Modifier.weight(1f),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = DarkSurfaceVariant,
@@ -177,8 +188,13 @@ fun AddPelanggan(
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.White
                         ),
-                        shape = RoundedCornerShape(12.dp)
+                        isError = viewModel.phoneError != null,
+                        shape = RoundedCornerShape(12.dp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
                     )
+                }
+                if (viewModel.phoneError != null) {
+                    Text(text = viewModel.phoneError!!, color = Color.Red, fontSize = 10.sp, modifier = Modifier.padding(top = 4.dp))
                 }
             }
 
@@ -223,8 +239,12 @@ fun AddPelanggan(
             CustomTextField(
                 label = "NOMOR PLAT *",
                 value = viewModel.nomorPlat,
-                onValueChange = { viewModel.nomorPlat = it },
-                placeholder = "B 4821 XZ"
+                onValueChange = { 
+                    viewModel.nomorPlat = it 
+                    if (it.isNotBlank()) viewModel.plateError = null
+                },
+                placeholder = "B 4821 XZ",
+                errorText = viewModel.plateError
             )
 
             Row(
@@ -283,7 +303,7 @@ fun AddPelanggan(
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
                         value = viewModel.tahun,
-                        onValueChange = { viewModel.tahun = it },
+                        onValueChange = { if (it.all { char -> char.isDigit() }) viewModel.tahun = it },
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = DarkSurfaceVariant,
@@ -293,7 +313,8 @@ fun AddPelanggan(
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.White
                         ),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
@@ -396,14 +417,19 @@ fun CustomTextField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
-    minLines: Int = 1
+    minLines: Int = 1,
+    errorText: String? = null
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 8.dp)
     ) {
-        Text(text = label, color = Color.Gray, fontSize = 12.sp)
+        Text(
+            text = label, 
+            color = if (errorText != null) Color.Red else Color.Gray, 
+            fontSize = 12.sp
+        )
         Spacer(modifier = Modifier.height(8.dp))
         TextField(
             value = value,
@@ -412,7 +438,9 @@ fun CustomTextField(
                 .fillMaxWidth()
                 .border(
                     width = 1.dp,
-                    brush = if (value.isNotEmpty()) Brush.linearGradient(listOf(PrimaryOrange, PrimaryOrange)) else Brush.linearGradient(listOf(Color.Transparent, Color.Transparent)),
+                    brush = if (errorText != null) Brush.linearGradient(listOf(Color.Red, Color.Red))
+                            else if (value.isNotEmpty()) Brush.linearGradient(listOf(PrimaryOrange, PrimaryOrange)) 
+                            else Brush.linearGradient(listOf(Color.Transparent, Color.Transparent)),
                     shape = RoundedCornerShape(12.dp)
                 ),
             colors = TextFieldDefaults.colors(
@@ -423,9 +451,13 @@ fun CustomTextField(
                 focusedTextColor = Color.White,
                 unfocusedTextColor = Color.White
             ),
+            isError = errorText != null,
             placeholder = { Text(text = placeholder, color = Color.Gray) },
             shape = RoundedCornerShape(12.dp),
             minLines = minLines
         )
+        if (errorText != null) {
+            Text(text = errorText, color = Color.Red, fontSize = 10.sp, modifier = Modifier.padding(top = 4.dp))
+        }
     }
 }

@@ -12,13 +12,10 @@ import kotlinx.coroutines.launch
 
 class PelangganViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
     private val repository = FirebaseRepository(ownerId, database)
-
     private val _uiState = MutableStateFlow<List<PelangganUIState>>(emptyList())
     val uiState: StateFlow<List<PelangganUIState>> = _uiState.asStateFlow()
-
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 

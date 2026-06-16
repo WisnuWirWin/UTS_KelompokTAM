@@ -31,13 +31,18 @@ import com.le.uts_tam.ui.screen.editstok.EditStockViewModel
 import com.le.uts_tam.ui.screen.inventaris.InventarisViewModel
 import com.le.uts_tam.ui.screen.laporan.LaporanViewModel
 import com.le.uts_tam.ui.theme.UTS_TAMTheme
+import com.le.uts_tam.utils.BluetoothPrinterManager
 
 class MainActivity : ComponentActivity() {
+    private lateinit var printerManager: BluetoothPrinterManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val database = AppDatabase.getDatabase(this)
+        printerManager = BluetoothPrinterManager(this)
+
         setContent {
             var isDarkTheme by remember { mutableStateOf(true) }
 
@@ -141,7 +146,8 @@ class MainActivity : ComponentActivity() {
                             viewModel = viewModel(
                                 key = "profil_$ownerId",
                                 factory = ScopedViewModelFactory(ownerId, database)
-                            )
+                            ),
+                            printerManager = printerManager
                         )
                     }
                     
@@ -165,7 +171,8 @@ class MainActivity : ComponentActivity() {
                             profilViewModel = viewModel(
                                 key = "profil_nota_$ownerId",
                                 factory = ScopedViewModelFactory(ownerId, database)
-                            )
+                            ),
+                            printerManager = printerManager
                         )
                     }
                     
@@ -242,6 +249,13 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (::printerManager.isInitialized) {
+            printerManager.disconnect()
         }
     }
 }

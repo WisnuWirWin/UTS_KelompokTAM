@@ -28,8 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.le.uts_tam.R
-import java.text.NumberFormat
-import java.util.*
+import com.le.uts_tam.utils.FormatUtils
 
 @Composable
 fun Dashboard(
@@ -42,9 +41,6 @@ fun Dashboard(
     viewModel: DashboardViewModel
 ) {
     val scrollState = rememberScrollState()
-    val currencyFormatter = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("id-ID")).apply {
-        maximumFractionDigits = 0
-    }
 
     Scaffold(
         bottomBar = {
@@ -148,22 +144,14 @@ fun Dashboard(
                         style = MaterialTheme.typography.labelSmall
                     )
                     Text(
-                        text = currencyFormatter.format(viewModel.totalIncomeToday).uppercase(), 
+                        text = FormatUtils.formatCurrency(viewModel.totalIncomeToday).uppercase(), 
                         color = MaterialTheme.colorScheme.onPrimaryContainer, 
                         style = MaterialTheme.typography.headlineLarge
                     )
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         SummaryText("Transaksi", viewModel.transactionCountToday.toString())
                         SummaryText("Servis", viewModel.serviceCountToday.toString())
-                        
-                        val sparepartFormatted = if (viewModel.sparepartIncomeToday >= 1000000) {
-                            "Rp %.1fjt".format(viewModel.sparepartIncomeToday / 1000000.0)
-                        } else if (viewModel.sparepartIncomeToday >= 1000) {
-                            "Rp ${viewModel.sparepartIncomeToday / 1000}K"
-                        } else {
-                            "Rp ${viewModel.sparepartIncomeToday}"
-                        }
-                        SummaryText("Sparepart", sparepartFormatted)
+                        SummaryText("Sparepart", FormatUtils.formatShortAmount(viewModel.sparepartIncomeToday))
                     }
                 }
             }
@@ -179,15 +167,7 @@ fun Dashboard(
             Row(modifier = Modifier.fillMaxWidth()) {
                 StatCard("PELANGGAN", viewModel.totalCustomers.toString(), Modifier.weight(1f), onClick = onPelangganClick)
                 Spacer(modifier = Modifier.width(16.dp))
-                
-                val monthlyFormatted = if (viewModel.monthlyIncome >= 1000000) {
-                    "RP ${viewModel.monthlyIncome / 1000000}JT"
-                } else if (viewModel.monthlyIncome >= 1000) {
-                    "RP ${viewModel.monthlyIncome / 1000}K"
-                } else {
-                    "RP ${viewModel.monthlyIncome}"
-                }
-                StatCard("BULAN INI", monthlyFormatted, Modifier.weight(1f), MaterialTheme.colorScheme.secondary, onClick = onLaporanClick)
+                StatCard("BULAN INI", FormatUtils.formatShortAmount(viewModel.monthlyIncome).uppercase(), Modifier.weight(1f), MaterialTheme.colorScheme.secondary, onClick = onLaporanClick)
             }
 
             Spacer(modifier = Modifier.height(24.dp))

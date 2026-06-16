@@ -16,14 +16,14 @@ val DarkSurfaceVariant = Color(0xFF262626)
 val DarkTextPrimary = Color(0xFFFFFFFF)
 val DarkTextSecondary = Color(0xFFB0B0B0)
 
-// Light Theme Colors
-val LightBackground = Color(0xFFF5F5F5)
+// Light Theme Colors (Refined for smoothness)
+val LightBackground = Color(0xFFF8F9FA) // Softer off-white
 val LightSurface = Color(0xFFFFFFFF)
-val LightSurfaceVariant = Color(0xFFE0E0E0)
-val LightTextPrimary = Color(0xFF212121)
-val LightTextSecondary = Color(0xFF757575)
+val LightSurfaceVariant = Color(0xFFF1F3F4) // Soft grey for cards/fields
+val LightTextPrimary = Color(0xFF202124) // Deep charcoal instead of pure black
+val LightTextSecondary = Color(0xFF5F6368) // Medium grey
 
-// Functional Colors
-//val SuccessGreen = Color(0xFF4CAF50)
-//val DarkSuccessGreen = Color(0xFF1B5E20)
-//val ErrorRed = Color(0xFFD32F2F)
+// Additional Refined Colors
+val SoftOrange = Color(0xFFFFF3E0) // For containers in light mode
+val SoftRed = Color(0xFFFFEBEE)
+val SoftGrey = Color(0xFFE8EAED)

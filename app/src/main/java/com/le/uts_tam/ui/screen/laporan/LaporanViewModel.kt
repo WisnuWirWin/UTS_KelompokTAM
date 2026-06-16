@@ -6,6 +6,7 @@ import com.le.uts_tam.data.local.AppDatabase
 import com.le.uts_tam.data.model.dataclass.ReportItem
 import com.le.uts_tam.data.model.dataclass.ReportState
 import com.le.uts_tam.data.repository.FirebaseRepository
+import com.le.uts_tam.utils.FormatUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,12 +19,9 @@ import java.util.*
 
 class LaporanViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
     private val repository = FirebaseRepository(ownerId, database)
-
     private val _transactions = MutableStateFlow<List<Map<String, Any>>>(emptyList())
-
     private val _selectedTab = MutableStateFlow("HARIAN")
     val selectedTab: StateFlow<String> = _selectedTab.asStateFlow()
-
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
@@ -56,14 +54,12 @@ class LaporanViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
     val reportData = combine(_transactions, _selectedTab) { transactions, tab ->
         val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
         val today = Calendar.getInstance()
-
         val filteredData = mutableMapOf<String, Long>()
         val profitData = mutableMapOf<String, Long>()
 
         transactions.forEach { trx ->
             val dateStr = trx["date"] as? String ?: ""
             val total = parseMoney(trx["totalPrice"])
-            
             val itemsRaw = trx["items"]
             var transactionProfit = 0L
 
@@ -77,14 +73,10 @@ class LaporanViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                 val price = parseMoney(item["price"])
                 val purchasePrice = parseMoney(item["purchasePrice"])
                 val qty = (item["qty"] as? Number ?: item["quantity"] as? Number ?: 1).toLong()
-
-                // Jika purchasePrice 0 (data lama), kita gunakan estimasi 40% agar laba tidak sama dengan omzet
                 val effectivePurchasePrice = if (purchasePrice == 0L) (price * 0.6).toLong() else purchasePrice
-                
                 transactionProfit += (price - effectivePurchasePrice) * qty
             }
 
-            // Jika total transaksi ada tapi profit masih 0, fallback ke estimasi
             val profit = if (transactionProfit == 0L && total > 0) (total * 0.4).toLong() else transactionProfit
 
             when (tab) {
@@ -124,22 +116,18 @@ class LaporanViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                     val cal = Calendar.getInstance().apply { add(Calendar.DATE, -i) }
                     val label = SimpleDateFormat("dd", Locale.getDefault()).format(cal.time)
                     val fullDate = sdf.format(cal.time)
-
                     val income = filteredData[fullDate] ?: 0L
                     val profit = profitData[fullDate] ?: 0L
-
                     labels.add(label)
                     chartValues.add(income / 1000000f)
 
                     if (income > 0) {
-                        reportItems.add(
-                            0, ReportItem(
-                                date = SimpleDateFormat("dd MMM", Locale.getDefault()).format(cal.time),
-                                income = "Rp ${formatNumber(income)}",
-                                profit = "Rp ${formatNumber(profit)}",
-                                isToday = i == 0
-                            )
-                        )
+                        reportItems.add(0, ReportItem(
+                            date = SimpleDateFormat("dd MMM", Locale.getDefault()).format(cal.time),
+                            income = "Rp ${FormatUtils.formatNumber(income)}",
+                            profit = "Rp ${FormatUtils.formatNumber(profit)}",
+                            isToday = i == 0
+                        ))
                     }
                     totalEstimasi += income
                 }
@@ -152,32 +140,13 @@ class LaporanViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                     labels.add(week)
                     chartValues.add(income / 1000000f)
                     if (income > 0) {
-                        reportItems.add(
-                            ReportItem(
-                                "Minggu $i",
-                                "Rp ${formatNumber(income)}",
-                                "Rp ${formatNumber(profit)}"
-                            )
-                        )
+                        reportItems.add(ReportItem("Minggu $i", "Rp ${FormatUtils.formatNumber(income)}", "Rp ${FormatUtils.formatNumber(profit)}"))
                     }
                     totalEstimasi += income
                 }
             }
             else -> {
-                val months = listOf(
-                    "JAN",
-                    "FEB",
-                    "MAR",
-                    "APR",
-                    "MEI",
-                    "JUN",
-                    "JUL",
-                    "AGU",
-                    "SEP",
-                    "OKT",
-                    "NOV",
-                    "DES"
-                )
+                val months = listOf("JAN", "FEB", "MAR", "APR", "MEI", "JUN", "JUL", "AGU", "SEP", "OKT", "NOV", "DES")
                 val year = today.get(Calendar.YEAR)
                 months.forEachIndexed { index, m ->
                     val key = "%02d-%d".format(index + 1, year)
@@ -186,23 +155,12 @@ class LaporanViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                     labels.add(m)
                     chartValues.add(income / 1000000f)
                     if (income > 0) {
-                        reportItems.add(
-                            ReportItem(
-                                m,
-                                "Rp ${formatNumber(income)}",
-                                "Rp ${formatNumber(profit)}"
-                            )
-                        )
+                        reportItems.add(ReportItem(m, "Rp ${FormatUtils.formatNumber(income)}", "Rp ${FormatUtils.formatNumber(profit)}"))
                     }
                     totalEstimasi += income
                 }
             }
         }
-
-        ReportState(labels, chartValues, reportItems, "Rp ${formatNumber(totalEstimasi)}")
+        ReportState(labels, chartValues, reportItems, "Rp ${FormatUtils.formatNumber(totalEstimasi)}")
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ReportState())
-
-    private fun formatNumber(num: Long): String {
-        return java.text.NumberFormat.getInstance(Locale.forLanguageTag("id-ID")).format(num)
-    }
 }

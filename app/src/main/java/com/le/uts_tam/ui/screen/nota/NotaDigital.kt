@@ -1,11 +1,26 @@
 package com.le.uts_tam.ui.screen.nota
 
+import android.annotation.SuppressLint
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -13,17 +28,37 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Print
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -34,16 +69,23 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.le.uts_tam.ui.screen.profil.ProfilViewModel
 import com.le.uts_tam.ui.screen.riwayat.HistoryItem
+import com.le.uts_tam.utils.BluetoothPrinterManager
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun NotaDigital(
     onBack: () -> Unit,
     transaction: HistoryItem? = null,
-    profilViewModel: ProfilViewModel = viewModel()
+    profilViewModel: ProfilViewModel = viewModel(),
+    printerManager: BluetoothPrinterManager? = null
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val shopInfo by profilViewModel.uiState.collectAsState()
     var showPrintDialog by remember { mutableStateOf(false) }
+    val isPrinterConnected by printerManager?.isConnected?.collectAsState() ?: mutableStateOf(false)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background
@@ -82,7 +124,41 @@ fun NotaDigital(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            ActionButtons(onPrintClick = { showPrintDialog = true })
+            ActionButtons(
+                onPrintClick = { showPrintDialog = true },
+                onBluetoothPrintClick = {
+                    if (isPrinterConnected && transaction != null && printerManager != null) {
+                        scope.launch {
+                            val receiptText = buildReceiptString(
+                                transaction,
+                                shopInfo.ownerName.ifEmpty { "TAM MOTOR" },
+                                shopInfo.address.ifEmpty { "Jl. Raya Natar" },
+                                shopInfo.phone.ifEmpty { "-" }
+                            )
+                            val success = printerManager.printReceipt(receiptText)
+                            if (success) Toast.makeText(context, "Mencetak nota...", Toast.LENGTH_SHORT).show()
+                            else Toast.makeText(context, "Gagal mencetak", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        Toast.makeText(context, "Printer belum terhubung. Atur di Profil.", Toast.LENGTH_LONG).show()
+                    }
+                },
+                onWhatsAppShare = {
+                    if (transaction != null) {
+                        val message = buildWhatsAppMessage(
+                            transaction,
+                            shopInfo.ownerName.ifEmpty { "TAM MOTOR" }
+                        )
+                        val phoneNumber = transaction.customer.noHp?.replace(Regex("[^0-9]"), "") ?: ""
+                        
+                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                            val url = "https://api.whatsapp.com/send?phone=62$phoneNumber&text=${Uri.encode(message)}"
+                            data = Uri.parse(url)
+                        }
+                        context.startActivity(intent)
+                    }
+                }
+            )
             Spacer(modifier = Modifier.height(20.dp))
         }
     }
@@ -95,6 +171,110 @@ fun NotaDigital(
             shopPhone = shopInfo.phone.ifEmpty { "0857-6494-8010" },
             onDismiss = { showPrintDialog = false }
         )
+    }
+}
+
+private fun buildReceiptString(
+    transaction: HistoryItem,
+    shopName: String,
+    shopAddress: String,
+    shopPhone: String
+): String {
+    val builder = StringBuilder()
+    builder.append("${shopName.uppercase()}\n")
+    builder.append("$shopAddress\n")
+    builder.append("Telp: $shopPhone\n")
+    builder.append("--------------------------------\n")
+    builder.append("${transaction.trxId}\n")
+    builder.append("${transaction.tgl}/${transaction.bln} ${transaction.jam}\n")
+    builder.append("--------------------------------\n")
+    builder.append("Pelanggan: ${transaction.customer.name ?: "Umum"}\n")
+    builder.append("Plat     : ${transaction.vehicle.numberPlate ?: "-"}\n")
+    builder.append("--------------------------------\n")
+    builder.append("${transaction.layanan.take(20).padEnd(20)} ${transaction.totalHarga.padStart(10)}\n")
+    builder.append("--------------------------------\n")
+    builder.append("TOTAL: Rp ${transaction.totalHarga}\n")
+    builder.append("\n      TERIMA KASIH      \n\n\n")
+    return builder.toString()
+}
+
+private fun buildWhatsAppMessage(transaction: HistoryItem, shopName: String): String {
+    return """
+        *NOTA DIGITAL - $shopName*
+        
+        ID Transaksi: ${transaction.trxId}
+        Tanggal: ${transaction.tgl} ${transaction.bln} ${transaction.jam}
+        
+        Pelanggan: ${transaction.customer.name ?: "Umum"}
+        Kendaraan: ${transaction.vehicle.brand ?: "-"} (${transaction.vehicle.numberPlate ?: "-"})
+        
+        *Rincian:*
+        ${transaction.layanan}
+        
+        *TOTAL: Rp ${transaction.totalHarga}*
+        Status: LUNAS
+        
+        Terima kasih telah mempercayai layanan kami!
+    """.trimIndent()
+}
+
+@Composable
+fun ActionButtons(
+    onPrintClick: () -> Unit = {},
+    onBluetoothPrintClick: () -> Unit = {},
+    onWhatsAppShare: () -> Unit = {}
+) {
+    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            OutlinedButton(
+                onClick = onBluetoothPrintClick,
+                modifier = Modifier.weight(1f).height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+            ) {
+                Icon(Icons.Default.Print, null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("PRINTER")
+            }
+
+            OutlinedButton(
+                onClick = onWhatsAppShare,
+                modifier = Modifier.weight(1f).height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(2.dp, Color(0xFF25D366))
+            ) {
+                Icon(Icons.Default.Share, null, tint = Color(0xFF25D366))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("WHATSAPP", color = Color(0xFF25D366))
+            }
+        }
+
+        Button(
+            onClick = onPrintClick,
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+            contentPadding = PaddingValues()
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.horizontalGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)),
+                        RoundedCornerShape(12.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Info, null, tint = MaterialTheme.colorScheme.onPrimary)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("LIHAT NOTA", color = MaterialTheme.colorScheme.onPrimary)
+                }
+            }
+        }
     }
 }
 
@@ -131,7 +311,6 @@ fun PrintReceiptDialog(
                         .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Receipt Header
                     Text(
                         text = shopName.uppercase(),
                         color = Color.Black,
@@ -158,7 +337,6 @@ fun PrintReceiptDialog(
                     DashedDivider()
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Trx Info
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         ReceiptText(text = transaction.trxId, modifier = Modifier)
                         ReceiptText(text = "${transaction.tgl}/${transaction.bln} ${transaction.jam}", modifier = Modifier)
@@ -171,7 +349,6 @@ fun PrintReceiptDialog(
                     DashedDivider()
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Customer Info
                     Row(modifier = Modifier.fillMaxWidth()) {
                         ReceiptText(text = "Pelanggan: ${transaction.customer.name ?: "Umum"}", modifier = Modifier)
                     }
@@ -181,7 +358,6 @@ fun PrintReceiptDialog(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Items Table
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         ReceiptText("Item", modifier = Modifier.weight(1f))
                         ReceiptText("Qty", modifier = Modifier.width(40.dp), textAlign = TextAlign.Center)
@@ -191,7 +367,6 @@ fun PrintReceiptDialog(
                     DashedDivider()
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Transaction list
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         ReceiptText(
                             text = transaction.layanan, 
@@ -213,7 +388,6 @@ fun PrintReceiptDialog(
                     DashedDivider()
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Totals
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -224,7 +398,6 @@ fun PrintReceiptDialog(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Real QR Code Generator
                     QRVisualizer(seed = transaction.trxId, sizeDp = 100)
                     
                     Spacer(modifier = Modifier.height(8.dp))
@@ -423,7 +596,6 @@ fun ReceiptCard(
             HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Customer Info
             Column {
                 Text("PELANGGAN:", color = Color.Gray, style = MaterialTheme.typography.labelSmall)
                 Text(transaction.customer.name ?: "Umum", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
@@ -435,7 +607,6 @@ fun ReceiptCard(
             HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Items List
             Row(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -481,49 +652,6 @@ fun QRCodeSection(trxId: String) {
             Column {
                 Text("QR Code Nota", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                 Text("Scan untuk verifikasi - $trxId", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
-    }
-}
-
-@Composable
-fun ActionButtons(onPrintClick: () -> Unit = {}) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        OutlinedButton(
-            onClick = { },
-            modifier = Modifier.weight(1f).height(56.dp),
-            shape = RoundedCornerShape(12.dp),
-            border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-        ) {
-            Icon(Icons.Default.Share, null)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("WHATSAPP")
-        }
-
-        Button(
-            onClick = onPrintClick,
-            modifier = Modifier.weight(1f).height(56.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-            contentPadding = PaddingValues()
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.horizontalGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)),
-                        RoundedCornerShape(12.dp)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Info, null, tint = MaterialTheme.colorScheme.onPrimary)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("CETAK NOTA", color = MaterialTheme.colorScheme.onPrimary)
-                }
             }
         }
     }
