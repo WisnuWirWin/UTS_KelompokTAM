@@ -45,6 +45,10 @@ configure<com.android.build.api.dsl.ApplicationExtension> {
     }
 }
 
+base {
+    archivesName.set("SmartBengkel")
+}
+
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)

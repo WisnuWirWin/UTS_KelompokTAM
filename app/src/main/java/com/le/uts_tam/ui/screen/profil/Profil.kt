@@ -2,6 +2,8 @@ package com.le.uts_tam.ui.screen.profil
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothAdapter
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.widget.Toast
@@ -83,6 +85,16 @@ fun Profil(
             showPrinterDialog = true
         } else {
             Toast.makeText(context, "Izin Bluetooth (Connect & Scan) diperlukan", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    val enableBluetoothLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
+            showPrinterDialog = true
+        } else {
+            Toast.makeText(context, "Bluetooth harus diaktifkan", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -301,17 +313,25 @@ fun Profil(
                     label = "Printer Bluetooth", 
                     value = if (isPrinterConnected) connectedPrinterName ?: "Terhubung" else "Tidak terhubung",
                     onClick = {
+                        val checkAndOpenPrinter = {
+                            if (printerManager?.isBluetoothEnabled() == true) {
+                                showPrinterDialog = true
+                            } else {
+                                enableBluetoothLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+                            }
+                        }
+
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                             val missingPermissions = bluetoothPermissions.filter {
                                 ContextCompat.checkSelfPermission(context, it) != PackageManager.PERMISSION_GRANTED
                             }
                             if (missingPermissions.isEmpty()) {
-                                showPrinterDialog = true
+                                checkAndOpenPrinter()
                             } else {
                                 bluetoothPermissionLauncher.launch(missingPermissions.toTypedArray())
                             }
                         } else {
-                            showPrinterDialog = true
+                            checkAndOpenPrinter()
                         }
                     }
                 )

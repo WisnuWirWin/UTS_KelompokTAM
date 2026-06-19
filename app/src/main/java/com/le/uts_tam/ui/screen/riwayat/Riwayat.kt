@@ -278,13 +278,18 @@ fun HistoryCard(item: HistoryItem, onClick: () -> Unit = {}) {
                 Text(
                     text = item.customer.name ?: "Tanpa Nama",
                     color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 2
                 )
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Text(
                         text = item.vehicle.brand ?: "-",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
                     Text(" • ", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(
@@ -297,7 +302,8 @@ fun HistoryCard(item: HistoryItem, onClick: () -> Unit = {}) {
                 Text(
                     text = item.layanan,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 3
                 )
             }
 

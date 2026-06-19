@@ -107,10 +107,15 @@ fun NotaDigital(
                             transaction,
                             shopInfo.ownerName.ifEmpty { "SmartBengkel" }
                         )
-                        val phoneNumber = transaction.customer.noHp?.replace(Regex("[^0-9]"), "") ?: ""
+                        var phoneNumber = transaction.customer.noHp?.replace(Regex("[^0-9]"), "") ?: ""
+                        if (phoneNumber.startsWith("0")) {
+                            phoneNumber = "62" + phoneNumber.substring(1)
+                        } else if (phoneNumber.startsWith("8")) {
+                            phoneNumber = "62" + phoneNumber
+                        }
                         
                         val intent = Intent(Intent.ACTION_VIEW).apply {
-                            val url = "https://api.whatsapp.com/send?phone=62$phoneNumber&text=${Uri.encode(message)}"
+                            val url = "https://api.whatsapp.com/send?phone=$phoneNumber&text=${Uri.encode(message)}"
                             data = Uri.parse(url)
                         }
                         context.startActivity(intent)

@@ -34,6 +34,10 @@ class BluetoothPrinterManager(private val context: Context) {
 
     private val SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
 
+    fun isBluetoothEnabled(): Boolean {
+        return bluetoothAdapter?.isEnabled ?: false
+    }
+
     @SuppressLint("MissingPermission")
     fun getPairedDevices(): List<BluetoothDevice> {
         if (!hasBluetoothPermission()) return emptyList()
