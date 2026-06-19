@@ -7,57 +7,21 @@ import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Print
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -65,12 +29,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.le.uts_tam.R
+import com.le.uts_tam.ui.components.ChangePasswordDialog
 import com.le.uts_tam.ui.components.EditProfileDialog
+import com.le.uts_tam.ui.components.InfoDetailDialog
 import com.le.uts_tam.ui.components.PrinterSelectionDialog
 import com.le.uts_tam.utils.BluetoothPrinterManager
 import kotlinx.coroutines.launch
@@ -93,6 +60,10 @@ fun Profil(
     val error by viewModel.error.collectAsState()
 
     var showEditDialog by remember { mutableStateOf(false) }
+    var showPasswordDialog by remember { mutableStateOf(false) }
+    var showDetailDialog by remember { mutableStateOf(false) }
+    var detailTitle by remember { mutableStateOf("") }
+    var detailContent by remember { mutableStateOf("") }
 
     var showPrinterDialog by remember { mutableStateOf(false) }
     val isPrinterConnected by printerManager?.isConnected?.collectAsState() ?: mutableStateOf(false)
@@ -144,7 +115,6 @@ fun Profil(
                 Text(text = error ?: "Unknown Error", modifier = Modifier.padding(16.dp))
             }
         } else {
-            // Profile Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
@@ -225,13 +195,10 @@ fun Profil(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Section Title
             SectionHeader(icon = Icons.Default.Settings, title = "INFORMASI BENGKEL")
             
             Card(
-                modifier = Modifier.fillMaxWidth().clickable {
-                    showEditDialog = true
-                },
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
@@ -239,36 +206,67 @@ fun Profil(
                     SettingsItem(
                         icon = Icons.Default.Home, 
                         label = "Nama Pemilik", 
-                        value = uiState.ownerName.ifEmpty { "Set Name" },
+                        value = uiState.ownerName.ifEmpty { "-" },
                         onClick = {
-                            showEditDialog = true
+                            detailTitle = "Nama Pemilik"
+                            detailContent = uiState.ownerName.ifEmpty { "Belum diatur" }
+                            showDetailDialog = true
                         }
                     )
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
                     SettingsItem(
                         icon = Icons.Default.LocationOn, 
                         label = "Alamat", 
-                        value = uiState.address.ifEmpty { "Set Address" },
+                        value = uiState.address.ifEmpty { "-" },
                         onClick = {
-                            showEditDialog = true
+                            detailTitle = "Alamat Bengkel"
+                            detailContent = uiState.address.ifEmpty { "Belum diatur" }
+                            showDetailDialog = true
                         }
                     )
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
                     SettingsItem(
                         icon = Icons.Default.Call, 
                         label = "No. Telepon", 
-                        value = uiState.phone.ifEmpty { "Set Phone" },
+                        value = uiState.phone.ifEmpty { "-" },
                         onClick = {
-                            showEditDialog = true
+                            detailTitle = "Nomor Telepon"
+                            detailContent = uiState.phone.ifEmpty { "Belum diatur" }
+                            showDetailDialog = true
                         }
                     )
                 }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Button(
+                onClick = { showEditDialog = true },
+                modifier = Modifier.fillMaxWidth().height(50.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("UBAH PROFIL BENGKEL", fontWeight = FontWeight.Bold)
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            OutlinedButton(
+                onClick = { showPasswordDialog = true },
+                modifier = Modifier.fillMaxWidth().height(50.dp),
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+            ) {
+                Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("UBAH PASSWORD AKUN", fontWeight = FontWeight.Bold)
             }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Section Title
         SectionHeader(icon = Icons.Default.Notifications, title = "PREFERENSI APLIKASI")
         
         Card(
@@ -295,7 +293,6 @@ fun Profil(
                 )
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
 
-                // Theme Toggle Item
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -339,7 +336,6 @@ fun Profil(
                 
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
                 
-                // Logout Button
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -374,6 +370,14 @@ fun Profil(
         Spacer(modifier = Modifier.height(40.dp))
     }
 
+    if (showDetailDialog) {
+        InfoDetailDialog(
+            title = detailTitle,
+            content = detailContent,
+            onDismiss = { showDetailDialog = false }
+        )
+    }
+
     if (showEditDialog) {
         EditProfileDialog(
             initialName = uiState.ownerName,
@@ -384,6 +388,18 @@ fun Profil(
                 viewModel.updateProfile(name, address, phone) {
                     Toast.makeText(context, "Profil berhasil diperbarui", Toast.LENGTH_SHORT).show()
                     showEditDialog = false
+                }
+            }
+        )
+    }
+    
+    if (showPasswordDialog) {
+        ChangePasswordDialog(
+            onDismiss = { showPasswordDialog = false },
+            onConfirm = { newPass ->
+                viewModel.updateProfile(uiState.ownerName, uiState.address, uiState.phone, newPass) {
+                    Toast.makeText(context, "Password berhasil diubah", Toast.LENGTH_SHORT).show()
+                    showPasswordDialog = false
                 }
             }
         )
@@ -429,11 +445,11 @@ fun SectionHeader(icon: ImageVector, title: String) {
 }
 
 @Composable
-fun SettingsItem(icon: ImageVector, label: String, value: String, onClick: () -> Unit = {}) {
+fun SettingsItem(icon: ImageVector, label: String, value: String, onClick: (() -> Unit)? = null) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
+            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -462,12 +478,14 @@ fun SettingsItem(icon: ImageVector, label: String, value: String, onClick: () ->
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.widthIn(max = 150.dp)
             )
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(16.dp)
-            )
+            if (onClick != null) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
         }
     }
 }

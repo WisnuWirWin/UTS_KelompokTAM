@@ -45,7 +45,7 @@ class ProfilViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
         }
     }
 
-    fun updateProfile(name: String, address: String, phone: String, onSuccess: () -> Unit) {
+    fun updateProfile(name: String, address: String, phone: String, newPassword: String? = null, onSuccess: () -> Unit) {
         val currentState = _uiState.value
         if (currentState.firebaseKey.isEmpty()) {
             _error.value = "Data profil tidak ditemukan"
@@ -61,7 +61,7 @@ class ProfilViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                         noHp = phone,
                         imageUrl = currentState.imageUrl,
                         username = currentState.username,
-                        password = currentState.password
+                        password = newPassword ?: currentState.password
                     )
                 )
                 onSuccess()

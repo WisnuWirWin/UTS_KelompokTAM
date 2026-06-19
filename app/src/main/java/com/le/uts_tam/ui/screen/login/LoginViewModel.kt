@@ -29,7 +29,7 @@ class LoginViewModel(private val database: AppDatabase) : ViewModel() {
             try {
                 val owners = repository.getOwnersForLogin().first()
                 val matchedOwner = owners.find {
-                    it.username?.equals(u, ignoreCase = true) == true && it.password == p
+                    it.username == u && it.password == p
                 }
                 if (matchedOwner != null) {
                     database.ownerDao().deleteAll()

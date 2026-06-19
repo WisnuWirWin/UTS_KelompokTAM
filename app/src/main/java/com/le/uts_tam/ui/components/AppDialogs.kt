@@ -138,6 +138,25 @@ fun EditProfileDialog(
     
     var nameError by remember { mutableStateOf<String?>(null) }
     var phoneError by remember { mutableStateOf<String?>(null) }
+    
+    var showConfirmDialog by remember { mutableStateOf(false) }
+
+    if (showConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showConfirmDialog = false },
+            title = { Text("Konfirmasi Perubahan") },
+            text = { Text("Apakah Anda yakin ingin menyimpan perubahan profil ini?") },
+            confirmButton = {
+                Button(onClick = {
+                    onConfirm(name, address, phone)
+                    showConfirmDialog = false
+                }) { Text("Ya, Simpan") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showConfirmDialog = false }) { Text("Batal") }
+            }
+        )
+    }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -198,13 +217,93 @@ fun EditProfileDialog(
                     Button(
                         onClick = {
                             if ((name.isNotBlank()) && (phone.length >= 10)) {
-                                onConfirm(name, address, phone)
+                                showConfirmDialog = true
                             }
                         },
                         enabled = (nameError == null) && (phoneError == null) && (name.isNotBlank()) && (phone.length >= 10)
                     ) {
                         Text("Simpan")
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ChangePasswordDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit
+) {
+    var newPassword by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf<String?>(null) }
+    var showConfirmDialog by remember { mutableStateOf(false) }
+
+    if (showConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showConfirmDialog = false },
+            title = { Text("Konfirmasi Ganti Password") },
+            text = { Text("Apakah Anda yakin ingin mengubah password akun Anda?") },
+            confirmButton = {
+                Button(onClick = {
+                    onConfirm(newPassword)
+                    showConfirmDialog = false
+                }) { Text("Ya, Ubah") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showConfirmDialog = false }) { Text("Batal") }
+            }
+        )
+    }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(text = "Ubah Password", style = MaterialTheme.typography.titleLarge)
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                TextField(
+                    value = newPassword,
+                    onValueChange = { 
+                        newPassword = it 
+                        error = null
+                    },
+                    label = { Text("Password Baru") },
+                    modifier = Modifier.fillMaxWidth(),
+                    visualTransformation = PasswordVisualTransformation(),
+                    singleLine = true
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    value = confirmPassword,
+                    onValueChange = { 
+                        confirmPassword = it 
+                        error = null
+                    },
+                    label = { Text("Konfirmasi Password") },
+                    modifier = Modifier.fillMaxWidth(),
+                    visualTransformation = PasswordVisualTransformation(),
+                    singleLine = true,
+                    isError = error != null,
+                    supportingText = { error?.let { Text(it) } }
+                )
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    TextButton(onClick = onDismiss) { Text("Batal") }
+                    Button(onClick = {
+                        if (newPassword.length < 6) {
+                            error = "Password minimal 6 karakter"
+                        } else if (newPassword != confirmPassword) {
+                            error = "Password tidak cocok"
+                        } else {
+                            showConfirmDialog = true
+                        }
+                    }) { Text("Simpan") }
                 }
             }
         }
@@ -516,4 +615,28 @@ fun PrintReceiptDialog(
             }
         }
     }
+}
+
+@Composable
+fun InfoDetailDialog(
+    title: String,
+    content: String,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = title, fontWeight = FontWeight.Bold) },
+        text = { 
+            Text(
+                text = content,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            ) 
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("TUTUP")
+            }
+        }
+    )
 }

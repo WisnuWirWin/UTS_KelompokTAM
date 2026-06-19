@@ -148,6 +148,7 @@ class FirebaseRepository(private val ownerId: String? = null, databaseInstance: 
         val ownerId = this.ownerId ?: return
         val ownerWithKey = owner.copy(firebaseKey = ownerId)
         localDb?.ownerDao()?.upsertOwner(ownerWithKey)
+        allOwnersRef.child(ownerId).setValue(ownerWithKey).await()
         profileRef?.setValue(ownerWithKey)?.await()
     }
 
