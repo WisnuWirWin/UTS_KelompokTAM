@@ -162,22 +162,28 @@ private fun buildReceiptString(
 }
 
 private fun buildWhatsAppMessage(transaction: HistoryItem, shopName: String): String {
+    val itemsList = transaction.layanan.split(",").joinToString("\n") { "• ${it.trim()}" }
+    
     return """
-        *NOTA DIGITAL - $shopName*
+        *🧾 NOTA DIGITAL - $shopName*
+        ------------------------------------------
+        *ID Transaksi:* ${transaction.trxId}
+        *Tanggal:* ${transaction.tgl} ${transaction.bln} ${transaction.jam}
         
-        ID Transaksi: ${transaction.trxId}
-        Tanggal: ${transaction.tgl} ${transaction.bln} ${transaction.jam}
+        *Pelanggan:* ${transaction.customer.name ?: "Umum"}
+        *Kendaraan:* ${transaction.vehicle.brand ?: "-"} (${transaction.vehicle.numberPlate ?: "-"})
         
-        Pelanggan: ${transaction.customer.name ?: "Umum"}
-        Kendaraan: ${transaction.vehicle.brand ?: "-"} (${transaction.vehicle.numberPlate ?: "-"})
+        *Rincian Layanan:*
+        $itemsList
         
-        *Rincian:*
-        ${transaction.layanan}
+        *Total Pembayaran:*
+        *Rp ${transaction.totalHarga}*
         
-        *TOTAL: Rp ${transaction.totalHarga}*
-        Status: LUNAS
+        *Status:* ✅ LUNAS
+        ------------------------------------------
+        Terima kasih telah mempercayai layanan *$shopName*!
         
-        Terima kasih telah mempercayai layanan kami!
+        _Nota ini dihasilkan secara otomatis oleh SmartBengkel_
     """.trimIndent()
 }
 
@@ -207,11 +213,12 @@ fun ActionButtons(
                 onClick = onWhatsAppShare,
                 modifier = Modifier.weight(1f).height(56.dp),
                 shape = RoundedCornerShape(12.dp),
-                border = BorderStroke(2.dp, Color(0xFF25D366))
+                border = BorderStroke(2.dp, Color(0xFF25D366)),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF25D366))
             ) {
-                Icon(Icons.Default.Share, null, tint = Color(0xFF25D366))
+                Icon(Icons.Default.Share, null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("WHATSAPP", color = Color(0xFF25D366))
+                Text("KIRIM WA", fontWeight = FontWeight.Bold)
             }
         }
 

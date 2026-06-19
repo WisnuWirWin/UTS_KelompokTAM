@@ -9,12 +9,26 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.google.mlkit.vision.barcode.BarcodeScanner
@@ -91,6 +105,70 @@ fun QRScanner(
             },
             modifier = Modifier.fillMaxSize()
         )
+
+        // QR Scanner Overlay
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val canvasWidth = size.width
+            val canvasHeight = size.height
+            val boxSize = 250.dp.toPx()
+            val left = (canvasWidth - boxSize) / 2
+            val top = (canvasHeight - boxSize) / 2
+            
+            val boxRect = Rect(left, top, left + boxSize, top + boxSize)
+
+            // Draw semi-transparent background with a hole
+            val path = Path().apply {
+                addRect(Rect(0f, 0f, canvasWidth, canvasHeight))
+                addRoundRect(RoundRect(boxRect, CornerRadius(20.dp.toPx())))
+            }
+            
+            drawPath(
+                path = path,
+                color = Color.Black.copy(alpha = 0.6f),
+                blendMode = BlendMode.SrcOver
+            )
+            
+            // Re-draw the hole as transparent (using BlendMode.Clear)
+            drawRoundRect(
+                color = Color.Transparent,
+                topLeft = Offset(left, top),
+                size = Size(boxSize, boxSize),
+                cornerRadius = CornerRadius(20.dp.toPx()),
+                blendMode = BlendMode.Clear
+            )
+
+            // Draw orange border for the scanning area
+            drawRoundRect(
+                color = Color(0xFFFF5722),
+                topLeft = Offset(left, top),
+                size = Size(boxSize, boxSize),
+                cornerRadius = CornerRadius(20.dp.toPx()),
+                style = Stroke(width = 4.dp.toPx())
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 80.dp),
+            verticalArrangement = Arrangement.Bottom,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Arahkan kamera ke QR Code barang",
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .padding(horizontal = 24.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Barcode/QR akan terdeteksi otomatis",
+                color = Color.White.copy(alpha = 0.7f),
+                fontSize = 12.sp
+            )
+        }
     }
 }
 

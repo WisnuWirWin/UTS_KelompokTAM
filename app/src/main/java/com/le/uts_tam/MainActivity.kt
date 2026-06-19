@@ -53,6 +53,7 @@ class MainActivity : ComponentActivity() {
                 var selectedItemForEdit by remember { mutableStateOf<com.le.uts_tam.data.model.dataclass.Items?>(null) }
                 var selectedCustomerForEdit by remember { mutableStateOf<com.le.uts_tam.data.model.dataclass.Customers?>(null) }
                 var selectedTransactionForNota by remember { mutableStateOf<com.le.uts_tam.ui.screen.riwayat.HistoryItem?>(null) }
+                var fromScreen by remember { mutableStateOf("dashboard") }
 
                 @Suppress("UNCHECKED_CAST")
                 class ScopedViewModelFactory(private val ownerId: String, private val db: AppDatabase) : ViewModelProvider.Factory {
@@ -104,10 +105,12 @@ class MainActivity : ComponentActivity() {
                             onBack = { currentScreen = "dashboard" },
                             onAddPelanggan = { 
                                 selectedCustomerForEdit = null
+                                fromScreen = "pelanggan"
                                 currentScreen = "add_pelanggan" 
                             },
                             onEditPelanggan = { customer ->
                                 selectedCustomerForEdit = customer
+                                fromScreen = "pelanggan"
                                 currentScreen = "add_pelanggan"
                             },
                             viewModel = viewModel(
@@ -127,8 +130,8 @@ class MainActivity : ComponentActivity() {
                             addViewModel.setInitialData(selectedCustomerForEdit)
                         }
                         AddPelanggan(
-                            onBack = { currentScreen = "pelanggan" },
-                            onConfirm = { currentScreen = "pelanggan" },
+                            onBack = { currentScreen = fromScreen },
+                            onConfirm = { currentScreen = fromScreen },
                             viewModel = addViewModel
                         )
                     }
@@ -156,6 +159,11 @@ class MainActivity : ComponentActivity() {
                         Kasir(
                             onBack = { currentScreen = "dashboard" },
                             onPrintNota = { currentScreen = "riwayat" },
+                            onAddCustomerClick = {
+                                selectedCustomerForEdit = null
+                                fromScreen = "kasir"
+                                currentScreen = "add_pelanggan"
+                            },
                             viewModel = viewModel(
                                 key = "kasir_$ownerId",
                                 factory = ScopedViewModelFactory(ownerId, database)

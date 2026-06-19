@@ -40,12 +40,12 @@ class KasirViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
         .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
 
     val filteredItems: StateFlow<List<Items>> = combine(_items, _searchQuery) { items, query ->
-        if (query.isEmpty()) emptyList()
+        if (query.isEmpty()) items
         else items.filter { it.name?.contains(query, ignoreCase = true) == true || it.id?.contains(query, ignoreCase = true) == true }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val filteredCustomers: StateFlow<List<Customers>> = combine(_customers, _customerSearchQuery) { customers, query ->
-        if (query.isEmpty()) emptyList()
+        if (query.isEmpty()) customers
         else customers.filter { it.name?.contains(query, ignoreCase = true) == true || it.plateNumber?.contains(query, ignoreCase = true) == true }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
