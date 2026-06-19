@@ -30,7 +30,7 @@ import com.le.uts_tam.ui.screen.addpelanggan.AddPelangganViewModel
 import com.le.uts_tam.ui.screen.editstok.EditStockViewModel
 import com.le.uts_tam.ui.screen.inventaris.InventarisViewModel
 import com.le.uts_tam.ui.screen.laporan.LaporanViewModel
-import com.le.uts_tam.ui.theme.UTS_TAMTheme
+import com.le.uts_tam.ui.theme.BengkelSmartTheme
 import com.le.uts_tam.utils.BluetoothPrinterManager
 
 class MainActivity : ComponentActivity() {
@@ -46,7 +46,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             var isDarkTheme by remember { mutableStateOf(true) }
 
-            UTS_TAMTheme(darkTheme = isDarkTheme) {
+            BengkelSmartTheme(darkTheme = isDarkTheme) {
                 var currentScreen by remember { mutableStateOf("login") }
                 var loggedInOwnerId by remember { mutableStateOf<String?>(null) }
                 
@@ -83,7 +83,7 @@ class MainActivity : ComponentActivity() {
                     )
                     
                     "dashboard" -> {
-                        val ownerId = loggedInOwnerId ?: return@UTS_TAMTheme
+                        val ownerId = loggedInOwnerId ?: return@BengkelSmartTheme
                         Dashboard(
                             onPelangganClick = { currentScreen = "pelanggan" },
                             onProfileClick = { currentScreen = "profil" },
@@ -99,7 +99,7 @@ class MainActivity : ComponentActivity() {
                     }
                     
                     "pelanggan" -> {
-                        val ownerId = loggedInOwnerId ?: return@UTS_TAMTheme
+                        val ownerId = loggedInOwnerId ?: return@BengkelSmartTheme
                         Pelanggan(
                             onBack = { currentScreen = "dashboard" },
                             onAddPelanggan = { 
@@ -118,7 +118,7 @@ class MainActivity : ComponentActivity() {
                     }
                     
                     "add_pelanggan" -> {
-                        val ownerId = loggedInOwnerId ?: return@UTS_TAMTheme
+                        val ownerId = loggedInOwnerId ?: return@BengkelSmartTheme
                         val addViewModel: AddPelangganViewModel = viewModel(
                             key = "add_pelanggan_$ownerId",
                             factory = ScopedViewModelFactory(ownerId, database)
@@ -134,7 +134,7 @@ class MainActivity : ComponentActivity() {
                     }
                     
                     "profil" -> {
-                        val ownerId = loggedInOwnerId ?: return@UTS_TAMTheme
+                        val ownerId = loggedInOwnerId ?: return@BengkelSmartTheme
                         Profil(
                             onBack = { currentScreen = "dashboard" },
                             onLogout = { 
@@ -152,7 +152,7 @@ class MainActivity : ComponentActivity() {
                     }
                     
                     "kasir" -> {
-                        val ownerId = loggedInOwnerId ?: return@UTS_TAMTheme
+                        val ownerId = loggedInOwnerId ?: return@BengkelSmartTheme
                         Kasir(
                             onBack = { currentScreen = "dashboard" },
                             onPrintNota = { currentScreen = "riwayat" },
@@ -164,7 +164,7 @@ class MainActivity : ComponentActivity() {
                     }
                     
                     "nota_digital" -> {
-                        val ownerId = loggedInOwnerId ?: return@UTS_TAMTheme
+                        val ownerId = loggedInOwnerId ?: return@BengkelSmartTheme
                         NotaDigital(
                             onBack = { currentScreen = "riwayat" },
                             transaction = selectedTransactionForNota,
@@ -177,7 +177,7 @@ class MainActivity : ComponentActivity() {
                     }
                     
                     "riwayat" -> {
-                        val ownerId = loggedInOwnerId ?: return@UTS_TAMTheme
+                        val ownerId = loggedInOwnerId ?: return@BengkelSmartTheme
                         Riwayat(
                             onBack = { currentScreen = "dashboard" },
                             onKasirClick = { currentScreen = "kasir" },
@@ -196,7 +196,7 @@ class MainActivity : ComponentActivity() {
                     }
                     
                     "inventaris" -> {
-                        val ownerId = loggedInOwnerId ?: return@UTS_TAMTheme
+                        val ownerId = loggedInOwnerId ?: return@BengkelSmartTheme
                         Inventaris(
                             onBack = { currentScreen = "dashboard" },
                             onAddItem = { 
@@ -219,7 +219,7 @@ class MainActivity : ComponentActivity() {
                     }
                     
                     "edit_stock" -> {
-                        val ownerId = loggedInOwnerId ?: return@UTS_TAMTheme
+                        val ownerId = loggedInOwnerId ?: return@BengkelSmartTheme
                         val editViewModel: EditStockViewModel = viewModel(
                             key = "edit_stock_$ownerId",
                             factory = ScopedViewModelFactory(ownerId, database)
@@ -234,7 +234,7 @@ class MainActivity : ComponentActivity() {
                     }
 
                     "laporan" -> {
-                        val ownerId = loggedInOwnerId ?: return@UTS_TAMTheme
+                        val ownerId = loggedInOwnerId ?: return@BengkelSmartTheme
                         Laporan(
                             onBack = { currentScreen = "dashboard" },
                             onKasirClick = { currentScreen = "kasir" },

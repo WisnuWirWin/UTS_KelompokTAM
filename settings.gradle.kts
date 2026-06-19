@@ -22,6 +22,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "UTS_TAM"
+rootProject.name = "BengkelSmart"
 include(":app")
  

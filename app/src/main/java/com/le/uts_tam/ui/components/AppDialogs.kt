@@ -27,9 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.le.uts_tam.ui.screen.nota.DashedDivider
-import com.le.uts_tam.ui.screen.nota.QRVisualizer
-import com.le.uts_tam.ui.screen.nota.ReceiptText
 import com.le.uts_tam.ui.screen.riwayat.HistoryItem
 import com.le.uts_tam.utils.QRUtils
 
