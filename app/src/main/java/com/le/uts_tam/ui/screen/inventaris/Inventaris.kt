@@ -1,9 +1,7 @@
 package com.le.uts_tam.ui.screen.inventaris
 
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -28,16 +26,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.le.uts_tam.data.model.dataclass.Items
-import com.le.uts_tam.utils.QRUtils
+import com.le.uts_tam.ui.components.DeleteConfirmationDialog
+import com.le.uts_tam.ui.components.ItemQRCodeDialog
 
 @Composable
 fun Inventaris(
@@ -58,98 +53,28 @@ fun Inventaris(
     val items by viewModel.filteredItems.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
-    // State untuk Dialog
     val selectedItemForQR = remember { mutableStateOf<Items?>(null) }
     val selectedItemForDelete = remember { mutableStateOf<Items?>(null) }
 
-    // Dialog Konfirmasi Hapus
     selectedItemForDelete.value?.let { item ->
-        AlertDialog(
-            onDismissRequest = { selectedItemForDelete.value = null },
-            title = { Text("Hapus Barang") },
-            text = { Text("Apakah Anda yakin ingin menghapus '${item.name}' dari inventaris?") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        viewModel.deleteItem(item)
-                        Toast.makeText(context, "Barang '${item.name}' berhasil dihapus", Toast.LENGTH_SHORT).show()
-                        selectedItemForDelete.value = null
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Hapus")
-                }
+        DeleteConfirmationDialog(
+            title = "Hapus Barang",
+            message = "Apakah Anda yakin ingin menghapus '${item.name}' dari inventaris?",
+            onConfirm = {
+                viewModel.deleteItem(item)
+                Toast.makeText(context, "Barang '${item.name}' berhasil dihapus", Toast.LENGTH_SHORT).show()
+                selectedItemForDelete.value = null
             },
-            dismissButton = {
-                TextButton(onClick = { selectedItemForDelete.value = null }) {
-                    Text("Batal")
-                }
-            }
+            onDismiss = { selectedItemForDelete.value = null }
         )
     }
 
-    // Tampilkan Dialog jika ada item yang dipilih
     selectedItemForQR.value?.let { item ->
-        Dialog(onDismissRequest = { selectedItemForQR.value = null }) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-            ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "QR CODE BARANG",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = item.name ?: "",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    val qrBitmap = remember(item) {
-                        QRUtils.generateQRCode(item.id ?: item.firebaseKey)
-                    }
-
-                    qrBitmap?.let {
-                        Image(
-                            bitmap = it.asImageBitmap(),
-                            contentDescription = "QR Code",
-                            modifier = Modifier
-                                .size(200.dp)
-                                .background(Color.White)
-                                .padding(8.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "ID: ${item.id ?: "-"}",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Button(
-                        onClick = { selectedItemForQR.value = null },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text("TUTUP")
-                    }
-                }
-            }
-        }
+        ItemQRCodeDialog(
+            itemName = item.name ?: "",
+            itemId = item.id ?: item.firebaseKey,
+            onDismiss = { selectedItemForQR.value = null }
+        )
     }
 
     Scaffold(

@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.le.uts_tam.data.model.dataclass.Customers
 import com.le.uts_tam.data.model.dataclass.PelangganUIState
+import com.le.uts_tam.ui.components.DeleteConfirmationDialog
 
 @Composable
 fun Pelanggan(
@@ -61,29 +62,16 @@ fun Pelanggan(
 
     var selectedCustomerForDelete by remember { mutableStateOf<PelangganUIState?>(null) }
 
-    // Dialog Konfirmasi Hapus
     selectedCustomerForDelete?.let { customer ->
-        AlertDialog(
-            onDismissRequest = { selectedCustomerForDelete = null },
-            title = { Text("Hapus Pelanggan") },
-            text = { Text("Apakah Anda yakin ingin menghapus data pelanggan '${customer.name}' beserta riwayatnya?") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        viewModel.deleteCustomer(customer.firebaseKey)
-                        Toast.makeText(context, "Data pelanggan '${customer.name}' berhasil dihapus", Toast.LENGTH_SHORT).show()
-                        selectedCustomerForDelete = null
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Hapus")
-                }
+        DeleteConfirmationDialog(
+            title = "Hapus Pelanggan",
+            message = "Apakah Anda yakin ingin menghapus data pelanggan '${customer.name}' beserta riwayatnya?",
+            onConfirm = {
+                viewModel.deleteCustomer(customer.firebaseKey)
+                Toast.makeText(context, "Data pelanggan '${customer.name}' berhasil dihapus", Toast.LENGTH_SHORT).show()
+                selectedCustomerForDelete = null
             },
-            dismissButton = {
-                TextButton(onClick = { selectedCustomerForDelete = null }) {
-                    Text("Batal")
-                }
-            }
+            onDismiss = { selectedCustomerForDelete = null }
         )
     }
 

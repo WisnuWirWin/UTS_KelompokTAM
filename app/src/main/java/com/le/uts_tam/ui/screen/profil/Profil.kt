@@ -22,8 +22,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -68,11 +66,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.le.uts_tam.R
+import com.le.uts_tam.ui.components.EditProfileDialog
+import com.le.uts_tam.ui.components.PrinterSelectionDialog
 import com.le.uts_tam.utils.BluetoothPrinterManager
 import kotlinx.coroutines.launch
 
@@ -94,11 +93,6 @@ fun Profil(
     val error by viewModel.error.collectAsState()
 
     var showEditDialog by remember { mutableStateOf(false) }
-    var editName by remember { mutableStateOf("") }
-    var editAddress by remember { mutableStateOf("") }
-    var editPhone by remember { mutableStateOf("") }
-    var nameError by remember { mutableStateOf<String?>(null) }
-    var phoneError by remember { mutableStateOf<String?>(null) }
 
     var showPrinterDialog by remember { mutableStateOf(false) }
     val isPrinterConnected by printerManager?.isConnected?.collectAsState() ?: mutableStateOf(false)
@@ -236,11 +230,6 @@ fun Profil(
             
             Card(
                 modifier = Modifier.fillMaxWidth().clickable {
-                    editName = uiState.ownerName
-                    editAddress = uiState.address
-                    editPhone = uiState.phone
-                    nameError = null
-                    phoneError = null
                     showEditDialog = true
                 },
                 shape = RoundedCornerShape(16.dp),
@@ -252,11 +241,6 @@ fun Profil(
                         label = "Nama Pemilik", 
                         value = uiState.ownerName.ifEmpty { "Set Name" },
                         onClick = {
-                            editName = uiState.ownerName
-                            editAddress = uiState.address
-                            editPhone = uiState.phone
-                            nameError = null
-                            phoneError = null
                             showEditDialog = true
                         }
                     )
@@ -266,11 +250,6 @@ fun Profil(
                         label = "Alamat", 
                         value = uiState.address.ifEmpty { "Set Address" },
                         onClick = {
-                            editName = uiState.ownerName
-                            editAddress = uiState.address
-                            editPhone = uiState.phone
-                            nameError = null
-                            phoneError = null
                             showEditDialog = true
                         }
                     )
@@ -280,11 +259,6 @@ fun Profil(
                         label = "No. Telepon", 
                         value = uiState.phone.ifEmpty { "Set Phone" },
                         onClick = {
-                            editName = uiState.ownerName
-                            editAddress = uiState.address
-                            editPhone = uiState.phone
-                            nameError = null
-                            phoneError = null
                             showEditDialog = true
                         }
                     )
@@ -401,147 +375,40 @@ fun Profil(
     }
 
     if (showEditDialog) {
-        Dialog(onDismissRequest = { showEditDialog = false }) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = "Ubah Profil Bengkel", style = MaterialTheme.typography.titleLarge)
-                    Spacer(modifier = Modifier.height(24.dp))
-                    
-                    TextField(
-                        value = editName,
-                        onValueChange = { 
-                            editName = it
-                            nameError = if (it.isBlank()) "Nama tidak boleh kosong" else null
-                        },
-                        label = { Text("Nama Pemilik") },
-                        modifier = Modifier.fillMaxWidth(),
-                        isError = nameError != null,
-                        supportingText = { nameError?.let { Text(it) } },
-                        singleLine = true
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    TextField(
-                        value = editAddress,
-                        onValueChange = { editAddress = it },
-                        label = { Text("Alamat") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    TextField(
-                        value = editPhone,
-                        onValueChange = { 
-                            editPhone = it
-                            phoneError = if (it.length < 10) "Nomor telepon tidak valid" else null
-                        },
-                        label = { Text("No. Telepon") },
-                        modifier = Modifier.fillMaxWidth(),
-                        isError = phoneError != null,
-                        supportingText = { phoneError?.let { Text(it) } },
-                        singleLine = true
-                    )
-                    
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        TextButton(onClick = { showEditDialog = false }) {
-                            Text("Batal")
-                        }
-                        Button(
-                            onClick = {
-                                if (editName.isNotBlank() && editPhone.length >= 10) {
-                                    viewModel.updateProfile(editName, editAddress, editPhone) {
-                                        Toast.makeText(context, "Profil berhasil diperbarui", Toast.LENGTH_SHORT).show()
-                                        showEditDialog = false
-                                    }
-                                } else {
-                                    if (editName.isBlank()) nameError = "Nama tidak boleh kosong"
-                                    if (editPhone.length < 10) phoneError = "Nomor telepon tidak valid"
-                                }
-                            },
-                            enabled = nameError == null && phoneError == null
-                        ) {
-                            Text("Simpan")
-                        }
-                    }
+        EditProfileDialog(
+            initialName = uiState.ownerName,
+            initialAddress = uiState.address,
+            initialPhone = uiState.phone,
+            onDismiss = { showEditDialog = false },
+            onConfirm = { name, address, phone ->
+                viewModel.updateProfile(name, address, phone) {
+                    Toast.makeText(context, "Profil berhasil diperbarui", Toast.LENGTH_SHORT).show()
+                    showEditDialog = false
                 }
             }
-        }
+        )
     }
 
     if (showPrinterDialog && printerManager != null) {
-        val pairedDevices = printerManager.getPairedDevices()
-        Dialog(onDismissRequest = { showPrinterDialog = false }) {
-            Card(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Text("Pilih Printer Bluetooth", style = MaterialTheme.typography.titleLarge)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    if (pairedDevices.isEmpty()) {
-                        Text("Tidak ada perangkat Bluetooth yang terpasang.", color = Color.Gray)
+        PrinterSelectionDialog(
+            pairedDevices = printerManager.getPairedDevices(),
+            isConnected = isPrinterConnected,
+            onDeviceClick = { device ->
+                scope.launch {
+                    val success = printerManager.connectToDevice(device)
+                    if (success) {
+                        @SuppressLint("MissingPermission")
+                        val dName = device.name ?: "Printer"
+                        Toast.makeText(context, "Berhasil terhubung ke $dName", Toast.LENGTH_SHORT).show()
+                        showPrinterDialog = false
                     } else {
-                        LazyColumn(modifier = Modifier.height(200.dp)) {
-                            items(pairedDevices) { device ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            scope.launch {
-                                                val success = printerManager.connectToDevice(device)
-                                                if (success) {
-                                                    Toast.makeText(context, "Berhasil terhubung ke ${device.name}", Toast.LENGTH_SHORT).show()
-                                                    showPrinterDialog = false
-                                                } else {
-                                                    Toast.makeText(context, "Gagal terhubung", Toast.LENGTH_SHORT).show()
-                                                }
-                                            }
-                                        }
-                                        .padding(vertical = 12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(Icons.Default.Print, null, tint = MaterialTheme.colorScheme.primary)
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Column {
-                                        @SuppressLint("MissingPermission")
-                                        val deviceName = device.name ?: "Unknown Device"
-                                        Text(deviceName, style = MaterialTheme.typography.bodyLarge)
-                                        Text(device.address, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-                                    }
-                                }
-                                HorizontalDivider(color = Color.LightGray.copy(alpha = 0.2f))
-                            }
-                        }
-                    }
-                    
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        if (isPrinterConnected) {
-                            TextButton(onClick = { printerManager.disconnect() }) {
-                                Text("Putus Koneksi", color = MaterialTheme.colorScheme.error)
-                            }
-                        }
-                        TextButton(onClick = { showPrinterDialog = false }) {
-                            Text("Tutup")
-                        }
+                        Toast.makeText(context, "Gagal terhubung", Toast.LENGTH_SHORT).show()
                     }
                 }
-            }
-        }
+            },
+            onDisconnect = { printerManager.disconnect() },
+            onDismiss = { showPrinterDialog = false }
+        )
     }
 }
 

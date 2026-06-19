@@ -21,9 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
@@ -32,8 +30,6 @@ import androidx.compose.material.icons.filled.Print
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -51,7 +47,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -64,9 +59,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.le.uts_tam.ui.components.PrintReceiptDialog
 import com.le.uts_tam.ui.screen.profil.ProfilViewModel
 import com.le.uts_tam.ui.screen.riwayat.HistoryItem
 import com.le.uts_tam.utils.BluetoothPrinterManager
@@ -272,155 +266,6 @@ fun ActionButtons(
                     Icon(Icons.Default.Info, null, tint = MaterialTheme.colorScheme.onPrimary)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("LIHAT NOTA", color = MaterialTheme.colorScheme.onPrimary)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun PrintReceiptDialog(
-    transaction: HistoryItem,
-    shopName: String,
-    shopAddress: String,
-    shopPhone: String,
-    onDismiss: () -> Unit
-) {
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.8f))
-                .clickable { onDismiss() },
-            contentAlignment = Alignment.Center
-        ) {
-            Card(
-                modifier = Modifier
-                    .width(350.dp)
-                    .padding(16.dp)
-                    .clickable(enabled = false) {}, 
-                shape = RoundedCornerShape(4.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .padding(24.dp)
-                        .verticalScroll(rememberScrollState()),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = shopName.uppercase(),
-                        color = Color.Black,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace,
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        text = shopAddress,
-                        color = Color.Black,
-                        fontSize = 12.sp,
-                        textAlign = TextAlign.Center,
-                        fontFamily = FontFamily.Monospace
-                    )
-                    Text(
-                        text = "Telp: $shopPhone",
-                        color = Color.Black,
-                        fontSize = 12.sp,
-                        fontFamily = FontFamily.Monospace
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                    DashedDivider()
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        ReceiptText(text = transaction.trxId, modifier = Modifier)
-                        ReceiptText(text = "${transaction.tgl}/${transaction.bln} ${transaction.jam}", modifier = Modifier)
-                    }
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        ReceiptText(text = "Kasir: Admin", modifier = Modifier)
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-                    DashedDivider()
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        ReceiptText(text = "Pelanggan: ${transaction.customer.name ?: "Umum"}", modifier = Modifier)
-                    }
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        ReceiptText(text = "Plat     : ${transaction.vehicle.numberPlate ?: "-"}", modifier = Modifier)
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        ReceiptText("Item", modifier = Modifier.weight(1f))
-                        ReceiptText("Qty", modifier = Modifier.width(40.dp), textAlign = TextAlign.Center)
-                        ReceiptText("Total", modifier = Modifier.width(80.dp), textAlign = TextAlign.End)
-                    }
-                    Spacer(modifier = Modifier.height(4.dp))
-                    DashedDivider()
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        ReceiptText(
-                            text = transaction.layanan, 
-                            modifier = Modifier.weight(1f)
-                        )
-                        ReceiptText(
-                            text = "1", 
-                            modifier = Modifier.width(40.dp), 
-                            textAlign = TextAlign.Center
-                        )
-                        ReceiptText(
-                            text = transaction.totalHarga, 
-                            modifier = Modifier.width(80.dp), 
-                            textAlign = TextAlign.End
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                    DashedDivider()
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        ReceiptText(text = "TOTAL", modifier = Modifier)
-                        ReceiptText(text = "Rp ${transaction.totalHarga}", modifier = Modifier)
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    QRVisualizer(seed = transaction.trxId, sizeDp = 100)
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    ReceiptText(
-                        text = transaction.trxId,
-                        modifier = Modifier
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "*** TERIMA KASIH ***",
-                        color = Color.Black,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
-                    )
-                    Text(
-                        text = "Barang yang sudah dibeli tidak dapat ditukar/dikembalikan",
-                        color = Color.Black,
-                        fontSize = 8.sp,
-                        textAlign = TextAlign.Center,
-                        fontFamily = FontFamily.Monospace
-                    )
                 }
             }
         }

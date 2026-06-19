@@ -13,13 +13,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.le.uts_tam.data.local.AppDatabase
 import com.le.uts_tam.data.model.dataclass.Owners
+import com.le.uts_tam.ui.components.RegisterDialog
 
 @Composable
 fun Login(onLoginSuccess: (Owners) -> Unit, database: AppDatabase) {
@@ -186,91 +185,5 @@ fun Login(onLoginSuccess: (Owners) -> Unit, database: AppDatabase) {
                 }
             }
         )
-    }
-}
-
-@Composable
-fun RegisterDialog(onDismiss: () -> Unit, onRegister: (String, String, String) -> Unit) {
-    var user by remember { mutableStateOf("") }
-    var pass by remember { mutableStateOf("") }
-    var name by remember { mutableStateOf("") }
-    
-    var userError by remember { mutableStateOf<String?>(null) }
-    var passError by remember { mutableStateOf<String?>(null) }
-    var nameError by remember { mutableStateOf<String?>(null) }
-
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = "Daftar Akun Baru", style = MaterialTheme.typography.titleLarge)
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                TextField(
-                    value = name, 
-                    onValueChange = { 
-                        name = it
-                        if (it.isNotBlank()) nameError = null
-                    }, 
-                    label = { Text("Nama Pemilik") }, 
-                    modifier = Modifier.fillMaxWidth(),
-                    isError = nameError != null,
-                    supportingText = { nameError?.let { Text(it) } }
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                TextField(
-                    value = user, 
-                    onValueChange = { 
-                        user = it
-                        if (it.isNotBlank()) userError = null
-                    }, 
-                    label = { Text("Username") }, 
-                    modifier = Modifier.fillMaxWidth(),
-                    isError = userError != null,
-                    supportingText = { userError?.let { Text(it) } }
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                TextField(
-                    value = pass, 
-                    onValueChange = { 
-                        pass = it
-                        if (it.length >= 6) passError = null
-                    }, 
-                    label = { Text("Password") }, 
-                    modifier = Modifier.fillMaxWidth(), 
-                    visualTransformation = PasswordVisualTransformation(),
-                    isError = passError != null,
-                    supportingText = { passError?.let { Text(it) } }
-                )
-                
-                Spacer(modifier = Modifier.height(24.dp))
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    TextButton(onClick = onDismiss) { Text("Batal") }
-                    Button(onClick = { 
-                        var hasError = false
-                        if (name.isBlank()) {
-                            nameError = "Nama wajib diisi"
-                            hasError = true
-                        }
-                        if (user.isBlank()) {
-                            userError = "Username wajib diisi"
-                            hasError = true
-                        }
-                        if (pass.length < 6) {
-                            passError = "Password minimal 6 karakter"
-                            hasError = true
-                        }
-                        
-                        if (!hasError) {
-                            onRegister(user, pass, name)
-                        }
-                    }) { Text("Daftar") }
-                }
-            }
-        }
     }
 }
