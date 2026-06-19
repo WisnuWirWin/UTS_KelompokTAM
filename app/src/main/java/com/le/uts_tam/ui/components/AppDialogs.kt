@@ -615,6 +615,26 @@ fun PrintReceiptDialog(
 }
 
 @Composable
+fun SaveConfirmationDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+    title: String = "Konfirmasi Simpan",
+    message: String = "Apakah Anda yakin ingin menyimpan perubahan ini?"
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = { Text(message) },
+        confirmButton = {
+            Button(onClick = onConfirm) { Text("Ya, Simpan") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Batal") }
+        }
+    )
+}
+
+@Composable
 fun InfoDetailDialog(
     title: String,
     content: String,

@@ -22,7 +22,7 @@ class FirebaseRepository(private val ownerId: String? = null, databaseInstance: 
     private val localDb = databaseInstance
     private val repositoryScope = CoroutineScope(Dispatchers.IO)
     private val allOwnersRef = database.getReference("owners_list")
-    private val ownerDataRef = if (ownerId != null) database.getReference("data").child(ownerId) else null
+    private val ownerDataRef = ownerId?.let { database.getReference("data").child(it) }
     private val customersRef = ownerDataRef?.child("customers")
     private val itemsRef = ownerDataRef?.child("items")
     private val profileRef = ownerDataRef?.child("profile")
@@ -35,50 +35,59 @@ class FirebaseRepository(private val ownerId: String? = null, databaseInstance: 
     }
 
     private fun startSyncing() {
-        customersRef?.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                repositoryScope.launch {
-                    val list = snapshot.children.mapNotNull { 
-                        it.getValue(Customers::class.java)?.copy(firebaseKey = it.key ?: "") 
-                    }
-                    localDb?.withTransaction {
-                        localDb.customerDao().deleteAll()
-                        localDb.customerDao().upsertCustomers(list)
-                    }
-                }
-            }
-            override fun onCancelled(error: DatabaseError) {}
-        })
-
-        itemsRef?.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                repositoryScope.launch {
-                    val list = snapshot.children.mapNotNull { 
-                        it.getValue(Items::class.java)?.copy(firebaseKey = it.key ?: "") 
-                    }
-                    localDb?.withTransaction {
-                        localDb.itemDao().deleteAll()
-                        localDb.itemDao().upsertItems(list)
-                    }
-                }
-            }
-            override fun onCancelled(error: DatabaseError) {}
-        })
-
-        profileRef?.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                repositoryScope.launch {
-                    val owner = snapshot.getValue(Owners::class.java)?.copy(firebaseKey = snapshot.key ?: "")
-                    if (owner != null) {
+        customersRef?.addValueEventListener(
+            object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    repositoryScope.launch {
+                        val list = snapshot.children.mapNotNull {
+                            it.getValue(Customers::class.java)?.copy(firebaseKey = it.key ?: "")
+                        }
                         localDb?.withTransaction {
-                            localDb.ownerDao().deleteAll()
-                            localDb.ownerDao().upsertOwner(owner)
+                            localDb.customerDao().deleteAll()
+                            localDb.customerDao().upsertCustomers(list)
                         }
                     }
                 }
-            }
-            override fun onCancelled(error: DatabaseError) {}
-        })
+
+                override fun onCancelled(error: DatabaseError) {}
+            },
+        )
+
+        itemsRef?.addValueEventListener(
+            object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    repositoryScope.launch {
+                        val list = snapshot.children.mapNotNull {
+                            it.getValue(Items::class.java)?.copy(firebaseKey = it.key ?: "")
+                        }
+                        localDb?.withTransaction {
+                            localDb.itemDao().deleteAll()
+                            localDb.itemDao().upsertItems(list)
+                        }
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {}
+            },
+        )
+
+        profileRef?.addValueEventListener(
+            object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    repositoryScope.launch {
+                        val owner = snapshot.getValue(Owners::class.java)?.copy(firebaseKey = snapshot.key ?: "")
+                        if (owner != null) {
+                            localDb?.withTransaction {
+                                localDb.ownerDao().deleteAll()
+                                localDb.ownerDao().upsertOwner(owner)
+                            }
+                        }
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {}
+            },
+        )
     }
 
     fun getOwnersForLogin(): Flow<List<Owners>> = callbackFlow {

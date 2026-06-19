@@ -31,15 +31,32 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.le.uts_tam.R
+import com.le.uts_tam.ui.components.SaveConfirmationDialog
 
 @Composable
 fun EditStock(
     onBack: () -> Unit = {},
-    viewModel: EditStockViewModel = viewModel()
+    viewModel: EditStockViewModel = viewModel(),
 ) {
     val context = LocalContext.current
     val customFontFamily = FontFamily(Font(R.font.poppins))
     val scrollState = rememberScrollState()
+    var showConfirmDialog by remember { mutableStateOf(value = false) }
+
+    if (showConfirmDialog) {
+        SaveConfirmationDialog(
+            onConfirm = {
+                showConfirmDialog = false
+                viewModel.saveChanges { message ->
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    onBack()
+                }
+            },
+            onDismiss = { showConfirmDialog = false },
+            title = "Simpan Data Barang",
+            message = "Apakah Anda yakin data yang dimasukkan sudah benar?"
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -185,10 +202,7 @@ fun EditStock(
 
         Button(
             onClick = {
-                viewModel.saveChanges { message ->
-                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                    onBack()
-                }
+                showConfirmDialog = true
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -330,7 +344,7 @@ fun EditField(
                         color = Color.Red,
                         fontSize = 10.sp,
                         fontFamily = fontFamily,
-                        modifier = Modifier.padding(top = 4.dp, start = 4.dp)
+                        modifier = Modifier.padding(top = 4.dp, start = 4.dp),
                     )
                 }
             }

@@ -22,15 +22,31 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.le.uts_tam.ui.components.SaveConfirmationDialog
 import com.le.uts_tam.ui.theme.*
 
 @Composable
 fun AddPelanggan(
     onBack: () -> Unit = {},
     onConfirm: () -> Unit = {},
-    viewModel: AddPelangganViewModel = viewModel()
+    viewModel: AddPelangganViewModel = viewModel(),
 ) {
     val scrollState = rememberScrollState()
+    var showConfirmDialog by remember { mutableStateOf(value = false) }
+
+    if (showConfirmDialog) {
+        SaveConfirmationDialog(
+            onConfirm = {
+                showConfirmDialog = false
+                viewModel.saveCustomer(
+                    onSuccess = onConfirm
+                )
+            },
+            onDismiss = { showConfirmDialog = false },
+            title = "Simpan Data Pelanggan",
+            message = "Apakah Anda yakin ingin menyimpan data pelanggan ini?"
+        )
+    }
 
     Box(
         modifier = Modifier
@@ -360,9 +376,7 @@ fun AddPelanggan(
         ) {
             Button(
                 onClick = {
-                    viewModel.saveCustomer(
-                        onSuccess = onConfirm
-                    )
+                    showConfirmDialog = true
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -457,7 +471,12 @@ fun CustomTextField(
             minLines = minLines
         )
         if (errorText != null) {
-            Text(text = errorText, color = Color.Red, fontSize = 10.sp, modifier = Modifier.padding(top = 4.dp))
+            Text(
+                text = errorText,
+                color = Color.Red,
+                fontSize = 10.sp,
+                modifier = Modifier.padding(top = 4.dp),
+            )
         }
     }
 }

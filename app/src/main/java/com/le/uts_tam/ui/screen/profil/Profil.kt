@@ -43,6 +43,7 @@ import com.le.uts_tam.utils.BluetoothPrinterManager
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnrememberedMutableState")
+@Suppress("unused")
 @Composable
 fun Profil(
     onBack: () -> Unit = {},
@@ -50,7 +51,7 @@ fun Profil(
     isDarkTheme: Boolean = true,
     onThemeToggle: (Boolean) -> Unit = {},
     viewModel: ProfilViewModel = viewModel(),
-    printerManager: BluetoothPrinterManager? = null
+    printerManager: BluetoothPrinterManager? = null,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -59,21 +60,42 @@ fun Profil(
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
 
-    var showEditDialog by remember { mutableStateOf(false) }
-    var showPasswordDialog by remember { mutableStateOf(false) }
-    var showDetailDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(value = false) }
+    var showPasswordDialog by remember { mutableStateOf(value = false) }
+    var showDetailDialog by remember { mutableStateOf(value = false) }
     var detailTitle by remember { mutableStateOf("") }
     var detailContent by remember { mutableStateOf("") }
 
-    var showPrinterDialog by remember { mutableStateOf(false) }
-    val isPrinterConnected by printerManager?.isConnected?.collectAsState() ?: mutableStateOf(false)
-    val connectedPrinterName by printerManager?.connectedDeviceName?.collectAsState() ?: mutableStateOf(null)
+    var showPrinterDialog by remember { mutableStateOf(value = false) }
+    val isPrinterConnected by printerManager?.isConnected?.collectAsState() ?: mutableStateOf(value = false)
+    val connectedPrinterName by printerManager?.connectedDeviceName?.collectAsState() ?: mutableStateOf(value = null)
+
+    val bluetoothPermissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        arrayOf(Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN)
+    } else {
+        emptyArray()
+    }
 
     val bluetoothPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) showPrinterDialog = true
-        else Toast.makeText(context, "Izin Bluetooth diperlukan", Toast.LENGTH_SHORT).show()
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val allGranted = permissions.entries.all { it.value }
+        if (allGranted) {
+            showPrinterDialog = true
+        } else {
+            Toast.makeText(context, "Izin Bluetooth (Connect & Scan) diperlukan", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val missingPermissions = bluetoothPermissions.filter {
+                ContextCompat.checkSelfPermission(context, it) != PackageManager.PERMISSION_GRANTED
+            }
+            if (missingPermissions.isNotEmpty()) {
+                bluetoothPermissionLauncher.launch(missingPermissions.toTypedArray())
+            }
+        }
     }
 
     Column(
@@ -81,7 +103,7 @@ fun Profil(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .verticalScroll(scrollState)
-            .padding(20.dp)
+            .padding(20.dp),
     ) {
         Spacer(modifier = Modifier.height(50.dp))
 
@@ -281,10 +303,13 @@ fun Profil(
                     value = if (isPrinterConnected) connectedPrinterName ?: "Terhubung" else "Tidak terhubung",
                     onClick = {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                            if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
+                            val missingPermissions = bluetoothPermissions.filter {
+                                ContextCompat.checkSelfPermission(context, it) != PackageManager.PERMISSION_GRANTED
+                            }
+                            if (missingPermissions.isEmpty()) {
                                 showPrinterDialog = true
                             } else {
-                                bluetoothPermissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
+                                bluetoothPermissionLauncher.launch(missingPermissions.toTypedArray())
                             }
                         } else {
                             showPrinterDialog = true
@@ -405,7 +430,7 @@ fun Profil(
         )
     }
 
-    if (showPrinterDialog && printerManager != null) {
+    if (showPrinterDialog && (printerManager != null)) {
         PrinterSelectionDialog(
             pairedDevices = printerManager.getPairedDevices(),
             isConnected = isPrinterConnected,

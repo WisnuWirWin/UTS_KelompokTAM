@@ -27,12 +27,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.le.uts_tam.ui.components.SaveConfirmationDialog
 
 @Composable
 fun Kasir(
     onBack: () -> Unit,
     onPrintNota: () -> Unit,
-    viewModel: KasirViewModel = viewModel()
+    viewModel: KasirViewModel = viewModel(),
 ) {
     val context = LocalContext.current
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -43,7 +44,22 @@ fun Kasir(
     val cartItems by viewModel.cartItems.collectAsState()
     val totalBayar by viewModel.totalBayar.collectAsState()
 
-    val showScanner = remember { mutableStateOf(false) }
+    val showScanner = remember { mutableStateOf(value = false) }
+    var showConfirmDialog by remember { mutableStateOf(value = false) }
+
+    if (showConfirmDialog) {
+        SaveConfirmationDialog(
+            onConfirm = {
+                showConfirmDialog = false
+                viewModel.processPayment {
+                    onPrintNota()
+                }
+            },
+            onDismiss = { showConfirmDialog = false },
+            title = "Konfirmasi Pembayaran",
+            message = "Apakah Anda yakin ingin memproses pembayaran sebesar RP ${"%,d".format(totalBayar)}?"
+        )
+    }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -64,7 +80,7 @@ fun Kasir(
                         Toast.makeText(context, "Barang berhasil ditambahkan", Toast.LENGTH_SHORT).show()
                     }
                 },
-                onClose = { showScanner.value = false }
+                onClose = { showScanner.value = false },
             )
             
             // Overlay Close Button
@@ -98,9 +114,14 @@ fun Kasir(
                     }
                     Text("TRX-${System.currentTimeMillis() / 100000}", color = Color(0xFFFF5722), fontSize = 12.sp)
                 }
-                Box(modifier = Modifier.fillMaxWidth().height(2.dp).background(
-                    Brush.horizontalGradient(listOf(Color.Red, Color.Yellow, Color.Transparent))
-                ))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(2.dp)
+                        .background(
+                            Brush.horizontalGradient(listOf(Color.Red, Color.Yellow, Color.Transparent)),
+                        ),
+                )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
@@ -263,7 +284,7 @@ fun Kasir(
                                     IconButton(onClick = { viewModel.updateQty(item, -1) }) {
                                         Icon(Icons.Default.Close, contentDescription = null, tint = Color.Red, modifier = Modifier.size(18.dp))
                                     }
-                                    Text("$qty", color = Color.White, fontWeight = FontWeight.Bold)
+                                    Text(text = qty.toString(), color = Color.White, fontWeight = FontWeight.Bold)
                                     Box(
                                         modifier = Modifier.size(30.dp).background(Color(0xFFFF5722), CircleShape)
                                             .clickable { viewModel.updateQty(item, 1) },
@@ -293,9 +314,7 @@ fun Kasir(
                         }
                         Button(
                             onClick = { 
-                                viewModel.processPayment {
-                                    onPrintNota()
-                                }
+                                showConfirmDialog = true
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
                             shape = RoundedCornerShape(12.dp),
