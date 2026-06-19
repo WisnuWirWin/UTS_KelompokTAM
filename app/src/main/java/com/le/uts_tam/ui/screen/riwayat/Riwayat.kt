@@ -38,7 +38,7 @@ data class HistoryItem(
     val totalHarga: String,
     val status: String,
     val statusColor: Color,
-    val kategori: String
+    val kategori: String,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)

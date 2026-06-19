@@ -11,18 +11,17 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.RoundRect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -40,7 +39,7 @@ import java.util.concurrent.Executors
 @Composable
 fun QRScanner(
     onScan: (String) -> Unit,
-    onClose: () -> Unit
+    onClose: () -> Unit,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -48,7 +47,7 @@ fun QRScanner(
     val executor = remember { Executors.newSingleThreadExecutor() }
     val scanner: BarcodeScanner = remember { BarcodeScanning.getClient() }
 
-    var isProcessed by remember { mutableStateOf(false) }
+    var isProcessed by remember { mutableStateOf(value = false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
@@ -58,48 +57,50 @@ fun QRScanner(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT
                     )
-                    // Fix for emulator/unusual hardware: specify implementation mode
                     implementationMode = PreviewView.ImplementationMode.COMPATIBLE
                 }
 
-                cameraProviderFuture.addListener({
-                    try {
-                        val cameraProvider = cameraProviderFuture.get()
-                        val preview = Preview.Builder().build().also {
-                            it.surfaceProvider = previewView.surfaceProvider
-                        }
-
-                        val imageAnalysis = ImageAnalysis.Builder()
-                            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                            .build()
-
-                        imageAnalysis.setAnalyzer(executor) { imageProxy: ImageProxy ->
-                            if (!isProcessed) {
-                                processImageProxy(scanner, imageProxy) { code ->
-                                    if (!isProcessed) {
-                                        isProcessed = true
-                                        onScan(code)
-                                    }
-                                }
-                            } else {
-                                imageProxy.close()
+                cameraProviderFuture.addListener(
+                    {
+                        try {
+                            val cameraProvider = cameraProviderFuture.get()
+                            val preview = Preview.Builder().build().also {
+                                it.surfaceProvider = previewView.surfaceProvider
                             }
+
+                            val imageAnalysis = ImageAnalysis.Builder()
+                                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                                .build()
+
+                            imageAnalysis.setAnalyzer(executor) { imageProxy: ImageProxy ->
+                                if (!isProcessed) {
+                                    processImageProxy(scanner, imageProxy) { code ->
+                                        if (!isProcessed) {
+                                            isProcessed = true
+                                            onScan(code)
+                                        }
+                                    }
+                                } else {
+                                    imageProxy.close()
+                                }
+                            }
+
+                            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+                            cameraProvider.unbindAll()
+                            cameraProvider.bindToLifecycle(
+                                lifecycleOwner,
+                                cameraSelector,
+                                preview,
+                                imageAnalysis
+                            )
+                        } catch (e: Exception) {
+                            Log.e("QRScanner", "Camera initialization failed", e)
+                            onClose()
                         }
-
-                        val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
-                        cameraProvider.unbindAll()
-                        cameraProvider.bindToLifecycle(
-                            lifecycleOwner,
-                            cameraSelector,
-                            preview,
-                            imageAnalysis
-                        )
-                    } catch (e: Exception) {
-                        Log.e("QRScanner", "Camera initialization failed", e)
-                        onClose()
-                    }
-                }, ContextCompat.getMainExecutor(ctx))
+                    }, 
+                    ContextCompat.getMainExecutor(ctx)
+                )
 
                 previewView
             },
@@ -107,45 +108,46 @@ fun QRScanner(
         )
 
         // QR Scanner Overlay
-        Canvas(modifier = Modifier.fillMaxSize()) {
+        Canvas(modifier = Modifier.fillMaxSize().graphicsLayer(alpha = 0.99f)) {
             val canvasWidth = size.width
             val canvasHeight = size.height
             val boxSize = 250.dp.toPx()
             val left = (canvasWidth - boxSize) / 2
             val top = (canvasHeight - boxSize) / 2
             
-            val boxRect = Rect(left, top, left + boxSize, top + boxSize)
-
-            // Draw semi-transparent background with a hole
-            val path = Path().apply {
-                addRect(Rect(0f, 0f, canvasWidth, canvasHeight))
-                addRoundRect(RoundRect(boxRect, CornerRadius(20.dp.toPx())))
-            }
+            drawRect(color = Color.Black.copy(alpha = 0.7f))
             
-            drawPath(
-                path = path,
-                color = Color.Black.copy(alpha = 0.6f),
-                blendMode = BlendMode.SrcOver
-            )
-            
-            // Re-draw the hole as transparent (using BlendMode.Clear)
             drawRoundRect(
                 color = Color.Transparent,
                 topLeft = Offset(left, top),
-                size = Size(boxSize, boxSize),
+                size = androidx.compose.ui.geometry.Size(boxSize, boxSize),
                 cornerRadius = CornerRadius(20.dp.toPx()),
                 blendMode = BlendMode.Clear
             )
 
-            // Draw orange border for the scanning area
             drawRoundRect(
                 color = Color(0xFFFF5722),
                 topLeft = Offset(left, top),
-                size = Size(boxSize, boxSize),
+                size = androidx.compose.ui.geometry.Size(boxSize, boxSize),
                 cornerRadius = CornerRadius(20.dp.toPx()),
                 style = Stroke(width = 4.dp.toPx())
             )
         }
+
+        IconButton(
+            onClick = onClose,
+            modifier = Modifier
+                .padding(top = 40.dp, start = 20.dp)
+                .align(Alignment.TopStart)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back",
+                tint = Color.White,
+                modifier = Modifier.size(32.dp)
+            )
+        }
+
 
         Column(
             modifier = Modifier

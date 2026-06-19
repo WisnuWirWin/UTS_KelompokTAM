@@ -49,9 +49,9 @@ fun Kasir(
     val cartItems by viewModel.cartItems.collectAsState()
     val totalBayar by viewModel.totalBayar.collectAsState()
 
-    val showScanner = remember { mutableStateOf(false) }
-    var showConfirmDialog by remember { mutableStateOf(false) }
-    var showCart by remember { mutableStateOf(false) }
+    val showScanner = remember { mutableStateOf(value = false) }
+    var showConfirmDialog by remember { mutableStateOf(value = false) }
+    var showCart by remember { mutableStateOf(value = false) }
 
     if (showConfirmDialog) {
         PaymentConfirmationDialog(
@@ -60,7 +60,9 @@ fun Kasir(
                 showConfirmDialog = false
                 viewModel.processPayment { onPrintNota() }
             },
-            onDismiss = { showConfirmDialog = false }
+            onDismiss = {
+                showConfirmDialog = false
+            },
         )
     }
 
@@ -296,7 +298,7 @@ private fun ProductSearchSection(
                 .size(56.dp)
                 .background(Color(0xFF1E1E1E), RoundedCornerShape(16.dp))
         ) {
-            Icon(Icons.Default.Search, "Scan QR Barang", tint = Color(0xFFFF5722))
+            Icon(Icons.Default.CameraAlt, "Scan QR Barang", tint = Color(0xFFFF5722))
         }
     }
 }
@@ -488,15 +490,6 @@ private fun ScannerView(
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         QRScanner(onScan = onScan, onClose = onClose)
-        IconButton(
-            onClick = onClose,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(16.dp)
-                .background(Color.Black.copy(alpha = 0.5f), CircleShape)
-        ) {
-            Icon(Icons.Default.Close, "Close Scanner", tint = Color.White)
-        }
     }
 }
 
