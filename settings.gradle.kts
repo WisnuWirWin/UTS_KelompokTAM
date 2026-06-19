@@ -22,6 +22,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "BengkelSmart"
+rootProject.name = "SmartBengkel"
 include(":app")
  

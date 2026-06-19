@@ -1,5 +1,6 @@
 package com.le.uts_tam.data.repository
 
+import androidx.room.withTransaction
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -40,7 +41,10 @@ class FirebaseRepository(private val ownerId: String? = null, databaseInstance: 
                     val list = snapshot.children.mapNotNull { 
                         it.getValue(Customers::class.java)?.copy(firebaseKey = it.key ?: "") 
                     }
-                    localDb?.customerDao()?.upsertCustomers(list)
+                    localDb?.withTransaction {
+                        localDb.customerDao().deleteAll()
+                        localDb.customerDao().upsertCustomers(list)
+                    }
                 }
             }
             override fun onCancelled(error: DatabaseError) {}
@@ -52,7 +56,10 @@ class FirebaseRepository(private val ownerId: String? = null, databaseInstance: 
                     val list = snapshot.children.mapNotNull { 
                         it.getValue(Items::class.java)?.copy(firebaseKey = it.key ?: "") 
                     }
-                    localDb?.itemDao()?.upsertItems(list)
+                    localDb?.withTransaction {
+                        localDb.itemDao().deleteAll()
+                        localDb.itemDao().upsertItems(list)
+                    }
                 }
             }
             override fun onCancelled(error: DatabaseError) {}
@@ -63,7 +70,10 @@ class FirebaseRepository(private val ownerId: String? = null, databaseInstance: 
                 repositoryScope.launch {
                     val owner = snapshot.getValue(Owners::class.java)?.copy(firebaseKey = snapshot.key ?: "")
                     if (owner != null) {
-                        localDb?.ownerDao()?.upsertOwner(owner)
+                        localDb?.withTransaction {
+                            localDb.ownerDao().deleteAll()
+                            localDb.ownerDao().upsertOwner(owner)
+                        }
                     }
                 }
             }

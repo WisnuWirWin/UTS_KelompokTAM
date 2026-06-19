@@ -66,7 +66,7 @@ fun NotaDigital(
                 if (transaction != null) {
                     ReceiptCard(
                         transaction = transaction,
-                        shopName = shopInfo.ownerName.ifEmpty { "BengkelSmart" },
+                        shopName = shopInfo.ownerName.ifEmpty { "SmartBengkel" },
                         shopAddress = shopInfo.address.ifEmpty { "Jl. Raya Natar No.12, Lampung Selatan" },
                         shopPhone = shopInfo.phone.ifEmpty { "0857-6494-8010" }
                     )
@@ -89,7 +89,7 @@ fun NotaDigital(
                         scope.launch {
                             val receiptText = buildReceiptString(
                                 transaction,
-                                shopInfo.ownerName.ifEmpty { "BengkelSmart" },
+                                shopInfo.ownerName.ifEmpty { "SmartBengkel" },
                                 shopInfo.address.ifEmpty { "Jl. Raya Natar" },
                                 shopInfo.phone.ifEmpty { "-" }
                             )
@@ -105,7 +105,7 @@ fun NotaDigital(
                     if (transaction != null) {
                         val message = buildWhatsAppMessage(
                             transaction,
-                            shopInfo.ownerName.ifEmpty { "BengkelSmart" }
+                            shopInfo.ownerName.ifEmpty { "SmartBengkel" }
                         )
                         val phoneNumber = transaction.customer.noHp?.replace(Regex("[^0-9]"), "") ?: ""
                         
@@ -124,7 +124,7 @@ fun NotaDigital(
     if (showPrintDialog && transaction != null) {
         PrintReceiptDialog(
             transaction = transaction,
-            shopName = shopInfo.ownerName.ifEmpty { "BengkelSmart" },
+            shopName = shopInfo.ownerName.ifEmpty { "SmartBengkel" },
             shopAddress = shopInfo.address.ifEmpty { "Jl. Raya Natar No.12, Lampung Selatan" },
             shopPhone = shopInfo.phone.ifEmpty { "0857-6494-8010" },
             onDismiss = { showPrintDialog = false }
