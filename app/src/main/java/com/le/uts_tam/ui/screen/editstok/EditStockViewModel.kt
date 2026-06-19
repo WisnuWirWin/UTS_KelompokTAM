@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.le.uts_tam.data.local.AppDatabase
 import com.le.uts_tam.data.model.dataclass.Items
 import com.le.uts_tam.data.repository.FirebaseRepository
+import com.le.uts_tam.utils.FormatUtils
 import kotlinx.coroutines.launch
 
 class EditStockViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
@@ -75,9 +76,9 @@ class EditStockViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                     firebaseKey = firebaseKey ?: "",
                     id = idItems,
                     name = name,
-                    price = price,
-                    purchasePrice = hargaBeli,
-                    stock = stock,
+                    price = FormatUtils.cleanNumber(price),
+                    purchasePrice = FormatUtils.cleanNumber(hargaBeli),
+                    stock = FormatUtils.cleanNumber(stock),
                 )
                 val currentName = name
                 firebaseKey?.let { key ->

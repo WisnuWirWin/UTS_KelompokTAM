@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.le.uts_tam.data.local.AppDatabase
 import com.le.uts_tam.data.model.dataclass.Customers
 import com.le.uts_tam.data.repository.FirebaseRepository
+import com.le.uts_tam.utils.FormatUtils
 import kotlinx.coroutines.launch
 
 class AddPelangganViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
@@ -84,12 +85,12 @@ class AddPelangganViewModel(ownerId: String, database: AppDatabase) : ViewModel(
                 val customer = Customers(
                     firebaseKey = firebaseKey ?: "",
                     name = namaLengkap,
-                    noHp = nomorTelepon,
+                    noHp = FormatUtils.cleanNumber(nomorTelepon),
                     address = alamat,
                     plateNumber = nomorPlat,
                     motorBrand = merkMotor,
                     motorModel = tipeModel,
-                    motorYear = tahun,
+                    motorYear = FormatUtils.cleanNumber(tahun),
                     motorColor = warna,
                     complaint = catatan
                 )

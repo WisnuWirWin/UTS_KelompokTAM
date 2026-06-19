@@ -53,6 +53,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -235,9 +236,25 @@ fun Laporan(
                             .clip(RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
                             .background(MaterialTheme.colorScheme.surface)
                     ) {
-                        items(reportState.items) { item ->
-                            ReportRow(item)
-                            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), thickness = 0.5.dp)
+                        if (reportState.items.isEmpty()) {
+                            item {
+                                Box(
+                                    modifier = Modifier.fillMaxWidth().padding(40.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Belum ada data laporan untuk periode ini",
+                                        color = MaterialTheme.colorScheme.outline,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+                        } else {
+                            items(reportState.items) { item ->
+                                ReportRow(item)
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), thickness = 0.5.dp)
+                            }
                         }
                     }
                 }

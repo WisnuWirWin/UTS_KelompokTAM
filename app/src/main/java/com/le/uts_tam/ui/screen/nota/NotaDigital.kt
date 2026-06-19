@@ -12,7 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Print
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -193,7 +193,7 @@ fun ActionButtons(
                 shape = RoundedCornerShape(12.dp),
                 border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
             ) {
-                Icon(Icons.Default.Print, null)
+                Icon(Icons.Default.Refresh, null)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("PRINTER")
             }
@@ -337,7 +337,7 @@ fun ReceiptCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(transaction.layanan, modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurface)
-                Text("Rp ${transaction.totalHarga}", color = MaterialTheme.colorScheme.primary)
+                Text(transaction.totalHarga, color = MaterialTheme.colorScheme.primary)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -351,7 +351,7 @@ fun ReceiptCard(
             ) {
                 Text("TOTAL BAYAR", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                 Text(
-                    text = "RP ${transaction.totalHarga}",
+                    text = transaction.totalHarga.uppercase(),
                     color = Color(0xFFFFEB3B),
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.ExtraBold

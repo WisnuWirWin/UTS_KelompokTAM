@@ -161,6 +161,26 @@ fun Pelanggan(
                     Text("Coba Lagi")
                 }
             }
+        } else if (filteredList.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxWidth().height(200.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = null,
+                        modifier = Modifier.size(64.dp),
+                        tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = if (searchQuery.isEmpty()) "Belum ada data pelanggan" else "Pelanggan tidak ditemukan",
+                        color = MaterialTheme.colorScheme.outline,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
         } else {
             filteredList.forEach { customer ->
                 CustomerCard(

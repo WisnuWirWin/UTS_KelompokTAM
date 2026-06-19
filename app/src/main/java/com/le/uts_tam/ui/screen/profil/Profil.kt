@@ -18,7 +18,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -298,7 +297,7 @@ fun Profil(
         ) {
             Column {
                 SettingsItem(
-                    icon = Icons.Default.Print, 
+                    icon = Icons.Default.Refresh, 
                     label = "Printer Bluetooth", 
                     value = if (isPrinterConnected) connectedPrinterName ?: "Terhubung" else "Tidak terhubung",
                     onClick = {
@@ -334,7 +333,7 @@ fun Profil(
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = if (isDarkTheme) Icons.Default.DarkMode else Icons.Default.LightMode,
+                                imageVector = if (isDarkTheme) Icons.Default.Info else Icons.Default.Info,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.secondary,
                                 modifier = Modifier.size(20.dp)
@@ -376,7 +375,7 @@ fun Profil(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Logout,
+                            imageVector = Icons.Default.ExitToApp,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(20.dp)

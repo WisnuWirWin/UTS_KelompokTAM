@@ -41,4 +41,8 @@ object FormatUtils {
     fun formatDate(date: Date, pattern: String = "dd-MM-yyyy"): String {
         return SimpleDateFormat(pattern, localeID).format(date)
     }
+
+    fun cleanNumber(input: String): String {
+        return input.replace(Regex("[^0-9]"), "")
+    }
 }

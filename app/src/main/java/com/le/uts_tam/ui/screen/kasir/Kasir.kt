@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.le.uts_tam.ui.components.SaveConfirmationDialog
+import com.le.uts_tam.utils.FormatUtils
 
 @Composable
 fun Kasir(
@@ -227,7 +228,7 @@ fun Kasir(
                         },
                         modifier = Modifier.size(56.dp).background(Color(0xFF1E1E1E), RoundedCornerShape(16.dp))
                     ) {
-                        Icon(Icons.Default.QrCodeScanner, contentDescription = "Scan QR", tint = Color(0xFFFF5722))
+                        Icon(Icons.Default.Build, contentDescription = "Scan QR", tint = Color(0xFFFF5722))
                     }
                 }
 
@@ -310,7 +311,12 @@ fun Kasir(
                     ) {
                         Column {
                             Text("TOTAL BAYAR", color = Color.Gray, fontSize = 12.sp)
-                            Text("RP ${"%,d".format(totalBayar)}", color = Color(0xFFFFEB3B), fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
+                            Text(
+                                text = FormatUtils.formatCurrency(totalBayar.toLong()).uppercase(),
+                                color = Color(0xFFFFEB3B),
+                                fontSize = 28.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                            )
                         }
                         Button(
                             onClick = { 

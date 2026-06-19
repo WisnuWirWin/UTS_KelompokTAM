@@ -16,9 +16,9 @@ import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -33,6 +33,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.le.uts_tam.data.model.dataclass.Items
 import com.le.uts_tam.ui.components.DeleteConfirmationDialog
 import com.le.uts_tam.ui.components.ItemQRCodeDialog
+import com.le.uts_tam.utils.FormatUtils
 
 @Composable
 fun Inventaris(
@@ -201,6 +202,26 @@ fun Inventaris(
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
+            } else if (items.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = Icons.Default.Build,
+                            contentDescription = null,
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = if (searchQuery.isEmpty()) "Inventaris masih kosong" else "Barang tidak ditemukan",
+                            color = MaterialTheme.colorScheme.outline,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
             } else {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -261,7 +282,7 @@ fun InventoryCard(
             Column(horizontalAlignment = Alignment.End) {
                 Row {
                     IconButton(onClick = onShowQR, modifier = Modifier.size(32.dp)) {
-                        Icon(Icons.Default.QrCode, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                        Icon(Icons.Default.ThumbUp, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                     }
                     IconButton(onClick = onEdit, modifier = Modifier.size(32.dp)) {
                         Icon(Icons.Default.Edit, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
@@ -270,7 +291,11 @@ fun InventoryCard(
                         Icon(Icons.Default.Close, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))
                     }
                 }
-                Text("Rp ${item.price ?: "0"}", color = MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.labelLarge)
+                Text(
+                    text = FormatUtils.formatCurrency(item.price?.replace(Regex("[^0-9]"), "")?.toLongOrNull() ?: 0L),
+                    color = MaterialTheme.colorScheme.secondary,
+                    style = MaterialTheme.typography.labelLarge
+                )
                 Text("Stok: ${item.stock ?: "0"}", style = MaterialTheme.typography.titleMedium)
             }
         }

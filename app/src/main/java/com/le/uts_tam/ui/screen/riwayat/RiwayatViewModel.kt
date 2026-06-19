@@ -26,18 +26,20 @@ class RiwayatViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
     }
 
     private fun fetchTransactions() {
+        val dateTimeFormat = SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.getDefault())
         viewModelScope.launch {
             repository.getTransactions().collect { transactions ->
                 _allHistory.value = transactions.map { data ->
                     val dateStr = data["date"] as? String ?: ""
+                    val timeStr = data["time"] as? String ?: "00:00"
                     val tgl = dateStr.split("-").firstOrNull() ?: ""
                     val blnNum = dateStr.split("-").getOrNull(1) ?: ""
                     val bln = FormatUtils.getMonthName(blnNum)
 
                     val totalRaw = data["totalPrice"]
                     val totalFormatted = if (totalRaw is Number) {
-                        FormatUtils.formatShortAmount(totalRaw.toLong()).replace("Rp ", "")
-                    } else "0"
+                        FormatUtils.formatCurrency(totalRaw.toLong())
+                    } else "Rp 0"
 
                     @Suppress("UNCHECKED_CAST")
                     val items = data["items"] as? List<Map<String, Any>>
@@ -51,7 +53,7 @@ class RiwayatViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                         trxId = data["trxId"] as? String ?: "TRX-...",
                         tgl = tgl,
                         bln = bln,
-                        jam = data["time"] as? String ?: "00:00",
+                        jam = timeStr,
                         customer = Customers(
                             firebaseKey = data["customerId"] as? String ?: "",
                             name = data["customerName"] as? String,
@@ -68,7 +70,15 @@ class RiwayatViewModel(ownerId: String, database: AppDatabase) : ViewModel() {
                         statusColor = if ((data["status"] as? String) == "BON") Color(0xFFFFA000) else Color(0xFF4CAF50),
                         kategori = determineCategory(dateStr)
                     )
-                }.sortedByDescending { it.trxId }
+                }.sortedByDescending { item ->
+                    val dateStr = transactions.find { it["trxId"] == item.trxId }?.get("date") as? String ?: "01-01-2000"
+                    val timeStr = transactions.find { it["trxId"] == item.trxId }?.get("time") as? String ?: "00:00"
+                    try {
+                        dateTimeFormat.parse("$dateStr $timeStr")?.time ?: 0L
+                    } catch (_: Exception) {
+                        0L
+                    }
+                }
             }
         }
     }

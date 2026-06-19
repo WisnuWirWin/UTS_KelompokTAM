@@ -163,15 +163,37 @@ fun Riwayat(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(bottom = 20.dp)
-            ) {
-                items(
-                    items = filteredRiwayat,
-                    key = { it.trxId }
-                ) { item: HistoryItem ->
-                    HistoryCard(item, onClick = { onTransactionClick(item) })
+            if (filteredRiwayat.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = Icons.Default.Email,
+                            contentDescription = null,
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Belum ada riwayat transaksi",
+                            color = MaterialTheme.colorScheme.outline,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(bottom = 20.dp)
+                ) {
+                    items(
+                        items = filteredRiwayat,
+                        key = { it.trxId }
+                    ) { item: HistoryItem ->
+                        HistoryCard(item, onClick = { onTransactionClick(item) })
+                    }
                 }
             }
         }

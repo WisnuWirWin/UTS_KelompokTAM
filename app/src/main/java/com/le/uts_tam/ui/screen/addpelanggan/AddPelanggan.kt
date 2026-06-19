@@ -10,7 +10,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -117,7 +117,7 @@ fun AddPelanggan(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.CameraAlt,
+                            imageVector = Icons.Default.Add,
                             contentDescription = null,
                             tint = Color.White.copy(alpha = 0.5f),
                             modifier = Modifier.size(40.dp)
@@ -131,7 +131,7 @@ fun AddPelanggan(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.CameraAlt,
+                            imageVector = Icons.Default.Add,
                             contentDescription = null,
                             tint = Color.White,
                             modifier = Modifier.size(16.dp)
